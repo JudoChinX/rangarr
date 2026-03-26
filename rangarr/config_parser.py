@@ -11,6 +11,7 @@ SETTINGS_SCHEMA = {
     'missing_batch_size': {
         'default': 20,
         'type': int,
+        'allow_special_values': True,
     },
     'retry_interval_days': {
         'default': 30,
@@ -46,12 +47,13 @@ SETTINGS_SCHEMA = {
     'upgrade_batch_size': {
         'default': 10,
         'type': int,
+        'allow_special_values': True,
     },
 }
 
 
 def _parse_instance(name: str, config: dict) -> tuple[str, dict] | None:
-    """Parse and validate single instance configuration."""
+    """Parse and validate a single instance configuration."""
     instance = config.copy()
     if 'host' in instance:
         instance['url'] = instance.pop('host')
@@ -80,17 +82,38 @@ def _validate_global_settings(settings: dict, schema: dict) -> None:
     """Validate all global settings against their schema."""
     for setting, definition in schema.items():
         settings.setdefault(setting, definition['default'])
-        _validate_setting(setting, settings[setting], definition['type'], definition.get('choices'), prefix='global')
+        _validate_setting(
+            setting,
+            settings[setting],
+            definition['type'],
+            definition.get('choices'),
+            allow_special_values=definition.get('allow_special_values', False),
+            prefix='global',
+        )
 
 
 def _validate_setting(
-    setting: str, value: Any, expected_type: type, choices: tuple = None, prefix: str = 'global'
+    setting: str,
+    value: Any,
+    expected_type: type,
+    choices: tuple | None = None,
+    allow_special_values: bool = False,
+    prefix: str = 'global',
 ) -> None:
     """Validate a setting value based on its expected type."""
     if not isinstance(value, expected_type):
         raise ValueError(f"'{prefix}.{setting}' must be of type {expected_type.__name__}.")
-    if expected_type is int and value < 0:
-        raise ValueError(f"'{prefix}.{setting}' must be a non-negative integer.")
+
+    if expected_type is int:
+        limit = -1 if allow_special_values else 0
+        if value < limit:
+            msg = (
+                f"'{prefix}.{setting}' must be 0 (disabled), -1 (unlimited), or a positive integer."
+                if allow_special_values
+                else f"'{prefix}.{setting}' must be a non-negative integer."
+            )
+            raise ValueError(msg)
+
     if choices is not None and value not in choices:
         valid_choices = ', '.join(repr(choice) for choice in choices)
         raise ValueError(f"'{prefix}.{setting}' must be one of: {valid_choices}.")

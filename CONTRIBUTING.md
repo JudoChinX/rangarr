@@ -37,7 +37,7 @@ All contributions must meet the following standards:
 
 ### Automated Checks
 
-All pushes automatically run pre-push hooks (see [pre-push.sh](pre-push.sh)) that enforce:
+All pushes automatically run pre-push hooks (see [pre-push.sh](utils/pre-push.sh)) that enforce:
 
 - **Ruff** (linting and formatting).
 - **Pylint** (code quality).
@@ -109,8 +109,8 @@ All user input and configuration must be validated:
 
 1. **Test locally**: Run the full test suite and ensure all checks pass.
 2. **Update tests**: Add tests for new functionality or bug fixes.
-3. **Update documentation**: Update README.md, docs/user-guide.md, or CLAUDE.md if applicable.
-4. **Review your changes**: Self-review using the code review checklist in CLAUDE.md.
+3. **Update documentation**: Update README.md or docs/user-guide.md if applicable.
+4. **Review your changes**: Self-review for correctness, test coverage, and alignment with the coding standards in this file.
 5. **Clean commit history**: Squash WIP commits; write clear commit messages.
 
 ### Creating a Pull Request

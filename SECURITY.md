@@ -53,7 +53,7 @@ Rangarr operates entirely within your local network (or wherever you host your *
 - Only communicates with URLs explicitly configured in `config.yaml`
 - No telemetry, analytics, or external API calls
 - No automatic updates or version checks
-- All HTTP requests are logged at `DEBUG` level for transparency
+- All HTTP requests use the session configured at startup; no request data is logged externally
 
 **Important:** Rangarr does not encrypt credentials or API keys in transit. It is designed for use on a trusted local network and should **not** be exposed to the public internet. For Docker deployments, keep all *arr containers on an isolated internal Docker network (see README for details).
 
@@ -64,6 +64,25 @@ API keys are stored in `config.yaml` and used exclusively for authentication hea
 - Keys are added to HTTP request headers as `X-Api-Key` (standard *arr authentication)
 - No API keys are logged, transmitted externally, or written to disk beyond your configuration file
 - The configuration file should be protected with appropriate filesystem permissions (recommend `chmod 600 config.yaml`)
+
+## Container Security
+
+The official Docker image is built on `gcr.io/distroless/python3-debian13` — Google's distroless Python base image. Distroless images contain only the application runtime and its dependencies; they do not include a shell, package manager, or any OS userland beyond what is strictly required.
+
+**Properties of the runtime image:**
+- No shell (`/bin/sh`, `/bin/bash`) — interactive access to a running container is not possible
+- No package manager (`apt`, `pip`) — no packages can be installed at runtime
+- No build tooling, compilers, or utilities
+- Runs as a non-root user (`nonroot`, UID 65532) by default
+- CA certificates included — outbound HTTPS connections work without modification
+
+This limits the blast radius of a compromised container: an attacker cannot execute arbitrary shell commands, install additional tooling, or escalate to root via the package manager.
+
+To verify the runtime image contains no shell:
+```bash
+docker run --rm --entrypoint /bin/sh judochinx/rangarr
+# Expected: "exec: /bin/sh: stat /bin/sh: no such file or directory"
+```
 
 ## Reporting a Vulnerability
 

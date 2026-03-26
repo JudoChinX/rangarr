@@ -1,7 +1,10 @@
 """Tests for main.py entry point and search logic."""
+# pylint: disable=redefined-outer-name
 
+import logging
 from typing import Any
 from unittest.mock import MagicMock
+from unittest.mock import Mock
 from unittest.mock import patch
 
 import pytest
@@ -11,6 +14,17 @@ from rangarr.main import _calculate_batch
 from rangarr.main import _calculate_eta
 from rangarr.main import _format_batch_info
 from rangarr.main import build_arr_clients
+
+
+@pytest.fixture
+def mock_client() -> Mock:
+    """Create a mock ArrClient for testing."""
+    client = Mock()
+    client.name = 'test-instance'
+    client.weight = 1.0
+    client.get_media_to_search = Mock(return_value=[])
+    client.trigger_search = Mock()
+    return client
 
 
 def _make_run_config(
@@ -82,7 +96,7 @@ _build_clients_cases = {
         'expected_count': 2,
         'expected_weights': [2.0, 1.5],
     },
-    'with_disabled': {
+    'with_two_instances': {
         'instances_config': {
             'radarr': [
                 {
@@ -92,16 +106,15 @@ _build_clients_cases = {
                     'enabled': True,
                 },
                 {
-                    'name': 'Inactive Radarr',
+                    'name': 'Second Radarr',
                     'url': 'http://localhost:7879',
                     'api_key': 'key2',
-                    'enabled': False,
+                    'enabled': True,
                 },
             ]
         },
         'settings': {},
-        'expected_count': 1,
-        'expected_inactive': 1,
+        'expected_count': 2,
     },
 }
 
@@ -148,13 +161,12 @@ _run_cases = {
 
 
 @pytest.mark.parametrize(
-    'instances_config, settings, expected_count, expected_inactive, expected_name, expected_weights',
+    'instances_config, settings, expected_count, expected_name, expected_weights',
     [
         (
             case['instances_config'],
             case['settings'],
             case['expected_count'],
-            case.get('expected_inactive', 0),
             case.get('expected_name'),
             case.get('expected_weights'),
         )
@@ -166,14 +178,12 @@ def test_build_arr_clients(
     instances_config: Any,
     settings: Any,
     expected_count: Any,
-    expected_inactive: Any,
     expected_name: Any,
     expected_weights: Any,
 ) -> None:
     """Test build_arr_clients instantiates clients correctly."""
-    clients, inactive = build_arr_clients(instances_config, settings)
+    clients = build_arr_clients(instances_config, settings)
     assert len(clients) == expected_count
-    assert inactive == expected_inactive
 
     if expected_count > 0:
         if expected_name:
@@ -283,6 +293,26 @@ _calculate_batch_cases = {
         'weight_share': 1.0,
         'expected': 0,
     },
+    'disabled_with_half_share': {
+        'global_batch': 0,
+        'weight_share': 0.5,
+        'expected': 0,
+    },
+    'unlimited': {
+        'global_batch': -1,
+        'weight_share': 0.5,
+        'expected': -1,
+    },
+    'unlimited_ignores_zero_weight': {
+        'global_batch': -1,
+        'weight_share': 0.0,
+        'expected': -1,
+    },
+    'unlimited_ignores_full_weight': {
+        'global_batch': -1,
+        'weight_share': 1.0,
+        'expected': -1,
+    },
     'zero_weight_share': {
         'global_batch': 20,
         'weight_share': 0.0,
@@ -337,10 +367,10 @@ def test_run(
     def is_file_mock(path_obj: Any) -> Any:
         return str(path_obj) == config_file_exists if config_file_exists else False
 
-    mock_client = MagicMock()
-    mock_client.name = 'Test'
-    mock_client.weight = 1.0
-    mock_client.get_media_to_search.return_value = media_to_return or []
+    run_client = MagicMock()
+    run_client.name = 'Test'
+    run_client.weight = 1.0
+    run_client.get_media_to_search.return_value = media_to_return or []
 
     with (
         patch('pathlib.Path.is_file', new=is_file_mock),
@@ -354,7 +384,7 @@ def test_run(
         elif config_file_exists is not None:
             mock_load.return_value = _make_run_config()
 
-        mock_build.return_value = ([mock_client] if has_clients else []), 0
+        mock_build.return_value = [run_client] if has_clients else []
 
         from rangarr.main import run
 
@@ -371,4 +401,126 @@ def test_run(
             if expected_config_path:
                 mock_load.assert_called_once_with(expected_config_path)
             if expected_trigger_called:
-                mock_client.trigger_search.assert_called_once_with(media_to_return)
+                run_client.trigger_search.assert_called_once_with(media_to_return)
+
+
+def test_run_search_cycle_both_disabled(mock_client: Mock, caplog: pytest.LogCaptureFixture) -> None:
+    """Test that search cycle skips instance when both batch types disabled."""
+    from rangarr.main import _run_search_cycle
+
+    settings = {
+        'missing_batch_size': 0,
+        'upgrade_batch_size': 0,
+        'stagger_interval_seconds': 30,
+    }
+
+    with caplog.at_level(logging.INFO):
+        _run_search_cycle([mock_client], settings)
+
+    assert 'Missing and upgrade items disabled, skipping' in caplog.text
+    mock_client.get_media_to_search.assert_not_called()
+    mock_client.trigger_search.assert_not_called()
+
+
+def test_run_search_cycle_missing_disabled(mock_client: Mock, caplog: pytest.LogCaptureFixture) -> None:
+    """Test that search cycle logs when missing is disabled."""
+    from rangarr.main import _run_search_cycle
+
+    mock_client.get_media_to_search = Mock(return_value=[(1, 'upgrade', 'Movie 1')])
+
+    settings = {
+        'missing_batch_size': 0,
+        'upgrade_batch_size': 10,
+        'stagger_interval_seconds': 30,
+    }
+
+    with caplog.at_level(logging.INFO):
+        _run_search_cycle([mock_client], settings)
+
+    assert 'Missing items disabled for this cycle' in caplog.text
+    mock_client.get_media_to_search.assert_called_once_with(0, 10)
+
+
+def test_run_search_cycle_unlimited(mock_client: Mock) -> None:
+    """Test that search cycle passes -1 for unlimited batch size."""
+    from rangarr.main import _run_search_cycle
+
+    mock_client.get_media_to_search = Mock(
+        return_value=[
+            (1, 'missing', 'Movie 1'),
+            (2, 'missing', 'Movie 2'),
+        ]
+    )
+
+    settings = {
+        'missing_batch_size': -1,
+        'upgrade_batch_size': 10,
+        'stagger_interval_seconds': 30,
+    }
+
+    _run_search_cycle([mock_client], settings)
+
+    mock_client.get_media_to_search.assert_called_once_with(-1, 10)
+
+
+_log_rangarr_start_cases = {
+    'disabled': {
+        'missing_batch_size': 0,
+        'upgrade_batch_size': 20,
+        'expected_missing': 'Missing Batch: Disabled',
+        'expected_upgrade': 'Upgrade Batch: 20',
+    },
+    'unlimited': {
+        'missing_batch_size': -1,
+        'upgrade_batch_size': -1,
+        'expected_missing': 'Missing Batch: Unlimited',
+        'expected_upgrade': 'Upgrade Batch: Unlimited',
+    },
+    'limited': {
+        'missing_batch_size': 20,
+        'upgrade_batch_size': 10,
+        'expected_missing': 'Missing Batch: 20',
+        'expected_upgrade': 'Upgrade Batch: 10',
+    },
+}
+
+
+@pytest.mark.parametrize(
+    'missing_batch_size, upgrade_batch_size, expected_missing, expected_upgrade',
+    [
+        (
+            case['missing_batch_size'],
+            case['upgrade_batch_size'],
+            case['expected_missing'],
+            case['expected_upgrade'],
+        )
+        for case in _log_rangarr_start_cases.values()
+    ],
+    ids=list(_log_rangarr_start_cases.keys()),
+)
+def test_log_rangarr_start(
+    mock_client: Mock,
+    caplog: pytest.LogCaptureFixture,
+    missing_batch_size: int,
+    upgrade_batch_size: int,
+    expected_missing: str,
+    expected_upgrade: str,
+) -> None:
+    """Test startup log displays correct batch size labels."""
+    from rangarr.main import _log_rangarr_start
+
+    settings = {
+        'missing_batch_size': missing_batch_size,
+        'upgrade_batch_size': upgrade_batch_size,
+        'retry_interval_days': 30,
+        'run_interval_minutes': 60,
+        'stagger_interval_seconds': 30,
+        'search_order': 'last_searched_ascending',
+        'dry_run': False,
+    }
+
+    with caplog.at_level(logging.INFO):
+        _log_rangarr_start([mock_client], settings)
+
+    assert expected_missing in caplog.text
+    assert expected_upgrade in caplog.text

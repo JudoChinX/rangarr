@@ -10,13 +10,13 @@ on:
 
 jobs:
   tests_and_quality:
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
       - uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
+          python-version: '3.13'
 
       - name: Cache pip
         uses: actions/cache@v4
@@ -63,7 +63,7 @@ jobs:
 
       - uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
+          python-version: '3.13'
 
       - name: Cache pip
         uses: actions/cache@v4

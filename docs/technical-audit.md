@@ -45,7 +45,7 @@ To be absolutely clear, Rangarr does not and will never:
 
 ## Architecture Overview
 
-Rangarr is a ~840-line Python service with three core modules:
+Rangarr is a ~864-line Python service with three core modules:
 
 ```
 rangarr/
@@ -170,7 +170,7 @@ Rangarr operates entirely within your local network (or wherever you host your *
 - Only communicates with URLs explicitly configured in `config.yaml`
 - No telemetry, analytics, or external API calls
 - No automatic updates or version checks
-- All HTTP requests are logged at `DEBUG` level for transparency
+- All HTTP requests use the session configured at startup; no request data is logged externally
 
 ---
 
@@ -178,7 +178,7 @@ Rangarr operates entirely within your local network (or wherever you host your *
 
 ### 1. Security Through Simplicity
 
-**Decision:** ~840 lines of core Python code, zero external dependencies beyond requests and PyYAML.
+**Decision:** ~864 lines of core Python code, zero external dependencies beyond requests and PyYAML.
 
 **Why:** Small codebases are auditable. Every line of code is a potential attack surface. By keeping the codebase minimal, security reviewers can read and understand the entire project in under an hour.
 
@@ -205,7 +205,7 @@ Rangarr operates entirely within your local network (or wherever you host your *
 
 ### 4. Test Coverage as Documentation
 
-**Decision:** 90+ tests covering all code paths, including error conditions.
+**Decision:** 116 tests covering all code paths, including error conditions.
 
 **Why:** Tests serve three purposes:
 1. Prevent regressions.
@@ -229,9 +229,19 @@ Rangarr operates entirely within your local network (or wherever you host your *
 
 ## Technical Decisions
 
+### Distroless Container Image
+
+**Choice:** `gcr.io/distroless/python3-debian13` as the runtime base image, built via a multi-stage Dockerfile.
+
+**Why:** The runtime image contains only the Python interpreter, CA certificates, and the application itself. There is no shell, no package manager, no build tooling. This limits what an attacker can do with a compromised container — they cannot execute shell commands, install tools, or escalate privileges through the package manager.
+
+**How it works:** A `python:3.13-slim` builder stage installs dependencies into an isolated prefix (`/install`) using `pip install --prefix`. The distroless runtime stage copies only that prefix and the application source. pip, build headers, and the OS package manager never exist in the final image.
+
+**Trade-off:** Debugging a running container is harder — there is no shell to exec into. Use `LOG_LEVEL=DEBUG` and structured logs for diagnostics.
+
 ### Python Over Other Languages
 
-**Choice:** Python 3.12+ with type hints.
+**Choice:** Python 3.13+ with type hints.
 
 **Why:**
 - Widely understood in the homelab community.
@@ -310,10 +320,10 @@ Both are widely-used, well-maintained libraries with public security disclosure 
 
 ## File Sizes
 
-- `main.py`: ~225 lines
-- `config_parser.py`: ~190 lines
+- `main.py`: ~238 lines
+- `config_parser.py`: ~201 lines
 - `clients/arr.py`: ~425 lines
-- **Total:** ~840 lines of Python (excluding tests/comments)
+- **Total:** ~864 lines of Python (excluding tests/comments)
 
 The small codebase size makes comprehensive security auditing feasible.
 

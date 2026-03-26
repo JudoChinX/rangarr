@@ -1,4 +1,4 @@
-FROM python:3.12-slim
+FROM python:3.13-slim AS builder
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
@@ -7,16 +7,23 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 WORKDIR /app
 
-RUN addgroup --system --gid 1000 rangarr && \
-    adduser --system --uid 1000 --gid 1000 rangarr
-
 COPY requirements.txt .
-RUN pip install -r requirements.txt
+RUN pip install --prefix=/install -r requirements.txt
 
 COPY rangarr/ ./rangarr/
 COPY config.example.yaml .
 
-RUN chown -R rangarr:rangarr /app
-USER rangarr
+FROM gcr.io/distroless/python3-debian13
 
-CMD ["python", "-m", "rangarr.main"]
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PYTHONPATH=/install/lib/python3.13/site-packages
+
+WORKDIR /app
+
+COPY --from=builder /install /install
+COPY --from=builder /app /app
+
+USER nonroot
+
+CMD ["-m", "rangarr.main"]

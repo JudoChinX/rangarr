@@ -4,9 +4,11 @@
 [![GitHub Release](https://img.shields.io/github/v/release/JudoChinX/rangarr)](https://github.com/JudoChinX/rangarr/releases)
 [![Docker Pulls](https://img.shields.io/docker/pulls/judochinx/rangarr)](https://hub.docker.com/r/judochinx/rangarr)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Python 3.12+](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/downloads/)
+[![Python 3.13+](https://img.shields.io/badge/python-3.13+-blue.svg)](https://www.python.org/downloads/)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 [![security: bandit](https://img.shields.io/badge/security-bandit-yellow.svg)](https://github.com/PyCQA/bandit)
+[![Docker Scout](https://img.shields.io/badge/docker%20scout-enabled-blue)](https://hub.docker.com/r/judochinx/rangarr)
+[![Architectures](https://img.shields.io/badge/arch-amd64%20%7C%20arm64-blue)](https://hub.docker.com/r/judochinx/rangarr/tags)
 
 **Rangarr** is a lightweight orchestration service that automates and staggers media searches across multiple *arr instances ([Radarr](https://github.com/Radarr/Radarr), [Sonarr](https://github.com/Sonarr/Sonarr), [Lidarr](https://github.com/Lidarr/Lidarr)). It helps keep your library complete without overwhelming your indexers or API limits.
 
@@ -35,11 +37,13 @@ curl -O https://raw.githubusercontent.com/JudoChinX/rangarr/main/config.example.
 curl -O https://raw.githubusercontent.com/JudoChinX/rangarr/main/compose.example.yaml
 mv config.example.yaml config.yaml
 mv compose.example.yaml compose.yaml
+chmod 644 config.yaml  # Required: container runs as UID 65532 (nonroot), not your user
 
 # 2. Edit config.yaml with your *arr API keys and hostnames
 nano config.yaml
 
-# 3. Start the service
+# 3. Start with dry_run: true to verify config before triggering real searches
+#    Set dry_run: false in config.yaml once logs look correct, then restart
 docker compose up -d
 ```
 
@@ -49,8 +53,8 @@ A minimal `config.yaml` to get you running:
 global:
   interval: 3600             # Run every hour
   stagger_interval_seconds: 30 # Wait 30s between searches
-  missing_batch_size: 20      # Search 20 missing items per cycle
-  upgrade_batch_size: 10      # Search 10 upgrade-eligible items per cycle
+  missing_batch_size: 20      # Search 20 missing items per cycle (0=disabled, -1=unlimited)
+  upgrade_batch_size: 10      # Search 10 upgrade-eligible items per cycle (0=disabled, -1=unlimited)
   search_order: last_searched_ascending  # Prioritize items not searched recently
 
 instances:

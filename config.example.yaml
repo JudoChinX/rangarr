@@ -4,11 +4,21 @@
 global:
   interval: 3600
 
+  # Batch sizes: 0 = disabled, -1 = unlimited, N > 0 = limit to N items per cycle
+  # missing_batch_size: 20     # Search up to 20 missing items per cycle (default)
+  # missing_batch_size: -1     # Search all available missing items (unlimited)
+  # missing_batch_size: 0      # Disable missing item searches entirely
+
+  # upgrade_batch_size: 10     # Search up to 10 upgrade items per cycle (default)
+  # upgrade_batch_size: -1     # Search all available upgrades (unlimited)
+  # upgrade_batch_size: 0      # Disable upgrade searches entirely
+
 instances:
   sonarr-tv:
     type: sonarr
     host: "http://sonarr:8989"     # Use container hostname for Docker deployments
     api_key: "YOUR_SONARR_KEY"
+    enabled: false                 # Set to true to activate
 
   radarr:
     type: radarr
@@ -20,8 +30,10 @@ instances:
     type: radarr
     host: "http://radarr-4k:7879"  # Use container hostname for Docker deployments
     api_key: "ANOTHER_KEY"
+    enabled: false                 # Set to true to activate
 
   lidarr-music:
     type: lidarr
     host: "http://lidarr:8686"     # Use container hostname for Docker deployments
     api_key: "YOUR_LIDARR_KEY"
+    enabled: false                 # Set to true to activate

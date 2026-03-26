@@ -1,5 +1,6 @@
 """Tests for config_parser.py configuration loading and validation."""
 
+import re
 from pathlib import Path
 from typing import Any
 
@@ -83,7 +84,7 @@ _parse_config_cases = {
             },
             'global': {'missing_batch_size': -5},
         },
-        'expected_error': "'global.missing_batch_size' must be a non-negative integer.",
+        'expected_error': "'global.missing_batch_size' must be 0 (disabled), -1 (unlimited), or a positive integer.",
     },
     'instances_not_a_dict': {
         'config_data': {'instances': 'not a dict'},
@@ -195,6 +196,134 @@ _parse_config_cases = {
     'empty_instances_dict': {
         'config_data': {'instances': {}},
         'expected_error': "No instances defined under 'instances'. Add at least one Radarr, Sonarr, or Lidarr instance.",
+    },
+    'missing_batch_size_unlimited': {
+        'config_data': {
+            'instances': {
+                'test-instance': {
+                    'type': 'radarr',
+                    'host': 'http://test',
+                    'api_key': 'test_key',
+                    'enabled': True,
+                }
+            },
+            'global': {
+                'missing_batch_size': -1,
+            },
+        },
+        'expected_result': {
+            'global_settings': {
+                'missing_batch_size': -1,
+            },
+        },
+    },
+    'upgrade_batch_size_unlimited': {
+        'config_data': {
+            'instances': {
+                'test-instance': {
+                    'type': 'radarr',
+                    'host': 'http://test',
+                    'api_key': 'test_key',
+                    'enabled': True,
+                }
+            },
+            'global': {
+                'upgrade_batch_size': -1,
+            },
+        },
+        'expected_result': {
+            'global_settings': {
+                'upgrade_batch_size': -1,
+            },
+        },
+    },
+    'missing_batch_size_disabled': {
+        'config_data': {
+            'instances': {
+                'test-instance': {
+                    'type': 'radarr',
+                    'host': 'http://test',
+                    'api_key': 'test_key',
+                    'enabled': True,
+                }
+            },
+            'global': {
+                'missing_batch_size': 0,
+            },
+        },
+        'expected_result': {
+            'global_settings': {
+                'missing_batch_size': 0,
+            },
+        },
+    },
+    'upgrade_batch_size_disabled': {
+        'config_data': {
+            'instances': {
+                'test-instance': {
+                    'type': 'radarr',
+                    'host': 'http://test',
+                    'api_key': 'test_key',
+                    'enabled': True,
+                }
+            },
+            'global': {
+                'upgrade_batch_size': 0,
+            },
+        },
+        'expected_result': {
+            'global_settings': {
+                'upgrade_batch_size': 0,
+            },
+        },
+    },
+    'missing_batch_size_invalid_negative_two': {
+        'config_data': {
+            'instances': {
+                'test-instance': {
+                    'type': 'radarr',
+                    'host': 'http://test',
+                    'api_key': 'test_key',
+                    'enabled': True,
+                }
+            },
+            'global': {
+                'missing_batch_size': -2,
+            },
+        },
+        'expected_error': "'global.missing_batch_size' must be 0 (disabled), -1 (unlimited), or a positive integer.",
+    },
+    'upgrade_batch_size_invalid_negative_two': {
+        'config_data': {
+            'instances': {
+                'test-instance': {
+                    'type': 'radarr',
+                    'host': 'http://test',
+                    'api_key': 'test_key',
+                    'enabled': True,
+                }
+            },
+            'global': {
+                'upgrade_batch_size': -2,
+            },
+        },
+        'expected_error': "'global.upgrade_batch_size' must be 0 (disabled), -1 (unlimited), or a positive integer.",
+    },
+    'retry_interval_days_rejects_negative': {
+        'config_data': {
+            'instances': {
+                'test-instance': {
+                    'type': 'radarr',
+                    'host': 'http://test',
+                    'api_key': 'test_key',
+                    'enabled': True,
+                }
+            },
+            'global': {
+                'retry_interval_days': -1,
+            },
+        },
+        'expected_error': 'must be a non-negative integer',
     },
     'all_instances_implicit_disabled': {
         'config_data': {
@@ -392,7 +521,7 @@ def test_load_config_empty_yaml_treats_as_empty_dict(tmp_path: Any) -> None:
 def test_parse_config(config_data: Any, expected_error: Any, expected_result: Any) -> None:
     """Test parse_config validates configuration structure and values."""
     if expected_error:
-        with pytest.raises(ValueError, match=expected_error):
+        with pytest.raises(ValueError, match=re.escape(expected_error)):
             parse_config(config_data)
     else:
         _assert_parse_config_result(parse_config(config_data), expected_result)

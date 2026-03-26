@@ -12,6 +12,7 @@ import requests
 from rangarr.clients.arr import LidarrClient
 from rangarr.clients.arr import RadarrClient
 from rangarr.clients.arr import SonarrClient
+from tests.builders import ClientBuilder
 from tests.builders import LidarrRecordBuilder
 from tests.builders import RadarrRecordBuilder
 from tests.builders import SonarrRecordBuilder
@@ -132,7 +133,7 @@ _fetch_wanted_cases = {
         'expected_result_count': 3,
     },
     'unlimited_mode_returns_all_records': {
-        'missing_batch_size': 0,
+        'missing_batch_size': -1,
         'upgrade_batch_size': 5,
         'session_responses': [
             {'records': [{'id': num, 'title': f'Missing {num}', 'isAvailable': True} for num in range(1, 6)]},
@@ -149,7 +150,7 @@ _fetch_wanted_cases = {
         'expected_result_count': 0,
     },
     'unlimited_mode_fetches_multiple_pages': {
-        'missing_batch_size': 0,
+        'missing_batch_size': -1,
         'upgrade_batch_size': 5,
         'session_responses': [
             {'records': [{'id': num, 'title': f'Missing {num}', 'isAvailable': True} for num in range(1000)]},
@@ -160,7 +161,7 @@ _fetch_wanted_cases = {
         'expected_result_count': 1001,
     },
     'unlimited_mode_handles_exception_in_loop': {
-        'missing_batch_size': 0,
+        'missing_batch_size': -1,
         'upgrade_batch_size': 5,
         'session_responses': None,
         'raises_exception': 'unlimited',
@@ -787,3 +788,65 @@ def test_arr_client_trigger_single(client_class: Any, item: Any, expected_payloa
             json=expected_payload,
             timeout=15,
         )
+
+
+_get_target_media_cases = {
+    'disabled': {
+        'search_order': 'last_searched_ascending',
+        'target_batch_size': 0,
+        'fetch_wanted_records': [],
+        'expected_result_len': 0,
+        'expected_fetch_called': False,
+    },
+    'unlimited': {
+        'search_order': 'alphabetical_ascending',
+        'target_batch_size': -1,
+        'fetch_wanted_records': [
+            RadarrRecordBuilder().with_id(1).with_title('Movie One').available().build(),
+            RadarrRecordBuilder().with_id(2).with_title('Movie Two').available().build(),
+        ],
+        'expected_result_len': 2,
+        'expected_fetch_called': True,
+    },
+}
+
+
+@pytest.mark.parametrize(
+    'search_order, target_batch_size, fetch_wanted_records, expected_result_len, expected_fetch_called',
+    [
+        (
+            case['search_order'],
+            case['target_batch_size'],
+            case['fetch_wanted_records'],
+            case['expected_result_len'],
+            case['expected_fetch_called'],
+        )
+        for case in _get_target_media_cases.values()
+    ],
+    ids=list(_get_target_media_cases.keys()),
+)
+def test_get_target_media_modes(
+    search_order: str,
+    target_batch_size: int,
+    fetch_wanted_records: list,
+    expected_result_len: int,
+    expected_fetch_called: bool,
+) -> None:
+    """Test _get_target_media disabled and unlimited modes."""
+    client = ClientBuilder().radarr().with_settings(search_order=search_order).build()
+
+    with patch.object(client, '_fetch_wanted', return_value=fetch_wanted_records) as mock_fetch:
+        result = client._get_target_media(  # pylint: disable=protected-access
+            endpoint='movie/wanted/missing',
+            target_batch_size=target_batch_size,
+            cursor_attr='missing_cursor',
+            buffer_attr='missing_buffer',
+            reason='missing',
+            seen=set(),
+        )
+
+    assert len(result) == expected_result_len
+    if expected_fetch_called:
+        mock_fetch.assert_called_once()
+    else:
+        mock_fetch.assert_not_called()

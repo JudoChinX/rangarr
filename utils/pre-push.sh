@@ -52,6 +52,16 @@ if ! bandit -r rangarr/ -lll; then
   exit 1
 fi
 
+echo "Running pip-audit..."
+if ! pip-audit -r requirements.txt; then
+  echo ""
+  echo "ERROR: pip-audit found vulnerable dependencies. To fix:"
+  echo "   1. Review the vulnerabilities above"
+  echo "   2. Update the affected packages in requirements.txt"
+  echo "   3. Commit your fixes and try pushing again"
+  exit 1
+fi
+
 echo "Running pytest..."
 if ! pytest tests/ -v; then
   echo ""

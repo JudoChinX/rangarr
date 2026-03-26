@@ -53,12 +53,16 @@ _SEARCH_ORDER_LABELS: dict[str, str] = {
 }
 
 
+def _batch_display_str(batch: int) -> str:
+    """Convert a batch size integer to its display string."""
+    return {0: 'Disabled', -1: 'Unlimited'}.get(batch, str(batch))
+
+
 def _calculate_batch(global_batch: int, weight_share: float) -> int:
-    """Calculate the number of items for a batch based on weight share."""
-    result = 0
-    if global_batch > 0:
-        result = max(1, int(round(global_batch * weight_share)))
-    return result
+    """Calculate batch size from global setting and instance weight share."""
+    if global_batch in (0, -1):
+        return global_batch
+    return max(1, int(round(global_batch * weight_share)))
 
 
 def _calculate_eta(item_count: int, stagger_seconds: int) -> str:
@@ -110,7 +114,7 @@ def _load_config_from_paths(config_paths: list[str]) -> dict | None:
     return config
 
 
-def _log_rangarr_start(active_clients: list[Any], settings: dict, inactive_count: int) -> None:
+def _log_rangarr_start(active_clients: list[Any], settings: dict) -> None:
     """Log startup information for Rangarr."""
     global_missing = _get_setting(settings, 'missing_batch_size')
     global_upgrade = _get_setting(settings, 'upgrade_batch_size')
@@ -118,17 +122,16 @@ def _log_rangarr_start(active_clients: list[Any], settings: dict, inactive_count
     stagger_seconds = _get_setting(settings, 'stagger_interval_seconds')
     dry_run = _get_setting(settings, 'dry_run')
 
-    missing_str = 'Unlimited' if global_missing == 0 else str(global_missing)
-    upgrade_str = 'Unlimited' if global_upgrade == 0 else str(global_upgrade)
+    missing_str = _batch_display_str(global_missing)
+    upgrade_str = _batch_display_str(global_upgrade)
     retry_str = 'Disabled' if retry_days == 0 else f'{retry_days} Days'
     raw_order = _get_setting(settings, 'search_order')
     search_order_str = _SEARCH_ORDER_LABELS.get(raw_order, raw_order.capitalize())
     dry_run_str = ' (DRY RUN ENABLED)' if dry_run else ''
-    disabled_str = f', {inactive_count} inactive' if inactive_count > 0 else ''
 
     logger.info(
         f'Rangarr started{dry_run_str} | '
-        f'Instances: {len(active_clients)} active{disabled_str} | '
+        f'Instances: {len(active_clients)} active | '
         f'Run Interval: {_get_setting(settings, "run_interval_minutes")} Minutes | '
         f'Missing Batch: {missing_str} | '
         f'Upgrade Batch: {upgrade_str} | '
@@ -154,6 +157,15 @@ def _run_search_cycle(active_clients: list[Any], settings: dict) -> None:
         client_missing = _calculate_batch(global_missing, weight_share)
         client_upgrade = _calculate_batch(global_upgrade, weight_share)
 
+        if client_missing == 0 and client_upgrade == 0:
+            logger.info(f'[{client.name}] Missing and upgrade items disabled, skipping.')
+            continue
+
+        if client_missing == 0:
+            logger.info(f'[{client.name}] Missing items disabled for this cycle.')
+        if client_upgrade == 0:
+            logger.info(f'[{client.name}] Upgrade items disabled for this cycle.')
+
         ids = client.get_media_to_search(client_missing, client_upgrade)
         if not ids:
             logger.info(f'[{client.name}] No media to search this cycle.')
@@ -167,7 +179,7 @@ def build_arr_clients(
     instances_config: dict,
     settings: dict,
     client_registry: dict[str, type[ArrClient]] | None = None,
-) -> tuple[list[ArrClient], int]:
+) -> list[ArrClient]:
     """Instantiate all *arr clients declared in the config.
 
     Args:
@@ -176,16 +188,12 @@ def build_arr_clients(
         client_registry: Optional client type registry (defaults to _CLIENT_MAP).
 
     Returns:
-        Tuple of (Flat list of instantiated *arr client objects, count of inactive instances).
+        Flat list of instantiated *arr client objects.
     """
     registry = client_registry if client_registry is not None else _CLIENT_MAP
     clients: list[ArrClient] = []
-    inactive_count = 0
     for arr_type, client_class in registry.items():
         for instance in instances_config.get(arr_type, []):
-            if not instance.get('enabled', True):
-                inactive_count += 1
-                continue
             client = client_class(
                 name=instance['name'],
                 url=instance['url'],
@@ -195,7 +203,7 @@ def build_arr_clients(
             )
             clients.append(client)
             logger.info(f'Registered {arr_type.capitalize()} instance: {instance["name"]} (Weight: {client.weight})')
-    return clients, inactive_count
+    return clients
 
 
 def run() -> None:
@@ -210,13 +218,13 @@ def run() -> None:
         sys.exit(1)
 
     settings = config.get('global_settings', {})
-    active_clients, inactive_count = build_arr_clients(config.get('instances', {}), settings)
+    active_clients = build_arr_clients(config.get('instances', {}), settings)
 
     if not active_clients:
         logger.warning("No *arr instances are configured. Add at least one entry under 'instances' to begin.")
         sys.exit(1)
 
-    _log_rangarr_start(active_clients, settings, inactive_count)
+    _log_rangarr_start(active_clients, settings)
 
     run_interval_seconds = _get_setting(settings, 'run_interval_minutes') * 60
 

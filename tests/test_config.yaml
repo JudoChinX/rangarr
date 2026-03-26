@@ -1,11 +1,11 @@
 instances:
   radarr-movies:
     type: radarr
-    url: http://localhost:7878
+    host: http://localhost:7878
     api_key: somekey
     enabled: true
   sonarr-tv:
     type: sonarr
-    url: http://localhost:8989
+    host: http://localhost:8989
     api_key: anotherkey
     enabled: true

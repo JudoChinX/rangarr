@@ -36,16 +36,28 @@ The fastest way to get Rangarr running:
    curl -O https://raw.githubusercontent.com/JudoChinX/rangarr/main/compose.example.yaml
    mv config.example.yaml config.yaml
    mv compose.example.yaml compose.yaml
+   chmod 644 config.yaml
    ```
+   The `chmod 644` is required. The container runs as UID 65532 (`nonroot`), not your host user, so the file must be world-readable.
 
 2. Edit `config.yaml` with your *arr instance details.
 
-3. Start the service:
+3. Start the service with dry run enabled to verify your configuration before triggering real searches:
+   ```yaml
+   global:
+     dry_run: true
+   ```
+   ```bash
+   docker compose up -d && docker compose logs -f
+   ```
+   Confirm the log output looks correct, then set `dry_run: false` and restart.
+
+4. Start normally:
    ```bash
    docker compose up -d
    ```
 
-4. View logs:
+5. View logs:
    ```bash
    docker compose logs -f
    ```
@@ -97,20 +109,41 @@ global:
 
 **Type:** Integer | **Default:** `20`
 
-Target number of missing items to search globally per cycle. Set to `0` for unlimited. Rangarr will fetch multiple pages if necessary to reach this total after filtering.
+Target number of missing items to search globally per cycle.
 
-Items are distributed across instances based on their `weight` settings.
+- Set to `0` to disable missing item searches entirely
+- Set to `-1` for unlimited (search all available missing items)
+- Set to a positive integer to limit the batch size
+
+When set to a limited value (positive integer), items are distributed across instances based on their `weight` settings. When set to unlimited (`-1`), all instances fetch all available items and weights are ignored.
+
+Rangarr will fetch multiple pages if necessary to reach the target after filtering.
 
 ```yaml
 global:
-  missing_batch_size: 50
+  missing_batch_size: 50   # Limited to 50 items
+  # missing_batch_size: -1  # Unlimited - search all
+  # missing_batch_size: 0   # Disabled - skip missing items
 ```
 
 #### `upgrade_batch_size`
 
 **Type:** Integer | **Default:** `10`
 
-Target number of upgrade items to search globally per cycle. Set to `0` for unlimited.
+Target number of upgrade items to search globally per cycle.
+
+- Set to `0` to disable upgrade searches entirely
+- Set to `-1` for unlimited (search all available upgrades)
+- Set to a positive integer to limit the batch size
+
+When set to a limited value (positive integer), items are distributed across instances based on their `weight` settings. When set to unlimited (`-1`), all instances fetch all available items and weights are ignored.
+
+```yaml
+global:
+  upgrade_batch_size: 10   # Limited to 10 items
+  # upgrade_batch_size: -1  # Unlimited - search all
+  # upgrade_batch_size: 0   # Disabled - skip upgrades
+```
 
 #### `stagger_interval_seconds`
 
@@ -276,6 +309,14 @@ Check logs with `docker compose logs -f` to verify behavior.
 global:
   missing_batch_size: 50
   upgrade_batch_size: 5  # Small allocation for upgrades
+```
+
+#### Disable Upgrades, Unlimited Missing
+
+```yaml
+global:
+  missing_batch_size: -1  # Search all missing items
+  upgrade_batch_size: 0   # Skip upgrade searches entirely
 ```
 
 ---
@@ -533,7 +574,7 @@ environment:
   LOG_LEVEL: DEBUG
 ```
 
-Debug logs show: configuration loaded, API requests and responses, items found and filtered, search commands sent, and retry window calculations.
+Debug logs show: unlimited fetch triggers, backlog resets, items skipped due to availability filtering, and per-item stagger delays.
 
 ### Reporting Bugs
 
@@ -588,7 +629,7 @@ If you plan to contribute or modify the code:
 
 6. **Install git hooks:**
    ```bash
-   ./setup.sh
+   ./utils/setup.sh
    ```
    This installs a pre-push hook that runs `ruff check`, `ruff format`, `pylint`, `mypy`, `bandit`, and `pytest` before every push. Pushes are blocked if any check fails.
 

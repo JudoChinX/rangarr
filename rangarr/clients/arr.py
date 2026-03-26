@@ -119,7 +119,7 @@ class ArrClient(ABC):
         return result
 
     def _fetch_wanted(self, endpoint: str, page: int, batch_size: int) -> list[dict]:
-        """Fetch wanted items using batch or unlimited strategy."""
+        """Fetch wanted items based on batch size."""
         result = []
         if batch_size == 0:
             result = self._fetch_unlimited(endpoint)
@@ -157,43 +157,44 @@ class ArrClient(ABC):
         """Fetch and process records until the target batch size is met (or backlog exhausted)."""
         items: list[MediaItem] = []
 
-        last_searched = self.search_order in ('last_searched_ascending', 'last_searched_descending')
-        last_added = self.search_order in ('last_added_ascending', 'last_added_descending')
-        unlimited_mode = target_batch_size == 0 or self.search_order == 'random' or last_searched or last_added
+        if target_batch_size != 0:
+            last_searched = self.search_order in ('last_searched_ascending', 'last_searched_descending')
+            last_added = self.search_order in ('last_added_ascending', 'last_added_descending')
+            unlimited_mode = target_batch_size == -1 or self.search_order == 'random' or last_searched or last_added
 
-        if unlimited_mode:
-            logger.debug(f'[{self.name}] {endpoint}: unlimited fetch triggered.')
-            setattr(self, buffer_attr, [])
-            records = self._fetch_wanted(endpoint, 1, 0)
-            if self.search_order == 'random':
-                random.shuffle(records)
+            if unlimited_mode:
+                logger.debug(f'[{self.name}] {endpoint}: unlimited fetch triggered.')
+                setattr(self, buffer_attr, [])
+                records = self._fetch_wanted(endpoint, 1, 0)  # 0 triggers unlimited fetch internally
+                if self.search_order == 'random':
+                    random.shuffle(records)
 
-            for record in records:
-                if 0 < target_batch_size <= len(items):
-                    break
-                item = self._process_record(record, reason, seen, check_availability)
-                if item:
-                    items.append(item)
-        elif target_batch_size > 0:
-            buffer: list[dict] = getattr(self, buffer_attr)
-            cursor: int = getattr(self, cursor_attr)
-
-            while len(items) < target_batch_size:
-                if not buffer:
-                    records = self._fetch_wanted(endpoint, cursor, target_batch_size)
-                    if not records:
-                        logger.debug(f'[{self.name}] {endpoint}: end of backlog at cursor {cursor}, resetting.')
-                        cursor = 1
+                for record in records:
+                    if 0 < target_batch_size <= len(items):
                         break
-                    buffer.extend(records)
-                    cursor += 1
+                    item = self._process_record(record, reason, seen, check_availability)
+                    if item:
+                        items.append(item)
+            else:
+                buffer: list[dict] = getattr(self, buffer_attr)
+                cursor: int = getattr(self, cursor_attr)
 
-                record = buffer.pop(0)
-                item = self._process_record(record, reason, seen, check_availability)
-                if item:
-                    items.append(item)
+                while len(items) < target_batch_size:
+                    if not buffer:
+                        records = self._fetch_wanted(endpoint, cursor, target_batch_size)
+                        if not records:
+                            logger.debug(f'[{self.name}] {endpoint}: end of backlog at cursor {cursor}, resetting.')
+                            cursor = 1
+                            break
+                        buffer.extend(records)
+                        cursor += 1
 
-            setattr(self, cursor_attr, cursor)
+                    record = buffer.pop(0)
+                    item = self._process_record(record, reason, seen, check_availability)
+                    if item:
+                        items.append(item)
+
+                setattr(self, cursor_attr, cursor)
 
         return items
 
@@ -297,7 +298,7 @@ class ArrClient(ABC):
                 )
 
     def get_media_to_search(self, missing_batch_size: int, upgrade_batch_size: int) -> list[MediaItem]:
-        """Draft a deduplicated list of missing and upgrade media items to search.
+        """Build a deduplicated list of missing and upgrade media items to search.
 
         Args:
             missing_batch_size: Maximum number of missing items to return.
