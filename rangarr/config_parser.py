@@ -1,5 +1,7 @@
 """Configuration loader and validator for Rangarr."""
 
+import os
+import re
 from typing import Any
 
 import yaml
@@ -50,6 +52,28 @@ SETTINGS_SCHEMA = {
         'allow_special_values': True,
     },
 }
+
+
+def _expand_env_var(match: re.Match) -> str:
+    """Resolve a regex match group to its environment variable value."""
+    name = match.group(1)
+    val = os.environ.get(name)
+    if val is None:
+        raise ValueError(f"Environment variable '{name}' referenced in config is not set.")
+    return val
+
+
+def _expand_env_vars(obj: Any) -> Any:
+    """Recursively expand ${VAR} placeholders in string values using environment variables."""
+    if isinstance(obj, dict):
+        result = {key: _expand_env_vars(val) for key, val in obj.items()}
+    elif isinstance(obj, list):
+        result = [_expand_env_vars(item) for item in obj]
+    elif isinstance(obj, str):
+        result = re.sub(r'\$\{([^}]+)\}', _expand_env_var, obj)
+    else:
+        result = obj
+    return result
 
 
 def _parse_instance(name: str, config: dict) -> tuple[str, dict] | None:
@@ -145,7 +169,7 @@ def load_config(path: str) -> dict:
 
     Raises:
         FileNotFoundError: If the config file does not exist.
-        ValueError: If required keys are missing or values are invalid.
+        ValueError: If required keys are missing, values are invalid, or a referenced environment variable is not set.
     """
     with open(path, encoding='utf-8') as file:
         config = yaml.safe_load(file)
@@ -153,6 +177,7 @@ def load_config(path: str) -> dict:
     if config is None:
         config = {}
 
+    config = _expand_env_vars(config)
     return parse_config(config)
 
 

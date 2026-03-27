@@ -537,3 +537,55 @@ def test_get_setting_default_raises_on_invalid_setting() -> None:
     """Test get_setting_default raises KeyError for undefined settings."""
     with pytest.raises(KeyError):
         get_setting_default('nonexistent_setting')
+
+
+def test_load_config_expands_env_vars_in_yaml(tmp_path: Any, monkeypatch: Any) -> None:
+    """Test load_config substitutes ${VAR} placeholders with environment variable values."""
+    monkeypatch.setenv('RADARR_URL', 'http://radarr:7878')
+    monkeypatch.setenv('RADARR_API_KEY', 'test-api-key')
+    config_file = tmp_path / 'config.yaml'
+    config_file.write_text(
+        'instances:\n'
+        '  my-radarr:\n'
+        '    type: radarr\n'
+        '    url: ${RADARR_URL}\n'
+        '    api_key: ${RADARR_API_KEY}\n'
+        '    enabled: true\n'
+    )
+    result = load_config(str(config_file))
+    instance = result['instances']['radarr'][0]
+    assert instance['url'] == 'http://radarr:7878'
+    assert instance['api_key'] == 'test-api-key'
+
+
+def test_load_config_raises_on_missing_env_var(tmp_path: Any, monkeypatch: Any) -> None:
+    """Test load_config raises ValueError when a referenced env var is not set."""
+    monkeypatch.delenv('RADARR_API_KEY', raising=False)
+    config_file = tmp_path / 'config.yaml'
+    config_file.write_text(
+        'instances:\n'
+        '  my-radarr:\n'
+        '    type: radarr\n'
+        '    url: http://radarr:7878\n'
+        '    api_key: ${RADARR_API_KEY}\n'
+        '    enabled: true\n'
+    )
+    with pytest.raises(ValueError, match='RADARR_API_KEY'):
+        load_config(str(config_file))
+
+
+def test_load_config_expands_multiple_placeholders_in_single_value(monkeypatch: Any) -> None:
+    """Test load_config expands multiple ${VAR} placeholders within a single string value."""
+    monkeypatch.setenv('APP_HOST', 'radarr')
+    monkeypatch.setenv('APP_PORT', '7878')
+    result = load_config(str(Path(__file__).parent / 'test_config_env_vars.yaml'))
+    instance = result['instances']['radarr'][0]
+    assert instance['url'] == 'http://radarr:7878'
+
+
+def test_load_config_leaves_plain_string_values_unchanged() -> None:
+    """Test load_config does not alter string values that contain no ${VAR} placeholders."""
+    result = load_config(str(Path(__file__).parent / 'test_config.yaml'))
+    instance = result['instances']['radarr'][0]
+    assert instance['url'] == 'http://localhost:7878'
+    assert instance['api_key'] == 'somekey'

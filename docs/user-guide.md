@@ -9,6 +9,7 @@ Complete guide to installing, configuring, and operating Rangarr.
 - [Prerequisites](#prerequisites)
 - [Quick Start (Docker)](#quick-start-docker)
 - [Configuration Reference](#configuration-reference)
+  - [Environment Variable Expansion](#environment-variable-expansion)
 - [Docker](#docker)
   - [Updating Rangarr](#updating-rangarr)
   - [Timezone](#timezone)
@@ -78,6 +79,37 @@ instances:
   Instance-Name:
     # Instance-specific settings
 ```
+
+### Environment Variable Expansion
+
+Any string value in `config.yaml` may contain `${VAR_NAME}` placeholders. Rangarr replaces them with the matching environment variable at startup. Expansion applies to all string fields — not just `api_key`. A single value may contain multiple placeholders.
+
+Set secrets as environment variables and reference them in `config.yaml`:
+
+```yaml
+# config.yaml
+instances:
+  Radarr:
+    type: radarr
+    host: "http://radarr:7878"
+    api_key: ${RADARR_API_KEY}
+    enabled: true
+```
+
+Pass the value via `compose.yaml`:
+
+```yaml
+environment:
+  RADARR_API_KEY: your_api_key_here
+```
+
+If a referenced variable is not set, Rangarr logs an error and exits:
+
+```
+Configuration error in <path>: Environment variable 'RADARR_API_KEY' referenced in config is not set.
+```
+
+Check startup logs to identify which variable is missing. Integer and boolean fields are not subject to expansion.
 
 ### Global Settings
 
@@ -212,7 +244,7 @@ instances:
 
 #### `api_key` (required)
 
-API key for authentication. Found in *arr settings under Settings → General → Security. Never commit `config.yaml` to version control — it is gitignored by default.
+API key for authentication. Found in *arr settings under Settings → General → Security. Never commit `config.yaml` to version control — it is gitignored by default. To avoid storing secrets in `config.yaml`, use environment variable expansion — see [Environment Variable Expansion](#environment-variable-expansion).
 
 #### `enabled`
 

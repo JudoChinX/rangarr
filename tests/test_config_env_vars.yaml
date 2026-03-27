@@ -1,0 +1,6 @@
+instances:
+  radarr-main:
+    type: radarr
+    url: http://${APP_HOST}:${APP_PORT}
+    api_key: test-api-key
+    enabled: true
