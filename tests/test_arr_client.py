@@ -24,7 +24,11 @@ _now = datetime.datetime.now(datetime.UTC)
 _RECENT = (_now - datetime.timedelta(days=1)).strftime('%Y-%m-%dT%H:%M:%SZ')
 _OLD = (_now - datetime.timedelta(days=30)).strftime('%Y-%m-%dT%H:%M:%SZ')
 
-_client_map = {'radarr': RadarrClient, 'sonarr': SonarrClient, 'lidarr': LidarrClient}
+_client_map: dict[str, type[RadarrClient] | type[SonarrClient] | type[LidarrClient]] = {
+    'radarr': RadarrClient,
+    'sonarr': SonarrClient,
+    'lidarr': LidarrClient,
+}
 
 
 _cursor_cases = {
@@ -105,7 +109,7 @@ def test_arr_client_cursor_management(
 @pytest.mark.parametrize('client_class', ['radarr', 'sonarr', 'lidarr'])
 def test_arr_client_dry_run(caplog: pytest.LogCaptureFixture, client_class: str) -> None:
     """Test that dry_run mode prevents POST requests and logs instead."""
-    client = _client_map[client_class](  # type: ignore[abstract]
+    client = _client_map[client_class](
         name='TestClient',
         url='http://test',
         api_key='testkey',
@@ -454,7 +458,7 @@ def test_arr_client_processing_pipeline(
     Exercises: _process_records, _is_within_retry_window, _is_available,
     _get_record_title, _interleave_items.
     """
-    client = _client_map[client_class](name='test', url='http://test', api_key='testkey', settings=settings)  # type: ignore[abstract]
+    client = _client_map[client_class](name='test', url='http://test', api_key='testkey', settings=settings)
     mock_fetch = mock_fetch_wanted_factory(missing_records, upgrade_records)
 
     with patch.object(client, '_fetch_wanted', side_effect=mock_fetch):
@@ -764,7 +768,7 @@ _trigger_single_cases = {
 )
 def test_arr_client_trigger_single(client_class: Any, item: Any, expected_payload: Any, raises_exception: Any) -> None:
     """Test _trigger_single implementations via trigger_search with mocked HTTP session."""
-    client = _client_map[client_class](  # type: ignore[abstract]
+    client = _client_map[client_class](
         name='test',
         url='http://test',
         api_key='testkey',
@@ -850,3 +854,46 @@ def test_get_target_media_modes(
         mock_fetch.assert_called_once()
     else:
         mock_fetch.assert_not_called()
+
+
+_include_series_param_cases = {
+    'sonarr_sends_include_series': {
+        'client_class': 'sonarr',
+        'expect_include_series': True,
+    },
+    'radarr_omits_include_series': {
+        'client_class': 'radarr',
+        'expect_include_series': False,
+    },
+    'lidarr_omits_include_series': {
+        'client_class': 'lidarr',
+        'expect_include_series': False,
+    },
+}
+
+
+@pytest.mark.parametrize(
+    'client_class, expect_include_series',
+    [(case['client_class'], case['expect_include_series']) for case in _include_series_param_cases.values()],
+    ids=list(_include_series_param_cases.keys()),
+)
+def test_fetch_include_series_param(client_class: str, expect_include_series: bool) -> None:
+    """Test that only SonarrClient sends includeSeries in fetch params."""
+    client = _client_map[client_class](
+        name='test',
+        url='http://test',
+        api_key='testkey',
+        settings={'retry_interval_days': 0, 'search_order': 'alphabetical_ascending'},
+    )
+
+    def mock_get(_url: str, *_args: Any, **kwargs: Any) -> Any:
+        params = kwargs.get('params', {})
+        if expect_include_series:
+            assert params.get('includeSeries') == 'true'
+        else:
+            assert 'includeSeries' not in params
+        return mock_http_response({'records': []})
+
+    client.session.get = MagicMock(side_effect=mock_get)
+    client.get_media_to_search(missing_batch_size=1, upgrade_batch_size=0)
+    client.session.get.assert_called()

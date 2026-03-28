@@ -66,13 +66,17 @@ class ArrClient(ABC):
         title = self._get_record_title(record)
         return (record_id, reason, title)
 
+    def _extra_fetch_params(self) -> dict[str, str]:
+        """Return additional parameterss to include in fetch requests."""
+        return {}
+
     def _fetch_batch(self, endpoint: str, page: int, page_size: int) -> list[dict]:
         """Fetch single page of records."""
         url = f'{self.url}{endpoint}'
         result = []
         sort_key, sort_direction = self._get_sort_params()
         params = {
-            'includeSeries': 'true',
+            **self._extra_fetch_params(),
             'sortKey': sort_key,
             'sortDirection': sort_direction,
             'page': page,
@@ -94,7 +98,7 @@ class ArrClient(ABC):
         page_size = 1000
         sort_key, sort_direction = self._get_sort_params()
         base_params = {
-            'includeSeries': 'true',
+            **self._extra_fetch_params(),
             'sortKey': sort_key,
             'sortDirection': sort_direction,
         }
@@ -401,6 +405,10 @@ class RadarrClient(ArrClient):
 
 class SonarrClient(ArrClient):
     """Sonarr API client."""
+
+    @override
+    def _extra_fetch_params(self) -> dict[str, str]:
+        return {'includeSeries': 'true'}
 
     @property
     @override
