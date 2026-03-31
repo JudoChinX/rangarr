@@ -53,7 +53,7 @@ jobs:
 
   release:
     needs: tests_and_quality
-    if: startsWith(github.ref, 'refs/tags/v')
+    if: startsWith(github.ref, 'refs/tags/v') && github.event.base_ref == 'refs/heads/main'
     runs-on: self-hosted
     permissions:
       contents: write
