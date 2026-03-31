@@ -2,6 +2,15 @@
 
 set -e
 
+source "$(git rev-parse --show-toplevel)/.venv/bin/activate"
+
+echo "Checking for subdirectories under docs/..."
+if git diff --name-only --diff-filter=ACM "$(git rev-parse --abbrev-ref @{upstream} 2>/dev/null || echo HEAD~1)" HEAD 2>/dev/null | grep -q '^docs/[^/]*/'; then
+  echo ""
+  echo "ERROR: push contains files inside a docs/ subdirectory. Remove them from the commit before pushing."
+  exit 1
+fi
+
 echo "Running ruff check..."
 if ! ruff check .; then
   echo ""

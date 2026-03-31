@@ -21,6 +21,9 @@ htmlcov/
 dist/
 build/
 
+# Dependencies
+uv.lock
+
 # Configuration with secrets
 config.yaml
 
@@ -35,3 +38,6 @@ config.yaml
 *.swo
 *~
 .DS_Store
+
+# Project-specific
+docs/*/

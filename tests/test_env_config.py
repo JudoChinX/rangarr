@@ -139,13 +139,34 @@ _load_config_from_env_cases = {
             'instances': {'radarr': [{'name': 'movies'}]},
         },
     },
-    'missing_name_raises_error': {
+    'missing_name_skips_slot': {
         'env': {
             'RANGARR_INSTANCE_0_TYPE': 'radarr',
             'RANGARR_INSTANCE_0_URL': 'http://localhost:7878',
             'RANGARR_INSTANCE_0_API_KEY': 'key1',
         },
-        'expected_error': "Missing 'name' for instance at index 0",
+        'expected_error': 'No instances defined',
+    },
+    'empty_name_skips_slot': {
+        'env': {
+            'RANGARR_INSTANCE_0_NAME': '',
+            'RANGARR_INSTANCE_0_TYPE': 'radarr',
+            'RANGARR_INSTANCE_0_URL': 'http://localhost:7878',
+            'RANGARR_INSTANCE_0_API_KEY': 'key1',
+            'RANGARR_INSTANCE_1_NAME': 'movies',
+            'RANGARR_INSTANCE_1_TYPE': 'radarr',
+            'RANGARR_INSTANCE_1_URL': 'http://localhost:7878',
+            'RANGARR_INSTANCE_1_API_KEY': 'key1',
+        },
+        'expected_result': {
+            'instances': {'radarr': [{'name': 'movies'}]},
+        },
+    },
+    'all_slots_empty_name_raises_no_instances': {
+        'env': {
+            'RANGARR_INSTANCE_0_NAME': '',
+        },
+        'expected_error': 'No instances defined',
     },
     'two_instances_same_type': {
         'env': {
@@ -268,3 +289,14 @@ def test_main_run_with_env_config() -> None:
                 with pytest.raises(InterruptedError):
                     run()
             mock_cycle.assert_called_once()
+
+
+def test_load_config_from_env_warns_on_skipped_slot(caplog: pytest.LogCaptureFixture) -> None:
+    """Test load_config_from_env logs a warning when an instance slot has an empty name."""
+    with mock.patch.dict(os.environ, _load_config_from_env_cases['empty_name_skips_slot']['env'], clear=True):
+        with caplog.at_level('WARNING', logger='rangarr.config_parser'):
+            load_config_from_env()
+    assert any(
+        'Skipping unconfigured instance slot at index 0' in record.message and record.levelname == 'WARNING'
+        for record in caplog.records
+    )
