@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-03-31
+
+### Added
+
+- Support for providing configuration values through environment variables (e.g. `RANGARR_INSTANCE_0_NAME=radarr`)
+- Set default weight for Lidarr to 1 (from 0.1).
+
 ## [0.2.2] - 2026-03-28
 
 ### Fixed
