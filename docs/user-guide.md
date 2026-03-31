@@ -269,7 +269,7 @@ Instances are disabled by default as a safety measure. You must explicitly set t
 
 #### `weight`
 
-**Type:** Number | **Default:** `1` (Lidarr defaults to `0.1`)
+**Type:** Number | **Default:** `1`
 
 Relative priority for batch distribution. Higher weight = more items.
 
@@ -330,7 +330,7 @@ instances:
     enabled: true
 ```
 
-With these three instances (weights 3, 1, and 0.1), Radarr-Main gets ~73% of the batch, Radarr-4K gets ~24%, and Lidarr-Music gets ~2%.
+With these three instances (weights 3, 1, and 1), Radarr-Main gets ~60% of the batch, Radarr-4K gets ~20%, and Lidarr-Music gets ~20%.
 
 #### Dry Run Testing
 
@@ -396,7 +396,7 @@ Each instance is identified by a numeric index. Prefix instance fields with `RAN
 | `RANGARR_INSTANCE_<n>_URL` | Yes | Base URL of the instance (e.g. `http://radarr:7878`). `HOST` is accepted as an alias. |
 | `RANGARR_INSTANCE_<n>_API_KEY` | Yes | API key from the instance's settings page. |
 | `RANGARR_INSTANCE_<n>_ENABLED` | No | Defaults to `true`. Set to `false` to disable without removing the variable. |
-| `RANGARR_INSTANCE_<n>_WEIGHT` | No | Relative search weight. Defaults to `1` for Radarr/Sonarr, `0.1` for Lidarr. |
+| `RANGARR_INSTANCE_<n>_WEIGHT` | No | Relative search weight. Defaults to `1`. |
 
 #### Example
 
