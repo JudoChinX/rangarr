@@ -443,7 +443,7 @@ _parse_config_cases = {
                         'url': 'http://localhost:8686',
                         'api_key': 'lidarrkey',
                         'enabled': True,
-                        'weight': 0.1,
+                        'weight': 1,
                     }
                 ],
             },

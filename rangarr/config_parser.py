@@ -112,8 +112,7 @@ def _parse_instance(name: str, config: dict) -> tuple[str, dict] | None:
     for field in ('url', 'api_key'):
         if not instance.get(field):
             raise ValueError(f"Missing or empty '{field}' for instance '{name}'.")
-    default_weight = 0.1 if inst_type == 'lidarr' else 1
-    instance.setdefault('weight', default_weight)
+    instance.setdefault('weight', 1)
     if not isinstance(instance['weight'], (int, float)) or instance['weight'] <= 0:
         raise ValueError(f"'weight' for instance '{name}' must be a positive number.")
     result = None
