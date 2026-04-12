@@ -23,7 +23,8 @@ from rangarr.config_parser import load_config_from_env
 
 if 'TZ' not in os.environ:
     os.environ['TZ'] = 'UTC'
-    time.tzset()
+    if hasattr(time, 'tzset'):
+        time.tzset()
 
 log_level = os.getenv('LOG_LEVEL', 'INFO').upper()
 logging.basicConfig(
