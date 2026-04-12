@@ -96,6 +96,16 @@ class SonarrRecordBuilder(_RecordBuilder):
         self._data['series']['title'] = series_title
         return self
 
+    def with_series_id(self, series_id: int) -> Self:
+        """Set the series ID."""
+        self._data['series']['id'] = series_id
+        return self
+
+    def without_season_number(self) -> Self:
+        """Remove seasonNumber from the record."""
+        del self._data['seasonNumber']
+        return self
+
 
 class LidarrRecordBuilder(_RecordBuilder):
     """Builder for Lidarr API response records."""

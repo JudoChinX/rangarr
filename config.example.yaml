@@ -13,6 +13,8 @@ global:
   # upgrade_batch_size: -1     # Search all available upgrades (unlimited)
   # upgrade_batch_size: 0      # Disable upgrade searches entirely
 
+  # season_packs: false        # Sonarr only: group searches by season (SeasonSearch) instead of per-episode (EpisodeSearch)
+
 instances:
   sonarr-tv:
     type: sonarr

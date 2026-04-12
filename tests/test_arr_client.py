@@ -713,6 +713,18 @@ def test_arr_client_strips_trailing_slash(input_url: str, expected_url: str) -> 
     assert client.url == expected_url
 
 
+def test_sonarr_client_reads_season_packs_setting() -> None:
+    """Test that SonarrClient reads season_packs from settings."""
+    client = SonarrClient(name='test', url='http://test', api_key='testkey', settings={'season_packs': True})
+    assert client.season_packs is True
+
+
+def test_sonarr_client_season_packs_defaults_to_false() -> None:
+    """Test that SonarrClient defaults season_packs to False when absent from settings."""
+    client = SonarrClient(name='test', url='http://test', api_key='testkey', settings={})
+    assert client.season_packs is False
+
+
 _trigger_single_cases = {
     'radarr_posts_movies_search_payload': {
         'client_class': 'radarr',

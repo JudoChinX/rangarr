@@ -226,6 +226,19 @@ global:
 - `release_date_ascending`: Oldest release date first. Uses cursor-based pagination.
 - `release_date_descending`: Newest release date first. Uses cursor-based pagination.
 
+#### `season_packs`
+
+**Type:** Boolean | **Default:** `false` | **Applies to:** Sonarr instances only
+
+When `true`, Sonarr searches are grouped by season. Instead of sending one `EpisodeSearch` command per missing or upgrade-eligible episode, Rangarr sends one `SeasonSearch` command per `(series, season)` pair that has at least one affected episode. This is more efficient when many episodes of the same season are missing.
+
+When enabled, `missing_batch_size` and `upgrade_batch_size` are ignored for Sonarr — all missing and upgrade-eligible episodes are fetched each cycle to build an accurate picture of which seasons need searching.
+
+```yaml
+global:
+  season_packs: true
+```
+
 ### Instance Settings
 
 Settings for individual *arr instances.
@@ -384,6 +397,7 @@ The following global settings are supported, each prefixed with `RANGARR_GLOBAL_
 | `RANGARR_GLOBAL_RETRY_INTERVAL_DAYS` | `30` | Days before a previously searched item is eligible again. `0` disables. |
 | `RANGARR_GLOBAL_SEARCH_ORDER` | `last_searched_ascending` | One of: `alphabetical_ascending`, `alphabetical_descending`, `last_added_ascending`, `last_added_descending`, `last_searched_ascending`, `last_searched_descending`, `random`, `release_date_ascending`, `release_date_descending`. |
 | `RANGARR_GLOBAL_DRY_RUN` | `false` | Log searches without triggering them. |
+| `RANGARR_GLOBAL_SEASON_PACKS` | `false` | Group Sonarr searches by season, sending one `SeasonSearch` per affected `(series, season)` pair. Sonarr only; ignored by other instance types. |
 
 #### Instance Settings
 

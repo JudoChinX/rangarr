@@ -54,6 +54,10 @@ SETTINGS_SCHEMA = {
         'type': int,
         'allow_special_values': True,
     },
+    'season_packs': {
+        'default': False,
+        'type': bool,
+    },
 }
 
 
