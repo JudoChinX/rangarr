@@ -248,8 +248,8 @@ class ArrClient(ABC):
         """Return True if the given ISO date string is in the past."""
         result = False
         if date_str:
-            now = datetime.datetime.now(datetime.UTC).strftime('%Y-%m-%dT%H:%M:%SZ')
-            result = date_str <= now
+            date_dt = datetime.datetime.fromisoformat(date_str.replace('Z', '+00:00'))
+            result = date_dt <= datetime.datetime.now(datetime.UTC)
         return result
 
     def _is_within_retry_window(self, record: dict) -> bool:

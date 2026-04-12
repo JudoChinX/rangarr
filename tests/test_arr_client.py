@@ -695,6 +695,42 @@ def test_arr_client_public_api(
                 assert 'Failed to trigger MoviesSearch' in caplog.text
 
 
+_arr_client_is_date_past_cases = {
+    'past_date_with_fractional_seconds_is_past': {
+        'date_str': '2020-01-01T00:00:00.123Z',
+        'expected': True,
+    },
+    'future_date_with_fractional_seconds_is_not_past': {
+        'date_str': '2030-01-01T00:00:00.999Z',
+        'expected': False,
+    },
+    'past_date_without_fractional_seconds_is_past': {
+        'date_str': '2020-01-01T00:00:00Z',
+        'expected': True,
+    },
+    'future_date_without_fractional_seconds_is_not_past': {
+        'date_str': '2030-01-01T00:00:00Z',
+        'expected': False,
+    },
+    'none_is_not_past': {
+        'date_str': None,
+        'expected': False,
+    },
+}
+
+
+@pytest.mark.parametrize(
+    'date_str, expected',
+    [(case['date_str'], case['expected']) for case in _arr_client_is_date_past_cases.values()],
+    ids=list(_arr_client_is_date_past_cases.keys()),
+)
+def test_arr_client_is_date_past(date_str: str | None, expected: bool) -> None:
+    """Test _is_date_past handles fractional seconds and None correctly."""
+    client = RadarrClient(name='test', url='http://test', api_key='testkey', settings={})
+    result = client._is_date_past(date_str)  # pylint: disable=protected-access
+    assert result == expected
+
+
 @pytest.mark.parametrize(
     'input_url,expected_url',
     [
