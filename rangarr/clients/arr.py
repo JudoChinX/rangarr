@@ -46,6 +46,10 @@ class ArrClient(ABC):
         self.stagger_seconds = self.settings.get('stagger_interval_seconds', 30)
         self.search_order = self.settings.get('search_order', 'last_searched_ascending')
         self.retry_interval_days = self.settings.get('retry_interval_days', 30)
+        if not self.url.lower().startswith('https://'):
+            logger.warning(
+                f"Client '{name}' is using a non-HTTPS URL ({self.url}). API keys will be transmitted in plaintext."
+            )
         self.session = requests.Session()
         self.session.headers.update({'X-Api-Key': api_key, 'Content-Type': 'application/json'})
 

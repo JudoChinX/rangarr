@@ -713,6 +713,44 @@ def test_arr_client_strips_trailing_slash(input_url: str, expected_url: str) -> 
     assert client.url == expected_url
 
 
+_https_warning_cases = {
+    'warns_on_http_url': {
+        'url': 'http://test:7878',
+        'expect_warning': True,
+    },
+    'warns_on_http_url_uppercase_scheme': {
+        'url': 'HTTP://test:7878',
+        'expect_warning': True,
+    },
+    'no_warning_on_https_url': {
+        'url': 'https://test:7878',
+        'expect_warning': False,
+    },
+    'no_warning_on_https_url_uppercase_scheme': {
+        'url': 'HTTPS://test:7878',
+        'expect_warning': False,
+    },
+}
+
+
+@pytest.mark.parametrize(
+    'url, expect_warning',
+    [(case['url'], case['expect_warning']) for case in _https_warning_cases.values()],
+    ids=list(_https_warning_cases.keys()),
+)
+def test_arr_client_warns_on_non_https_url(
+    url: str,
+    expect_warning: bool,
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    """Test that a WARNING is emitted when the URL does not use HTTPS."""
+    with caplog.at_level(logging.WARNING):
+        RadarrClient(name='TestRadarr', url=url, api_key='testkey', settings={})
+
+    warning_emitted = 'API keys will be transmitted in plaintext' in caplog.text
+    assert warning_emitted == expect_warning
+
+
 def test_sonarr_client_reads_season_packs_setting() -> None:
     """Test that SonarrClient reads season_packs from settings."""
     client = SonarrClient(name='test', url='http://test', api_key='testkey', settings={'season_packs': True})
