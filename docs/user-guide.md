@@ -194,7 +194,7 @@ global:
 
 #### `stagger_interval_seconds`
 
-**Type:** Integer | **Default:** `30`
+**Type:** Integer | **Default:** `30` | **Minimum:** `1`
 
 Seconds to wait between individual search commands. Prevents overwhelming *arr instances with simultaneous requests.
 
