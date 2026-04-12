@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-04-12
+
+### Added
+
+- Support for season packs in Sonarr (#15)
+- Project roadmap at `ROADMAP.md` (#14)
+- "Ranger the Pig" to `README.md`
+- Enforce yaml style with `yamllint` (#19)
+
+### Changed
+
+- Warn if clients connect using HTTP rather than HTTPS (#18)
+- Ensure `stagger_interval_seconds` is at least 1 (#16)
+
+### Fixed
+
+- Improve date comparison logic in `_is_date_past` (#20)
+- Avoid `time.tzset()` when unavailable (#17)
+- Harden CI workflow with pinned actions and least-privilege permissions (#12)
+
 ## [0.3.0] - 2026-03-31
 
 ### Added
