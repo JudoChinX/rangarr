@@ -61,6 +61,16 @@ if ! bandit -r rangarr/ -lll; then
   exit 1
 fi
 
+echo "Running yamllint..."
+if ! yamllint .; then
+  echo ""
+  echo "ERROR: yamllint found YAML style issues. To fix:"
+  echo "   1. Review the yamllint output above"
+  echo "   2. Fix the reported issues in your YAML files"
+  echo "   3. Commit your fixes and try pushing again"
+  exit 1
+fi
+
 echo "Running pip-audit..."
 if ! pip-audit -r requirements.txt; then
   echo ""

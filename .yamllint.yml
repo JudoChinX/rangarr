@@ -1,0 +1,12 @@
+extends: default
+
+ignore: |
+  .venv/
+
+rules:
+  line-length: disable
+  document-start: disable
+  comments: disable
+  truthy:
+    allowed-values: ['true', 'false']
+    check-keys: false  # Allows keys like 'on:' in GitHub Actions workflows

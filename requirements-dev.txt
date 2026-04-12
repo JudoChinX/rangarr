@@ -5,3 +5,4 @@ pylint>=4.0.5
 pytest>=8.3.4
 pytest-cov>=6.0.0
 ruff>=0.15.6
+yamllint>=1.35.1
