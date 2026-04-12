@@ -406,19 +406,14 @@ class RadarrClient(ArrClient):
 class SonarrClient(ArrClient):
     """Sonarr API client."""
 
-    @override
-    def _extra_fetch_params(self) -> dict[str, str]:
-        return {'includeSeries': 'true'}
-
     @property
     @override
     def _command_name(self) -> str:
         return 'EpisodeSearch'
 
-    @property
     @override
-    def _id_field(self) -> str:
-        return 'episodeIds'
+    def _extra_fetch_params(self) -> dict[str, str]:
+        return {'includeSeries': 'true'}
 
     @override
     def _get_record_title(self, record: dict) -> str:
@@ -428,6 +423,113 @@ class SonarrClient(ArrClient):
         episode_title = record.get('title', 'Unknown Episode')
         return f'{series_title} - S{season:02d}E{episode:02d} - {episode_title}'
 
+    def _get_season_number(self, record: dict) -> int | None:
+        """Return the season number from an episode record."""
+        return record.get('seasonNumber')
+
+    def _get_season_title(self, record: dict, season_number: int) -> str:
+        """Return a human-readable title for a season search."""
+        series_title = record.get('series', {}).get('title', 'Unknown Series')
+        return f'{series_title} - Season {season_number:02d}'
+
+    def _get_series_id(self, record: dict) -> int | None:
+        """Return the series ID from an episode record."""
+        return record.get('series', {}).get('id')
+
+    @property
+    @override
+    def _id_field(self) -> str:
+        return 'episodeIds'
+
     @override
     def _is_available(self, record: dict) -> bool:
         return self._is_date_past(record.get('airDateUtc'))
+
+    def __init__(
+        self,
+        name: str,
+        url: str,
+        api_key: str,
+        settings: dict,
+        weight: float = 1.0,
+    ) -> None:
+        """Initialize the Sonarr client.
+
+        Args:
+            name: Human-readable name for the client instance.
+            url: Base URL of the Sonarr service API.
+            api_key: Secret API key for authentication.
+            settings: Dictionary of configuration settings.
+            weight: Relative priority of this client instance.
+        """
+        super().__init__(name, url, api_key, settings, weight)
+        self.season_packs: bool = self.settings.get('season_packs', False)
+        self._season_pack_items: list[tuple[int, int, str, str]] = []
+
+    @override
+    def get_media_to_search(self, missing_batch_size: int, upgrade_batch_size: int) -> list[MediaItem]:
+        if not self.season_packs:
+            return super().get_media_to_search(missing_batch_size, upgrade_batch_size)
+
+        self._season_pack_items = []
+        seen_seasons: set[tuple[int, int]] = set()
+
+        missing_records = self._fetch_unlimited(self.ENDPOINT_WANTED_MISSING)
+        for record in missing_records:
+            if not self._is_available(record):
+                continue
+            if self._is_within_retry_window(record):
+                continue
+            series_id = self._get_series_id(record)
+            season_number = self._get_season_number(record)
+            if series_id is None or season_number is None:
+                continue
+            key = (series_id, season_number)
+            if key not in seen_seasons:
+                seen_seasons.add(key)
+                title = self._get_season_title(record, season_number)
+                self._season_pack_items.append((series_id, season_number, 'missing', title))
+
+        upgrade_records = self._fetch_unlimited(self.ENDPOINT_WANTED_CUTOFF)
+        for record in upgrade_records:
+            # Availability check intentionally omitted for upgrades (matches base class behaviour).
+            if self._is_within_retry_window(record):
+                continue
+            series_id = self._get_series_id(record)
+            season_number = self._get_season_number(record)
+            if series_id is None or season_number is None:
+                continue
+            key = (series_id, season_number)
+            if key not in seen_seasons:
+                seen_seasons.add(key)
+                title = self._get_season_title(record, season_number)
+                self._season_pack_items.append((series_id, season_number, 'upgrade', title))
+
+        return [(series_id, reason, title) for series_id, unused_season, reason, title in self._season_pack_items]
+
+    @override
+    def trigger_search(self, items: list[MediaItem]) -> None:
+        if not self.season_packs:
+            super().trigger_search(items)
+            return
+
+        total = len(self._season_pack_items)
+        for index, (series_id, season_number, reason, title) in enumerate(self._season_pack_items, start=1):
+            if self.dry_run:
+                logger.info(f'[{self.name}] [DRY RUN] Would search ({reason}): {title} ({index}/{total})')
+            else:
+                url = f'{self.url}{self.ENDPOINT_COMMAND}'
+                payload = {'name': 'SeasonSearch', 'seriesId': series_id, 'seasonNumber': season_number}
+                try:
+                    response = self.session.post(url, json=payload, timeout=15)
+                    response.raise_for_status()
+                    logger.info(f'[{self.name}] Searching ({reason}): {title} ({index}/{total})')
+                except requests.RequestException as error:
+                    logger.error(
+                        f'[{self.name}] Failed to trigger SeasonSearch for {title} '
+                        f'(Series: {series_id}, Season: {season_number}): {error}'
+                    )
+
+            if self.stagger_seconds > 0 and index < total:
+                logger.debug(f'[{self.name}] Staggering next search by {self.stagger_seconds}s.')
+                time.sleep(self.stagger_seconds)

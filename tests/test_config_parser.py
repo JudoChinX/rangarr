@@ -476,6 +476,55 @@ _parse_config_cases = {
             },
         },
     },
+    'season_packs_defaults_to_false': {
+        'config_data': {
+            'instances': {
+                'test-sonarr': {
+                    'type': 'sonarr',
+                    'url': 'http://localhost:8989',
+                    'api_key': 'testkey',
+                    'enabled': True,
+                }
+            },
+        },
+        'expected_result': {
+            'global_settings': {
+                'season_packs': False,
+            },
+        },
+    },
+    'season_packs_accepts_true': {
+        'config_data': {
+            'instances': {
+                'test-sonarr': {
+                    'type': 'sonarr',
+                    'url': 'http://localhost:8989',
+                    'api_key': 'testkey',
+                    'enabled': True,
+                }
+            },
+            'global': {'season_packs': True},
+        },
+        'expected_result': {
+            'global_settings': {
+                'season_packs': True,
+            },
+        },
+    },
+    'season_packs_rejects_non_bool': {
+        'config_data': {
+            'instances': {
+                'test-sonarr': {
+                    'type': 'sonarr',
+                    'url': 'http://localhost:8989',
+                    'api_key': 'testkey',
+                    'enabled': True,
+                }
+            },
+            'global': {'season_packs': 'yes'},
+        },
+        'expected_error': "'global.season_packs' must be of type bool.",
+    },
 }
 
 
