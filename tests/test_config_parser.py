@@ -325,6 +325,38 @@ _parse_config_cases = {
         },
         'expected_error': "'global.upgrade_batch_size' must be 0 (disabled), -1 (unlimited), or a positive integer.",
     },
+    'stagger_interval_seconds_rejects_zero': {
+        'config_data': {
+            'instances': {
+                'test-instance': {
+                    'type': 'radarr',
+                    'host': 'http://test',
+                    'api_key': 'test_key',
+                    'enabled': True,
+                }
+            },
+            'global': {
+                'stagger_interval_seconds': 0,
+            },
+        },
+        'expected_error': "'global.stagger_interval_seconds' must be at least 1.",
+    },
+    'stagger_interval_seconds_rejects_negative': {
+        'config_data': {
+            'instances': {
+                'test-instance': {
+                    'type': 'radarr',
+                    'host': 'http://test',
+                    'api_key': 'test_key',
+                    'enabled': True,
+                }
+            },
+            'global': {
+                'stagger_interval_seconds': -1,
+            },
+        },
+        'expected_error': "'global.stagger_interval_seconds' must be at least 1.",
+    },
     'retry_interval_days_rejects_negative': {
         'config_data': {
             'instances': {

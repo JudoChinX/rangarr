@@ -48,6 +48,7 @@ SETTINGS_SCHEMA = {
     'stagger_interval_seconds': {
         'default': 30,
         'type': int,
+        'min_value': 1,
     },
     'upgrade_batch_size': {
         'default': 10,
@@ -135,6 +136,7 @@ def _validate_global_settings(settings: dict, schema: dict) -> None:
             definition['type'],
             definition.get('choices'),
             allow_special_values=definition.get('allow_special_values', False),
+            min_value=definition.get('min_value'),
             prefix='global',
         )
 
@@ -145,6 +147,7 @@ def _validate_setting(
     expected_type: type,
     choices: tuple | None = None,
     allow_special_values: bool = False,
+    min_value: int | None = None,
     prefix: str = 'global',
 ) -> None:
     """Validate a setting value based on its expected type."""
@@ -152,14 +155,17 @@ def _validate_setting(
         raise ValueError(f"'{prefix}.{setting}' must be of type {expected_type.__name__}.")
 
     if expected_type is int:
-        limit = -1 if allow_special_values else 0
-        if value < limit:
-            msg = (
-                f"'{prefix}.{setting}' must be 0 (disabled), -1 (unlimited), or a positive integer."
-                if allow_special_values
-                else f"'{prefix}.{setting}' must be a non-negative integer."
-            )
-            raise ValueError(msg)
+        if min_value is not None and value < min_value:
+            raise ValueError(f"'{prefix}.{setting}' must be at least {min_value}.")
+        if min_value is None:
+            limit = -1 if allow_special_values else 0
+            if value < limit:
+                msg = (
+                    f"'{prefix}.{setting}' must be 0 (disabled), -1 (unlimited), or a positive integer."
+                    if allow_special_values
+                    else f"'{prefix}.{setting}' must be a non-negative integer."
+                )
+                raise ValueError(msg)
 
     if choices is not None and value not in choices:
         valid_choices = ', '.join(repr(choice) for choice in choices)
