@@ -51,6 +51,9 @@ jobs:
       - name: bandit
         run: bandit -r rangarr/ -lll
 
+      - name: yamllint
+        run: yamllint .
+
       - name: pip-audit
         run: pip-audit -r requirements.txt
 
