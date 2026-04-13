@@ -45,7 +45,7 @@ To be absolutely clear, Rangarr does not and will never:
 
 ## Architecture Overview
 
-Rangarr is a ~864-line Python service with three core modules:
+Rangarr is a ~1,101-line Python service with three core modules:
 
 ```
 rangarr/
@@ -120,7 +120,7 @@ config.yaml → config_parser.py → main.py → ArrClient instances → *arr AP
 
 **Search Commands Sent:**
 - Radarr: `{"name": "MoviesSearch", "movieIds": [...]}`
-- Sonarr: `{"name": "EpisodeSearch", "episodeIds": [...]}`
+- Sonarr: `{"name": "EpisodeSearch", "episodeIds": [...]}` (or `{"name": "SeasonSearch", "seriesId": ..., "seasonNumber": ...}` when `season_packs: true`)
 - Lidarr: `{"name": "AlbumSearch", "albumIds": [...]}`
 
 **Data Accessed:**
@@ -152,7 +152,7 @@ Rangarr does not encrypt credentials or API keys in transit. It is designed for 
 
 ### Write Operations
 
-**Location:** `clients/arr.py` — `RadarrClient._trigger_single()`, `SonarrClient._trigger_single()`, and `LidarrClient._trigger_single()`
+**Location:** `clients/arr.py` — `ArrClient._trigger_single()` (base) and `SonarrClient.trigger_search()` (season pack override)
 
 Search commands are POST requests that trigger media searches on *arr instances. These are the ONLY write operations Rangarr performs — the same commands you would trigger manually through the *arr web interfaces.
 
@@ -178,7 +178,7 @@ Rangarr operates entirely within your local network (or wherever you host your *
 
 ### 1. Security Through Simplicity
 
-**Decision:** ~864 lines of core Python code, zero external dependencies beyond requests and PyYAML.
+**Decision:** ~1,101 lines of core Python code, zero external dependencies beyond requests and PyYAML.
 
 **Why:** Small codebases are auditable. Every line of code is a potential attack surface. By keeping the codebase minimal, security reviewers can read and understand the entire project in under an hour.
 
@@ -205,7 +205,7 @@ Rangarr operates entirely within your local network (or wherever you host your *
 
 ### 4. Test Coverage as Documentation
 
-**Decision:** 116 tests covering all code paths, including error conditions.
+**Decision:** 175 tests covering all code paths, including error conditions.
 
 **Why:** Tests serve three purposes:
 1. Prevent regressions.
@@ -298,6 +298,8 @@ Every line of AI-generated code was reviewed, tested, and validated against requ
 
 - `test_config_parser.py`: Configuration validation without network calls.
 - `test_arr_client.py`: Client logic with mocked HTTP responses.
+- `test_sonarr_season_packs.py`: Season pack search logic with mocked HTTP responses.
+- `test_env_config.py`: Environment variable configuration loading.
 - `test_main.py`: Orchestration loop with mocked clients.
 
 **Testing Without Production Instances:**
@@ -320,10 +322,10 @@ Both are widely-used, well-maintained libraries with public security disclosure 
 
 ## File Sizes
 
-- `main.py`: ~238 lines
-- `config_parser.py`: ~201 lines
-- `clients/arr.py`: ~425 lines
-- **Total:** ~864 lines of Python (excluding tests/comments)
+- `main.py`: ~254 lines
+- `config_parser.py`: ~308 lines
+- `clients/arr.py`: ~539 lines
+- **Total:** ~1,101 lines of Python (excluding tests/comments)
 
 The small codebase size makes comprehensive security auditing feasible.
 
