@@ -557,6 +557,146 @@ _parse_config_cases = {
         },
         'expected_error': "'global.season_packs' must be of type bool.",
     },
+    'include_tags_defaults_to_empty_list': {
+        'config_data': {
+            'instances': {
+                'test-inst': {
+                    'type': 'radarr',
+                    'host': 'http://test',
+                    'api_key': 'testkey',
+                    'enabled': True,
+                }
+            },
+        },
+        'expected_result': {
+            'global_settings': {
+                'include_tags': [],
+            },
+        },
+    },
+    'exclude_tags_defaults_to_empty_list': {
+        'config_data': {
+            'instances': {
+                'test-inst': {
+                    'type': 'radarr',
+                    'host': 'http://test',
+                    'api_key': 'testkey',
+                    'enabled': True,
+                }
+            },
+        },
+        'expected_result': {
+            'global_settings': {
+                'exclude_tags': [],
+            },
+        },
+    },
+    'include_tags_accepts_valid_list': {
+        'config_data': {
+            'instances': {
+                'test-inst': {
+                    'type': 'radarr',
+                    'host': 'http://test',
+                    'api_key': 'testkey',
+                    'enabled': True,
+                }
+            },
+            'global': {'include_tags': ['alpha', 'beta']},
+        },
+        'expected_result': {
+            'global_settings': {
+                'include_tags': ['alpha', 'beta'],
+            },
+        },
+    },
+    'exclude_tags_accepts_valid_list': {
+        'config_data': {
+            'instances': {
+                'test-inst': {
+                    'type': 'radarr',
+                    'host': 'http://test',
+                    'api_key': 'testkey',
+                    'enabled': True,
+                }
+            },
+            'global': {'exclude_tags': ['gamma']},
+        },
+        'expected_result': {
+            'global_settings': {
+                'exclude_tags': ['gamma'],
+            },
+        },
+    },
+    'include_tags_rejects_non_list': {
+        'config_data': {
+            'instances': {
+                'test-inst': {
+                    'type': 'radarr',
+                    'host': 'http://test',
+                    'api_key': 'testkey',
+                    'enabled': True,
+                }
+            },
+            'global': {'include_tags': 'alpha'},
+        },
+        'expected_error': "'global.include_tags' must be of type list.",
+    },
+    'exclude_tags_rejects_non_list': {
+        'config_data': {
+            'instances': {
+                'test-inst': {
+                    'type': 'radarr',
+                    'host': 'http://test',
+                    'api_key': 'testkey',
+                    'enabled': True,
+                }
+            },
+            'global': {'exclude_tags': 42},
+        },
+        'expected_error': "'global.exclude_tags' must be of type list.",
+    },
+    'include_tags_rejects_non_string_element': {
+        'config_data': {
+            'instances': {
+                'test-inst': {
+                    'type': 'radarr',
+                    'host': 'http://test',
+                    'api_key': 'testkey',
+                    'enabled': True,
+                }
+            },
+            'global': {'include_tags': [99]},
+        },
+        'expected_error': "'global.include_tags' must be a list of str values.",
+    },
+    'include_tags_rejects_empty_string_element': {
+        'config_data': {
+            'instances': {
+                'test-inst': {
+                    'type': 'radarr',
+                    'host': 'http://test',
+                    'api_key': 'testkey',
+                    'enabled': True,
+                }
+            },
+            'global': {'include_tags': ['']},
+        },
+        'expected_error': "'global.include_tags' entries must not be empty strings.",
+    },
+    'exclude_tags_rejects_empty_string_element': {
+        'config_data': {
+            'instances': {
+                'test-inst': {
+                    'type': 'radarr',
+                    'host': 'http://test',
+                    'api_key': 'testkey',
+                    'enabled': True,
+                }
+            },
+            'global': {'exclude_tags': ['']},
+        },
+        'expected_error': "'global.exclude_tags' entries must not be empty strings.",
+    },
 }
 
 

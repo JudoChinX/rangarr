@@ -37,6 +37,11 @@ class _RecordBuilder:
         self._data['id'] = record_id
         return self
 
+    def with_tags(self, tag_ids: list[int]) -> Self:
+        """Set the record tag IDs."""
+        self._data['tags'] = tag_ids
+        return self
+
     def with_title(self, title: str) -> Self:
         """Set the record title."""
         self._data['title'] = title
@@ -99,6 +104,11 @@ class SonarrRecordBuilder(_RecordBuilder):
     def with_series_id(self, series_id: int) -> Self:
         """Set the series ID."""
         self._data['series']['id'] = series_id
+        return self
+
+    def with_tags(self, tag_ids: list[int]) -> Self:
+        """Set the series tag IDs."""
+        self._data['series']['tags'] = tag_ids
         return self
 
     def without_season_number(self) -> Self:
@@ -165,6 +175,16 @@ class ClientBuilder:
         self._class = SonarrClient
         return self
 
+    def with_exclude_tags(self, *names: str) -> 'ClientBuilder':
+        """Set exclude_tags in client settings."""
+        self._settings['exclude_tags'] = list(names)
+        return self
+
+    def with_include_tags(self, *names: str) -> 'ClientBuilder':
+        """Set include_tags in client settings."""
+        self._settings['include_tags'] = list(names)
+        return self
+
     def with_name(self, name: str) -> 'ClientBuilder':
         """Set the client name."""
         self._name = name
@@ -193,7 +213,7 @@ def mock_fetch_wanted_factory(missing_records: list[dict], upgrade_records: list
     return mock_fetch
 
 
-def mock_http_response(data: dict) -> Any:
+def mock_http_response(data: Any) -> Any:
     """Create mock HTTP response object."""
     mock_resp = MagicMock()
     mock_resp.raise_for_status.return_value = None
@@ -215,3 +235,8 @@ def mock_session_get_factory(missing_records: list[dict], upgrade_records: list[
         return mock_http_response({'records': records})
 
     return mock_get
+
+
+def mock_tag_api(tags: list[dict]) -> Any:
+    """Create a mock HTTP response for the tag API endpoint."""
+    return mock_http_response(tags)

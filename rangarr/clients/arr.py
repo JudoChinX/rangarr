@@ -21,6 +21,7 @@ class ArrClient(ABC):
     ENDPOINT_WANTED_MISSING = '/api/v3/wanted/missing'
     ENDPOINT_WANTED_CUTOFF = '/api/v3/wanted/cutoff'
     ENDPOINT_COMMAND = '/api/v3/command'
+    ENDPOINT_TAG = '/api/v3/tag'
 
     def __init__(
         self,
@@ -58,6 +59,9 @@ class ArrClient(ABC):
         self.upgrade_cursor: int = 1
         self.missing_buffer: list[dict] = []
         self.upgrade_buffer: list[dict] = []
+        self._include_tag_ids: set[int] = set()
+        self._exclude_tag_ids: set[int] = set()
+        self._resolve_tag_ids()
 
     @property
     @abstractmethod
@@ -134,6 +138,10 @@ class ArrClient(ABC):
         else:
             result = self._fetch_batch(endpoint, page, batch_size)
         return result
+
+    @abstractmethod
+    def _get_record_tags(self, record: dict) -> list[int]:
+        """Return the list of tag IDs from a record."""
 
     @abstractmethod
     def _get_record_title(self, record: dict) -> str:
@@ -244,12 +252,20 @@ class ArrClient(ABC):
     def _is_available(self, record: dict) -> bool:
         """Determine if a media item is actually released and available."""
 
+    def _is_tag_filtered_out(self, record: dict) -> bool:
+        """Return True if the record should be excluded by tag filtering rules."""
+        record_tag_ids = set(self._get_record_tags(record))
+        return bool(
+            (self._exclude_tag_ids and record_tag_ids & self._exclude_tag_ids)
+            or (self._include_tag_ids and not record_tag_ids & self._include_tag_ids)
+        )
+
     def _is_date_past(self, date_str: str | None) -> bool:
         """Return True if the given ISO date string is in the past."""
         result = False
         if date_str:
-            date_dt = datetime.datetime.fromisoformat(date_str.replace('Z', '+00:00'))
-            result = date_dt <= datetime.datetime.now(datetime.UTC)
+            now = datetime.datetime.now(datetime.UTC).strftime('%Y-%m-%dT%H:%M:%SZ')
+            result = date_str <= now
         return result
 
     def _is_within_retry_window(self, record: dict) -> bool:
@@ -269,12 +285,15 @@ class ArrClient(ABC):
         seen: set[int],
         check_availability: bool = False,
     ) -> MediaItem | None:
-        """Process a single record, returning a MediaItem if available and outside retry window."""
+        """Process a single record, applying tag, availability, and retry-window filters."""
         record_id = record.get('id')
         item = None
 
         if record_id is not None and record_id not in seen:
-            if check_availability and not self._is_available(record):
+            if self._is_tag_filtered_out(record):
+                title = self._get_record_title(record)
+                logger.debug(f'[{self.name}] Skipping {reason} item (tag filter): {title}')
+            elif check_availability and not self._is_available(record):
                 title = self._get_record_title(record)
                 logger.debug(f'[{self.name}] Skipping {reason} item (not yet available): {title}')
             elif self._is_within_retry_window(record):
@@ -288,6 +307,33 @@ class ArrClient(ABC):
                 item = self._extract_item(record, reason)
 
         return item
+
+    def _resolve_tag_ids(self) -> None:
+        """Fetch instance tags and resolve configured tag names to IDs."""
+        include_names = self.settings.get('include_tags', [])
+        exclude_names = self.settings.get('exclude_tags', [])
+
+        if include_names or exclude_names:
+            url = f'{self.url}{self.ENDPOINT_TAG}'
+            try:
+                response = self.session.get(url, timeout=15)
+                response.raise_for_status()
+                tag_map = {tag['label'].lower(): tag['id'] for tag in response.json()}
+                self._include_tag_ids = self._resolve_tag_names(tag_map, include_names)
+                self._exclude_tag_ids = self._resolve_tag_names(tag_map, exclude_names)
+            except requests.RequestException as err:
+                logger.error(f'[{self.name}] Failed to fetch tags, tag filtering disabled: {err}')
+
+    def _resolve_tag_names(self, tag_map: dict[str, int], names: list[str]) -> set[int]:
+        """Resolve tag names to IDs, logging a warning for any unrecognised name."""
+        result: set[int] = set()
+        for name in names:
+            tag_id = tag_map.get(name.lower())
+            if tag_id is None:
+                logger.warning(f'[{self.name}] Tag not found, ignoring: {name}')
+            else:
+                result.add(tag_id)
+        return result
 
     def _trigger_single(self, item_id: int, reason: str, title: str, index: int, total: int) -> None:
         """Dispatch a search command for a single media item."""
@@ -363,6 +409,7 @@ class LidarrClient(ArrClient):
     ENDPOINT_WANTED_MISSING = '/api/v1/wanted/missing'
     ENDPOINT_WANTED_CUTOFF = '/api/v1/wanted/cutoff'
     ENDPOINT_COMMAND = '/api/v1/command'
+    ENDPOINT_TAG = '/api/v1/tag'
 
     @property
     @override
@@ -373,6 +420,10 @@ class LidarrClient(ArrClient):
     @override
     def _id_field(self) -> str:
         return 'albumIds'
+
+    @override
+    def _get_record_tags(self, record: dict) -> list[int]:
+        return record.get('tags', [])
 
     @override
     def _get_record_title(self, record: dict) -> str:
@@ -399,6 +450,10 @@ class RadarrClient(ArrClient):
         return 'movieIds'
 
     @override
+    def _get_record_tags(self, record: dict) -> list[int]:
+        return record.get('tags', [])
+
+    @override
     def _get_record_title(self, record: dict) -> str:
         return record.get('title', f'Movie {record.get("id", "Unknown")}')
 
@@ -418,6 +473,10 @@ class SonarrClient(ArrClient):
     @override
     def _extra_fetch_params(self) -> dict[str, str]:
         return {'includeSeries': 'true'}
+
+    @override
+    def _get_record_tags(self, record: dict) -> list[int]:
+        return record.get('series', {}).get('tags', [])
 
     @override
     def _get_record_title(self, record: dict) -> str:
@@ -480,6 +539,8 @@ class SonarrClient(ArrClient):
 
         missing_records = self._fetch_unlimited(self.ENDPOINT_WANTED_MISSING)
         for record in missing_records:
+            if self._is_tag_filtered_out(record):
+                continue
             if not self._is_available(record):
                 continue
             if self._is_within_retry_window(record):
@@ -497,6 +558,8 @@ class SonarrClient(ArrClient):
         upgrade_records = self._fetch_unlimited(self.ENDPOINT_WANTED_CUTOFF)
         for record in upgrade_records:
             # Availability check intentionally omitted for upgrades (matches base class behaviour).
+            if self._is_tag_filtered_out(record):
+                continue
             if self._is_within_retry_window(record):
                 continue
             series_id = self._get_series_id(record)
