@@ -218,6 +218,16 @@ _load_config_from_env_cases = {
             },
         },
     },
+    'include_tags_parsed_from_comma_separated_env_var': {
+        'env': {
+            **_BASE_INSTANCE,
+            'RANGARR_INSTANCE_0_ENABLED': 'true',
+            'RANGARR_GLOBAL_INCLUDE_TAGS': 'alpha, beta',
+        },
+        'expected_result': {
+            'global_settings': {'include_tags': ['alpha', 'beta']},
+        },
+    },
 }
 
 

@@ -15,6 +15,9 @@ global:
 
   # season_packs: false        # Sonarr only: group searches by season (SeasonSearch) instead of per-episode (EpisodeSearch)
 
+  # include_tags: ["active"]     # Only search items that have ANY of these tags (case-insensitive)
+  # exclude_tags: ["on-hold"]    # Skip items that have ANY of these tags; exclude wins if both match
+
 instances:
   sonarr-tv:
     type: sonarr

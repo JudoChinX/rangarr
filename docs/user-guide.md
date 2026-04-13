@@ -239,6 +239,28 @@ global:
   season_packs: true
 ```
 
+#### `include_tags`
+
+**Type:** List of strings | **Default:** `[]`
+
+When non-empty, only search items that have **any** of the listed tags. Tags are matched case-insensitively. Leave empty (or omit) to search all items regardless of tags.
+
+```yaml
+global:
+  include_tags: ["active"]  # Only search items tagged "active"
+```
+
+#### `exclude_tags`
+
+**Type:** List of strings | **Default:** `[]`
+
+Skip items that have **any** of the listed tags. Tags are matched case-insensitively. When both `include_tags` and `exclude_tags` are set, exclude takes precedence — an item with an excluded tag is always skipped.
+
+```yaml
+global:
+  exclude_tags: ["on-hold"]  # Never search items tagged "on-hold"
+```
+
 ### Instance Settings
 
 Settings for individual *arr instances.
@@ -379,6 +401,16 @@ global:
   upgrade_batch_size: 0   # Skip upgrade searches entirely
 ```
 
+#### Tag Filtering
+
+```yaml
+global:
+  include_tags: ["active"]   # Only search items with this tag
+  exclude_tags: ["on-hold"]  # Skip items with this tag; takes precedence over include_tags
+```
+
+Tags are resolved at startup from each *arr instance. If a tag name is not found on a specific instance, a warning is logged and that name is ignored for that instance — other configured tags still apply. Adding or removing tags in *arr requires restarting Rangarr to take effect.
+
 ### Environment Variable-Only Configuration
 
 Set `RANGARR_CONFIG_SOURCE=env` to have Rangarr ignore `config.yaml` entirely and read all configuration from environment variables. This is useful for container deployments where injecting a config file is inconvenient.
@@ -398,6 +430,8 @@ The following global settings are supported, each prefixed with `RANGARR_GLOBAL_
 | `RANGARR_GLOBAL_SEARCH_ORDER` | `last_searched_ascending` | One of: `alphabetical_ascending`, `alphabetical_descending`, `last_added_ascending`, `last_added_descending`, `last_searched_ascending`, `last_searched_descending`, `random`, `release_date_ascending`, `release_date_descending`. |
 | `RANGARR_GLOBAL_DRY_RUN` | `false` | Log searches without triggering them. |
 | `RANGARR_GLOBAL_SEASON_PACKS` | `false` | Group Sonarr searches by season, sending one `SeasonSearch` per affected `(series, season)` pair. Sonarr only; ignored by other instance types. |
+| `RANGARR_GLOBAL_INCLUDE_TAGS` | `(none)` | Comma-separated tag names. Only search items that have any of these tags. |
+| `RANGARR_GLOBAL_EXCLUDE_TAGS` | `(none)` | Comma-separated tag names. Skip items that have any of these tags. |
 
 #### Instance Settings
 
@@ -624,6 +658,7 @@ Choosing the right search order depends on your library size and goals:
 1. **Retry window:** Items were recently searched and are within the `retry_interval_days` window.
 2. **Availability filtering:** Items may not meet availability criteria yet. Rangarr skips items that are not considered available: for Sonarr, episodes whose `airDateUtc` is in the future or missing; for Lidarr, albums whose `releaseDate` is in the future or missing. Radarr uses the `isAvailable` flag returned by the API.
 3. **Items not monitored or already available:** Check the *arr web UI to confirm items are monitored and actually missing/wanted.
+4. **Tag filtering:** `include_tags` or `exclude_tags` is configured and items do not match. Enable debug logging to see `Skipping ... item (tag filter):` messages.
 
 **Solutions:**
 

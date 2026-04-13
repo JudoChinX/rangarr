@@ -281,3 +281,38 @@ def test_sonarr_season_pack_trigger_search_applies_stagger_between_items() -> No
         client.trigger_search([(10, 'missing', 'Show A - Season 01'), (10, 'missing', 'Show A - Season 02')])
 
     mock_sleep.assert_called_once_with(5)
+
+
+def test_sonarr_season_pack_skips_series_with_excluded_tag() -> None:
+    """Test that season-pack mode skips series whose tag is in the exclude set."""
+    client = SonarrClient(
+        name='test',
+        url='http://test',
+        api_key='testkey',
+        settings={'season_packs': True, 'retry_interval_days': 0},
+    )
+    client._exclude_tag_ids = {5}  # pylint: disable=protected-access
+
+    missing_records = [
+        SonarrRecordBuilder()
+        .with_id(1)
+        .with_series('Show A')
+        .with_series_id(10)
+        .with_episode(1, 1)
+        .with_tags([5])
+        .aired()
+        .build(),
+        SonarrRecordBuilder().with_id(2).with_series('Show B').with_series_id(20).with_episode(1, 1).aired().build(),
+    ]
+
+    def mock_fetch_unlimited(endpoint: str) -> list[dict]:
+        if 'missing' in endpoint:
+            return missing_records.copy()
+        return []
+
+    with patch.object(client, '_fetch_unlimited', side_effect=mock_fetch_unlimited):
+        result = client.get_media_to_search(missing_batch_size=10, upgrade_batch_size=10)
+
+    item_ids = [item_id for item_id, unused_reason, unused_title in result]
+    assert item_ids == [20]
+    assert client._season_pack_items == [(20, 1, 'missing', 'Show B - Season 01')]  # pylint: disable=protected-access

@@ -59,6 +59,16 @@ SETTINGS_SCHEMA = {
         'default': False,
         'type': bool,
     },
+    'include_tags': {
+        'default': [],
+        'type': list,
+        'element_type': str,
+    },
+    'exclude_tags': {
+        'default': [],
+        'type': list,
+        'element_type': str,
+    },
 }
 
 
@@ -129,7 +139,8 @@ def _parse_instance(name: str, config: dict) -> tuple[str, dict] | None:
 def _validate_global_settings(settings: dict, schema: dict) -> None:
     """Validate all global settings against their schema."""
     for setting, definition in schema.items():
-        settings.setdefault(setting, definition['default'])
+        default = definition['default']
+        settings.setdefault(setting, list(default) if isinstance(default, list) else default)
         _validate_setting(
             setting,
             settings[setting],
@@ -137,6 +148,7 @@ def _validate_global_settings(settings: dict, schema: dict) -> None:
             definition.get('choices'),
             allow_special_values=definition.get('allow_special_values', False),
             min_value=definition.get('min_value'),
+            element_type=definition.get('element_type'),
             prefix='global',
         )
 
@@ -149,6 +161,7 @@ def _validate_setting(
     allow_special_values: bool = False,
     min_value: int | None = None,
     prefix: str = 'global',
+    element_type: type | None = None,
 ) -> None:
     """Validate a setting value based on its expected type."""
     if not isinstance(value, expected_type):
@@ -166,6 +179,13 @@ def _validate_setting(
                     else f"'{prefix}.{setting}' must be a non-negative integer."
                 )
                 raise ValueError(msg)
+
+    if expected_type is list and element_type is not None:
+        for element in value:
+            if not isinstance(element, element_type):
+                raise ValueError(f"'{prefix}.{setting}' must be a list of {element_type.__name__} values.")
+            if element_type is str and not element:
+                raise ValueError(f"'{prefix}.{setting}' entries must not be empty strings.")
 
     if choices is not None and value not in choices:
         valid_choices = ', '.join(repr(choice) for choice in choices)
@@ -229,7 +249,11 @@ def load_config_from_env() -> dict:
     for key, value in os.environ.items():
         if key.startswith('RANGARR_GLOBAL_'):
             setting_name = key.removeprefix('RANGARR_GLOBAL_').lower()
-            config['global'][setting_name] = _parse_env_value(value)
+            schema_entry = SETTINGS_SCHEMA.get(setting_name)
+            if schema_entry and schema_entry.get('type') is list:
+                config['global'][setting_name] = [item.strip() for item in value.split(',') if item.strip()]
+            else:
+                config['global'][setting_name] = _parse_env_value(value)
         elif key.startswith('RANGARR_INSTANCE_'):
             remainder = key.removeprefix('RANGARR_INSTANCE_')
             match = re.match(r'(?P<index>\d+)_(?P<field>.+)', remainder)
