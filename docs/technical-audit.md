@@ -45,7 +45,7 @@ To be absolutely clear, Rangarr does not and will never:
 
 ## Architecture Overview
 
-Rangarr is a ~1,101-line Python service with three core modules:
+Rangarr is a ~1,195-line Python service with three core modules:
 
 ```
 rangarr/
@@ -178,7 +178,7 @@ Rangarr operates entirely within your local network (or wherever you host your *
 
 ### 1. Security Through Simplicity
 
-**Decision:** ~1,101 lines of core Python code, zero external dependencies beyond requests and PyYAML.
+**Decision:** ~1,195 lines of core Python code, zero external dependencies beyond requests and PyYAML.
 
 **Why:** Small codebases are auditable. Every line of code is a potential attack surface. By keeping the codebase minimal, security reviewers can read and understand the entire project in under an hour.
 
@@ -205,7 +205,7 @@ Rangarr operates entirely within your local network (or wherever you host your *
 
 ### 4. Test Coverage as Documentation
 
-**Decision:** 175 tests covering all code paths, including error conditions.
+**Decision:** 197 tests covering all code paths, including error conditions.
 
 **Why:** Tests serve three purposes:
 1. Prevent regressions.
@@ -322,10 +322,10 @@ Both are widely-used, well-maintained libraries with public security disclosure 
 
 ## File Sizes
 
-- `main.py`: ~254 lines
-- `config_parser.py`: ~308 lines
-- `clients/arr.py`: ~539 lines
-- **Total:** ~1,101 lines of Python (excluding tests/comments)
+- `main.py`: ~257 lines
+- `config_parser.py`: ~332 lines
+- `clients/arr.py`: ~606 lines
+- **Total:** ~1,195 lines of Python (excluding tests/comments)
 
 The small codebase size makes comprehensive security auditing feasible.
 
@@ -336,7 +336,7 @@ The small codebase size makes comprehensive security auditing feasible.
 Don't trust documentation — verify the claims:
 
 1. **Run the tests:** `pytest` — See that security-relevant code is tested.
-2. **Read the code:** Start with `rangarr/main.py` — ~225 lines.
+2. **Read the code:** Start with `rangarr/main.py` — ~257 lines.
 3. **Check the API calls:** Enable `LOG_LEVEL=DEBUG` — Every HTTP request is logged.
 4. **Review dependencies:** `cat requirements.txt` — Two libraries, both standard.
 
