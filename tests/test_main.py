@@ -1,6 +1,7 @@
 """Tests for main.py entry point and search logic."""
 # pylint: disable=redefined-outer-name
 
+import datetime
 import logging
 from typing import Any
 from unittest.mock import MagicMock
@@ -30,6 +31,8 @@ def mock_client() -> Mock:
 def _make_run_config(
     missing_batch_size: Any = None,
     upgrade_batch_size: Any = None,
+    active_hours: str = '',
+    dry_run: bool = False,
 ) -> Any:
     """Build a minimal valid run config dict with optional batch size overrides."""
     return {
@@ -44,6 +47,8 @@ def _make_run_config(
             'stagger_interval_seconds': 5,
             'retry_interval_days': 0,
             'search_order': 'alphabetical_ascending',
+            'active_hours': active_hours,
+            'dry_run': dry_run,
         },
         'instances': {},
     }
@@ -423,6 +428,227 @@ def test_run(
                 run_client.trigger_search.assert_called_once_with(media_to_return)
 
 
+_is_within_active_hours_cases = {
+    'normal_window_inside': {
+        'start': datetime.time(8, 0),
+        'end': datetime.time(20, 0),
+        'now': datetime.time(12, 0),
+        'expected': True,
+    },
+    'normal_window_outside': {
+        'start': datetime.time(8, 0),
+        'end': datetime.time(20, 0),
+        'now': datetime.time(21, 0),
+        'expected': False,
+    },
+    'normal_window_at_start': {
+        'start': datetime.time(8, 0),
+        'end': datetime.time(20, 0),
+        'now': datetime.time(8, 0),
+        'expected': True,
+    },
+    'normal_window_at_end': {
+        'start': datetime.time(8, 0),
+        'end': datetime.time(20, 0),
+        'now': datetime.time(20, 0),
+        'expected': False,
+    },
+    'cross_midnight_inside_after_start': {
+        'start': datetime.time(22, 0),
+        'end': datetime.time(6, 0),
+        'now': datetime.time(23, 0),
+        'expected': True,
+    },
+    'cross_midnight_inside_before_end': {
+        'start': datetime.time(22, 0),
+        'end': datetime.time(6, 0),
+        'now': datetime.time(3, 0),
+        'expected': True,
+    },
+    'cross_midnight_outside_gap': {
+        'start': datetime.time(22, 0),
+        'end': datetime.time(6, 0),
+        'now': datetime.time(12, 0),
+        'expected': False,
+    },
+    'cross_midnight_at_start': {
+        'start': datetime.time(22, 0),
+        'end': datetime.time(6, 0),
+        'now': datetime.time(22, 0),
+        'expected': True,
+    },
+    'cross_midnight_at_end': {
+        'start': datetime.time(22, 0),
+        'end': datetime.time(6, 0),
+        'now': datetime.time(6, 0),
+        'expected': False,
+    },
+}
+
+
+@pytest.mark.parametrize(
+    'start, end, now, expected',
+    [(case['start'], case['end'], case['now'], case['expected']) for case in _is_within_active_hours_cases.values()],
+    ids=list(_is_within_active_hours_cases.keys()),
+)
+def test_is_within_active_hours(start: datetime.time, end: datetime.time, now: datetime.time, expected: bool) -> None:
+    """Test _is_within_active_hours handles normal and cross-midnight windows."""
+    from rangarr.main import _is_within_active_hours
+
+    assert _is_within_active_hours(start, end, now) == expected
+
+
+_parse_active_hours_cases = {
+    'normal_window': {
+        'active_hours': '08:00-20:00',
+        'expected_start': datetime.time(8, 0),
+        'expected_end': datetime.time(20, 0),
+    },
+    'cross_midnight_window': {
+        'active_hours': '22:00-06:00',
+        'expected_start': datetime.time(22, 0),
+        'expected_end': datetime.time(6, 0),
+    },
+}
+
+
+@pytest.mark.parametrize(
+    'active_hours, expected_start, expected_end',
+    [
+        (case['active_hours'], case['expected_start'], case['expected_end'])
+        for case in _parse_active_hours_cases.values()
+    ],
+    ids=list(_parse_active_hours_cases.keys()),
+)
+def test_parse_active_hours(active_hours: str, expected_start: datetime.time, expected_end: datetime.time) -> None:
+    """Test parse_active_hours parses HH:MM-HH:MM strings into datetime.time pairs."""
+    from rangarr.config_parser import parse_active_hours
+
+    start, end = parse_active_hours(active_hours)
+    assert start == expected_start
+    assert end == expected_end
+
+
+_fixed_today = datetime.date(2026, 1, 1)
+
+_seconds_until_window_open_cases = {
+    'window_opens_later_today': {
+        'start': datetime.time(22, 0),
+        'now': datetime.time(21, 0),
+        'expected_seconds': 3600,
+    },
+    'window_opens_tomorrow': {
+        'start': datetime.time(22, 0),
+        'now': datetime.time(23, 0),
+        'expected_seconds': 82800,
+    },
+}
+
+
+@pytest.mark.parametrize(
+    'start, now, expected_seconds',
+    [(case['start'], case['now'], case['expected_seconds']) for case in _seconds_until_window_open_cases.values()],
+    ids=list(_seconds_until_window_open_cases.keys()),
+)
+def test_seconds_until_window_open(start: datetime.time, now: datetime.time, expected_seconds: int) -> None:
+    """Test _seconds_until_window_open returns correct seconds until window start."""
+    from rangarr.main import _seconds_until_window_open
+
+    assert _seconds_until_window_open(start, now, today=_fixed_today) == expected_seconds
+
+
+def test_run_skips_cycle_outside_active_hours() -> None:
+    """Test run skips the search cycle and sleeps when outside the active hours window."""
+    run_client = MagicMock()
+    run_client.name = 'Test'
+    run_client.weight = 1.0
+    run_client.get_media_to_search.return_value = []
+
+    settings = _make_run_config(active_hours='22:00-06:00')
+
+    fixed_outside_time = datetime.time(12, 0)
+
+    sleep_calls = []
+
+    def fake_sleep(secs: float) -> None:
+        sleep_calls.append(secs)
+        raise KeyboardInterrupt
+
+    with (
+        patch('pathlib.Path.is_file', return_value=True),
+        patch('rangarr.main.load_config', return_value=settings),
+        patch('rangarr.main.build_arr_clients', return_value=[run_client]),
+        patch('rangarr.main.datetime') as mock_dt,
+        patch('rangarr.main.time.sleep', side_effect=fake_sleep),
+        pytest.raises(KeyboardInterrupt),
+    ):
+        mock_dt.datetime.now.return_value.time.return_value = fixed_outside_time
+        mock_dt.date.today.return_value = datetime.date(2026, 4, 13)
+        mock_dt.datetime.combine = datetime.datetime.combine
+        mock_dt.timedelta = datetime.timedelta
+        mock_dt.time = datetime.time
+
+        from rangarr.main import run
+
+        run()
+
+    run_client.get_media_to_search.assert_not_called()
+    assert len(sleep_calls) == 1
+    assert sleep_calls[0] == 36000
+
+
+def test_run_executes_cycle_inside_active_hours() -> None:
+    """Test run executes the search cycle normally when inside the active hours window."""
+    run_client = MagicMock()
+    run_client.name = 'Test'
+    run_client.weight = 1.0
+    run_client.get_media_to_search.return_value = []
+
+    settings = _make_run_config(active_hours='22:00-06:00')
+
+    fixed_inside_time = datetime.time(23, 0)
+
+    with (
+        patch('pathlib.Path.is_file', return_value=True),
+        patch('rangarr.main.load_config', return_value=settings),
+        patch('rangarr.main.build_arr_clients', return_value=[run_client]),
+        patch('rangarr.main.datetime') as mock_dt,
+        patch('rangarr.main.time.sleep', side_effect=KeyboardInterrupt),
+        pytest.raises(KeyboardInterrupt),
+    ):
+        mock_dt.datetime.now.return_value.time.return_value = fixed_inside_time
+        mock_dt.time = datetime.time
+
+        from rangarr.main import run
+
+        run()
+
+    run_client.get_media_to_search.assert_called_once()
+
+
+def test_run_no_active_hours_always_executes() -> None:
+    """Test run executes the search cycle at any time when active_hours is empty."""
+    run_client = MagicMock()
+    run_client.name = 'Test'
+    run_client.weight = 1.0
+    run_client.get_media_to_search.return_value = []
+
+    settings = _make_run_config()
+
+    with (
+        patch('pathlib.Path.is_file', return_value=True),
+        patch('rangarr.main.load_config', return_value=settings),
+        patch('rangarr.main.build_arr_clients', return_value=[run_client]),
+        patch('rangarr.main.time.sleep', side_effect=KeyboardInterrupt),
+        pytest.raises(KeyboardInterrupt),
+    ):
+        from rangarr.main import run
+
+        run()
+
+    run_client.get_media_to_search.assert_called_once()
+
+
 def test_run_search_cycle_both_disabled(mock_client: Mock, caplog: pytest.LogCaptureFixture) -> None:
     """Test that search cycle skips instance when both batch types disabled."""
     from rangarr.main import _run_search_cycle
@@ -501,17 +727,35 @@ _log_rangarr_start_cases = {
         'expected_missing': 'Missing Batch: 20',
         'expected_upgrade': 'Upgrade Batch: 10',
     },
+    'active_hours_set': {
+        'missing_batch_size': 20,
+        'upgrade_batch_size': 10,
+        'active_hours': '22:00-06:00',
+        'expected_missing': 'Missing Batch: 20',
+        'expected_upgrade': 'Upgrade Batch: 10',
+        'expected_active_hours': 'Active Hours: 22:00-06:00',
+    },
+    'active_hours_all': {
+        'missing_batch_size': 20,
+        'upgrade_batch_size': 10,
+        'active_hours': '',
+        'expected_missing': 'Missing Batch: 20',
+        'expected_upgrade': 'Upgrade Batch: 10',
+        'expected_active_hours': 'Active Hours: All hours',
+    },
 }
 
 
 @pytest.mark.parametrize(
-    'missing_batch_size, upgrade_batch_size, expected_missing, expected_upgrade',
+    'missing_batch_size, upgrade_batch_size, active_hours, expected_missing, expected_upgrade, expected_active_hours',
     [
         (
             case['missing_batch_size'],
             case['upgrade_batch_size'],
+            case.get('active_hours', ''),
             case['expected_missing'],
             case['expected_upgrade'],
+            case.get('expected_active_hours', 'Active Hours: All hours'),
         )
         for case in _log_rangarr_start_cases.values()
     ],
@@ -522,10 +766,12 @@ def test_log_rangarr_start(
     caplog: pytest.LogCaptureFixture,
     missing_batch_size: int,
     upgrade_batch_size: int,
+    active_hours: str,
     expected_missing: str,
     expected_upgrade: str,
+    expected_active_hours: str,
 ) -> None:
-    """Test startup log displays correct batch size labels."""
+    """Test startup log displays correct batch size labels and active hours."""
     from rangarr.main import _log_rangarr_start
 
     settings = {
@@ -536,6 +782,7 @@ def test_log_rangarr_start(
         'stagger_interval_seconds': 30,
         'search_order': 'last_searched_ascending',
         'dry_run': False,
+        'active_hours': active_hours,
     }
 
     with caplog.at_level(logging.INFO):
@@ -543,3 +790,4 @@ def test_log_rangarr_start(
 
     assert expected_missing in caplog.text
     assert expected_upgrade in caplog.text
+    assert expected_active_hours in caplog.text

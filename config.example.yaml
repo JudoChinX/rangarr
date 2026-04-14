@@ -17,6 +17,7 @@ global:
 
   # include_tags: ["active"]     # Only search items that have ANY of these tags (case-insensitive)
   # exclude_tags: ["on-hold"]    # Skip items that have ANY of these tags; exclude wins if both match
+  # active_hours: "22:00-06:00"  # Only search within this time window (local time). Leave unset to search at any hour.
 
 instances:
   sonarr-tv:

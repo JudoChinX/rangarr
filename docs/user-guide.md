@@ -261,6 +261,21 @@ global:
   exclude_tags: ["on-hold"]  # Never search items tagged "on-hold"
 ```
 
+#### `active_hours`
+
+**Type:** String | **Default:** `""` (all hours)
+
+Restrict searches to a specific time window. Format: `"HH:MM-HH:MM"` (24-hour clock). Times are interpreted in the container's local time — set the `TZ` environment variable in your `compose.yaml` to control this.
+
+Cross-midnight windows are supported: `"22:00-06:00"` means active from 22:00 through 06:00 the following morning. Outside the window, Rangarr skips the cycle and sleeps until the window opens rather than waiting the normal `interval`.
+
+Leave unset or set to `""` to search at any hour.
+
+```yaml
+global:
+  active_hours: "22:00-06:00"  # Only search overnight
+```
+
 ### Instance Settings
 
 Settings for individual *arr instances.
@@ -411,6 +426,24 @@ global:
 
 Tags are resolved at startup from each *arr instance. If a tag name is not found on a specific instance, a warning is logged and that name is ignored for that instance — other configured tags still apply. Adding or removing tags in *arr requires restarting Rangarr to take effect.
 
+#### Off-Peak Searching
+
+Restrict searches to overnight hours to avoid hitting indexers during peak usage. Set the `TZ` environment variable to your local timezone so `active_hours` uses your clock, not UTC.
+
+In `compose.yaml`:
+```yaml
+environment:
+  TZ: America/New_York
+```
+
+In `config.yaml`:
+```yaml
+global:
+  active_hours: "22:00-06:00"  # Search from 10 PM to 6 AM local time
+```
+
+Outside the window, Rangarr logs a message and sleeps until the window opens. It does not drift — when the window opens it runs the next cycle immediately.
+
 ### Environment Variable-Only Configuration
 
 Set `RANGARR_CONFIG_SOURCE=env` to have Rangarr ignore `config.yaml` entirely and read all configuration from environment variables. This is useful for container deployments where injecting a config file is inconvenient.
@@ -432,6 +465,7 @@ The following global settings are supported, each prefixed with `RANGARR_GLOBAL_
 | `RANGARR_GLOBAL_SEASON_PACKS` | `false` | Group Sonarr searches by season, sending one `SeasonSearch` per affected `(series, season)` pair. Sonarr only; ignored by other instance types. |
 | `RANGARR_GLOBAL_INCLUDE_TAGS` | `(none)` | Comma-separated tag names. Only search items that have any of these tags. |
 | `RANGARR_GLOBAL_EXCLUDE_TAGS` | `(none)` | Comma-separated tag names. Skip items that have any of these tags. |
+| `RANGARR_GLOBAL_ACTIVE_HOURS` | `""` | Time window for searches, e.g. `22:00-06:00`. Leave empty to search at any hour. |
 
 #### Instance Settings
 

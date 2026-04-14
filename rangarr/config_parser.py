@@ -1,16 +1,22 @@
 """Configuration loader and validator for Rangarr."""
 
+import datetime
 import logging
 import os
 import re
+from collections.abc import Callable
 from typing import Any
 
 import yaml
+
+from rangarr.validators import _parse_hhmm
+from rangarr.validators import _validate_active_hours
 
 logger = logging.getLogger(__name__)
 
 REQUIRED_TOP_LEVEL = ('instances',)
 VALID_ARR_TYPES = ('radarr', 'sonarr', 'lidarr')
+
 
 SETTINGS_SCHEMA = {
     'missing_batch_size': {
@@ -68,6 +74,11 @@ SETTINGS_SCHEMA = {
         'default': [],
         'type': list,
         'element_type': str,
+    },
+    'active_hours': {
+        'default': '',
+        'type': str,
+        'validator': _validate_active_hours,
     },
 }
 
@@ -149,6 +160,7 @@ def _validate_global_settings(settings: dict, schema: dict) -> None:
             allow_special_values=definition.get('allow_special_values', False),
             min_value=definition.get('min_value'),
             element_type=definition.get('element_type'),
+            validator=definition.get('validator'),
             prefix='global',
         )
 
@@ -162,6 +174,7 @@ def _validate_setting(
     min_value: int | None = None,
     prefix: str = 'global',
     element_type: type | None = None,
+    validator: Callable[[str], None] | None = None,
 ) -> None:
     """Validate a setting value based on its expected type."""
     if not isinstance(value, expected_type):
@@ -190,6 +203,9 @@ def _validate_setting(
     if choices is not None and value not in choices:
         valid_choices = ', '.join(repr(choice) for choice in choices)
         raise ValueError(f"'{prefix}.{setting}' must be one of: {valid_choices}.")
+
+    if validator is not None:
+        validator(value)
 
 
 def get_setting_default(setting: str) -> Any:
@@ -274,6 +290,19 @@ def load_config_from_env() -> dict:
             logger.warning(f'Skipping unconfigured instance slot at index {index} (name is empty).')
 
     return parse_config(config)
+
+
+def parse_active_hours(value: str) -> tuple[datetime.time, datetime.time]:
+    """Parse a validated HH:MM-HH:MM string into a start and end time pair.
+
+    Args:
+        value: A validated time window string in HH:MM-HH:MM format.
+
+    Returns:
+        A tuple of (start, end) as datetime.time objects.
+    """
+    start_str, end_str = value.split('-')
+    return _parse_hhmm(start_str), _parse_hhmm(end_str)
 
 
 def parse_config(config: Any) -> dict:

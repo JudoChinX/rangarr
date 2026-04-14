@@ -697,6 +697,175 @@ _parse_config_cases = {
         },
         'expected_error': "'global.exclude_tags' entries must not be empty strings.",
     },
+    'active_hours_defaults_to_empty_string': {
+        'config_data': {
+            'instances': {
+                'test-inst': {
+                    'type': 'radarr',
+                    'host': 'http://test',
+                    'api_key': 'testkey',
+                    'enabled': True,
+                }
+            },
+        },
+        'expected_result': {
+            'global_settings': {
+                'active_hours': '',
+            },
+        },
+    },
+    'active_hours_accepts_empty_string': {
+        'config_data': {
+            'instances': {
+                'test-inst': {
+                    'type': 'radarr',
+                    'host': 'http://test',
+                    'api_key': 'testkey',
+                    'enabled': True,
+                }
+            },
+            'global': {'active_hours': ''},
+        },
+        'expected_result': {
+            'global_settings': {
+                'active_hours': '',
+            },
+        },
+    },
+    'active_hours_accepts_normal_window': {
+        'config_data': {
+            'instances': {
+                'test-inst': {
+                    'type': 'radarr',
+                    'host': 'http://test',
+                    'api_key': 'testkey',
+                    'enabled': True,
+                }
+            },
+            'global': {'active_hours': '08:00-20:00'},
+        },
+        'expected_result': {
+            'global_settings': {
+                'active_hours': '08:00-20:00',
+            },
+        },
+    },
+    'active_hours_accepts_cross_midnight_window': {
+        'config_data': {
+            'instances': {
+                'test-inst': {
+                    'type': 'radarr',
+                    'host': 'http://test',
+                    'api_key': 'testkey',
+                    'enabled': True,
+                }
+            },
+            'global': {'active_hours': '22:00-06:00'},
+        },
+        'expected_result': {
+            'global_settings': {
+                'active_hours': '22:00-06:00',
+            },
+        },
+    },
+    'active_hours_rejects_missing_end': {
+        'config_data': {
+            'instances': {
+                'test-inst': {
+                    'type': 'radarr',
+                    'host': 'http://test',
+                    'api_key': 'testkey',
+                    'enabled': True,
+                }
+            },
+            'global': {'active_hours': '22:00'},
+        },
+        'expected_error': "'global.active_hours' must be in HH:MM-HH:MM format",
+    },
+    'active_hours_rejects_non_time_string': {
+        'config_data': {
+            'instances': {
+                'test-inst': {
+                    'type': 'radarr',
+                    'host': 'http://test',
+                    'api_key': 'testkey',
+                    'enabled': True,
+                }
+            },
+            'global': {'active_hours': 'not-a-time'},
+        },
+        'expected_error': "'global.active_hours' must be in HH:MM-HH:MM format",
+    },
+    'active_hours_rejects_invalid_start_hour': {
+        'config_data': {
+            'instances': {
+                'test-inst': {
+                    'type': 'radarr',
+                    'host': 'http://test',
+                    'api_key': 'testkey',
+                    'enabled': True,
+                }
+            },
+            'global': {'active_hours': '25:00-06:00'},
+        },
+        'expected_error': "start time '25:00' is not a valid 24-hour time",
+    },
+    'active_hours_rejects_invalid_start_minute': {
+        'config_data': {
+            'instances': {
+                'test-inst': {
+                    'type': 'radarr',
+                    'host': 'http://test',
+                    'api_key': 'testkey',
+                    'enabled': True,
+                }
+            },
+            'global': {'active_hours': '22:60-06:00'},
+        },
+        'expected_error': "start time '22:60' is not a valid 24-hour time",
+    },
+    'active_hours_rejects_invalid_end_hour': {
+        'config_data': {
+            'instances': {
+                'test-inst': {
+                    'type': 'radarr',
+                    'host': 'http://test',
+                    'api_key': 'testkey',
+                    'enabled': True,
+                }
+            },
+            'global': {'active_hours': '22:00-25:00'},
+        },
+        'expected_error': "end time '25:00' is not a valid 24-hour time",
+    },
+    'active_hours_rejects_invalid_end_minute': {
+        'config_data': {
+            'instances': {
+                'test-inst': {
+                    'type': 'radarr',
+                    'host': 'http://test',
+                    'api_key': 'testkey',
+                    'enabled': True,
+                }
+            },
+            'global': {'active_hours': '22:00-06:60'},
+        },
+        'expected_error': "end time '06:60' is not a valid 24-hour time",
+    },
+    'active_hours_rejects_start_equals_end': {
+        'config_data': {
+            'instances': {
+                'test-inst': {
+                    'type': 'radarr',
+                    'host': 'http://test',
+                    'api_key': 'testkey',
+                    'enabled': True,
+                }
+            },
+            'global': {'active_hours': '12:00-12:00'},
+        },
+        'expected_error': "'global.active_hours' start and end times must differ.",
+    },
 }
 
 

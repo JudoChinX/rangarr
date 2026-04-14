@@ -21,6 +21,7 @@ from rangarr.config_parser import SETTINGS_SCHEMA
 from rangarr.config_parser import get_setting_default
 from rangarr.config_parser import load_config
 from rangarr.config_parser import load_config_from_env
+from rangarr.config_parser import parse_active_hours
 
 if 'TZ' not in os.environ:
     os.environ['TZ'] = 'UTC'
@@ -91,6 +92,13 @@ def _get_setting(settings: dict, key: str) -> Any:
     return settings.get(key, get_setting_default(key))
 
 
+def _is_within_active_hours(start: datetime.time, end: datetime.time, now: datetime.time) -> bool:
+    """Return True if now falls within the configured active hours window."""
+    if start <= end:
+        return start <= now < end
+    return now >= start or now < end
+
+
 def _load_config_from_paths(config_paths: list[str]) -> dict | None:
     """Attempt to load configuration from a list of possible paths."""
     config = None
@@ -124,6 +132,7 @@ def _log_rangarr_start(active_clients: list[Any], settings: dict) -> None:
     retry_days = _get_setting(settings, 'retry_interval_days')
     stagger_seconds = _get_setting(settings, 'stagger_interval_seconds')
     dry_run = _get_setting(settings, 'dry_run')
+    active_hours = _get_setting(settings, 'active_hours')
 
     missing_str = _batch_display_str(global_missing)
     upgrade_str = _batch_display_str(global_upgrade)
@@ -131,6 +140,7 @@ def _log_rangarr_start(active_clients: list[Any], settings: dict) -> None:
     raw_order = _get_setting(settings, 'search_order')
     search_order_str = _SEARCH_ORDER_LABELS.get(raw_order, raw_order.capitalize())
     dry_run_str = ' (DRY RUN ENABLED)' if dry_run else ''
+    active_hours_str = active_hours if active_hours else 'All hours'
 
     logger.info(
         f'Rangarr started{dry_run_str} | '
@@ -140,7 +150,8 @@ def _log_rangarr_start(active_clients: list[Any], settings: dict) -> None:
         f'Upgrade Batch: {upgrade_str} | '
         f'Search Stagger: {stagger_seconds} Seconds | '
         f'Search Order: {search_order_str} | '
-        f'Retry Interval: {retry_str}'
+        f'Retry Interval: {retry_str} | '
+        f'Active Hours: {active_hours_str}'
     )
 
 
@@ -176,6 +187,16 @@ def _run_search_cycle(active_clients: list[Any], settings: dict) -> None:
 
         logger.info(_format_batch_info(client.name, ids, stagger_seconds))
         client.trigger_search(ids)
+
+
+def _seconds_until_window_open(start: datetime.time, now: datetime.time, today: datetime.date | None = None) -> int:
+    """Return the number of seconds until the active hours window next opens."""
+    date = today if today is not None else datetime.date.today()
+    start_dt = datetime.datetime.combine(date, start)
+    now_dt = datetime.datetime.combine(date, now)
+    if start_dt <= now_dt:
+        start_dt += datetime.timedelta(days=1)
+    return int((start_dt - now_dt).total_seconds())
 
 
 def build_arr_clients(
@@ -246,8 +267,18 @@ def run() -> None:
     _log_rangarr_start(active_clients, settings)
 
     run_interval_seconds = _get_setting(settings, 'run_interval_minutes') * 60
+    active_hours = _get_setting(settings, 'active_hours')
+    parsed_window = parse_active_hours(active_hours) if active_hours else None
 
     while True:
+        if parsed_window:
+            start_time, end_time = parsed_window
+            now = datetime.datetime.now().time()
+            if not _is_within_active_hours(start_time, end_time, now):
+                secs = _seconds_until_window_open(start_time, now)
+                logger.info(f'Outside active hours ({active_hours}). Sleeping {secs}s until window opens.')
+                time.sleep(secs)
+                continue
         _run_search_cycle(active_clients, settings)
         logger.info(f'--- Cycle complete. Sleeping for {_get_setting(settings, "run_interval_minutes")}m. ---')
         time.sleep(run_interval_seconds)
