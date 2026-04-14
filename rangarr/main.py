@@ -17,6 +17,7 @@ from rangarr.clients.arr import ArrClient
 from rangarr.clients.arr import LidarrClient
 from rangarr.clients.arr import RadarrClient
 from rangarr.clients.arr import SonarrClient
+from rangarr.config_parser import SETTINGS_SCHEMA
 from rangarr.config_parser import get_setting_default
 from rangarr.config_parser import load_config
 from rangarr.config_parser import load_config_from_env
@@ -196,11 +197,13 @@ def build_arr_clients(
     clients: list[ArrClient] = []
     for arr_type, client_class in registry.items():
         for instance in instances_config.get(arr_type, []):
+            instance_overrides = {key: instance[key] for key in SETTINGS_SCHEMA if key in instance}
+            client_settings = {**settings, **instance_overrides}
             client = client_class(
                 name=instance['name'],
                 url=instance['url'],
                 api_key=instance['api_key'],
-                settings=settings,
+                settings=client_settings,
                 weight=instance.get('weight', 1.0),
             )
             clients.append(client)

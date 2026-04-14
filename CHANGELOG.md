@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - `include_tags` and `exclude_tags` global settings to filter searches by *arr tags.
 
+### Fixed
+
+- Season packs: `missing_batch_size` and `upgrade_batch_size` are now enforced when `season_packs: true` is set on a Sonarr instance. Previously these limits were ignored and all eligible seasons were collected unconditionally.
+
 ## [0.3.0] - 2026-03-31
 
 ### Added

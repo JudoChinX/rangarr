@@ -529,6 +529,36 @@ class SonarrClient(ArrClient):
         self.season_packs: bool = self.settings.get('season_packs', False)
         self._season_pack_items: list[tuple[int, int, str, str]] = []
 
+    def _collect_season_pack_records(
+        self,
+        records: list[dict],
+        batch_size: int,
+        reason: str,
+        seen_seasons: set[tuple[int, int]],
+        check_availability: bool,
+    ) -> None:
+        """Collect unique (series, season) pairs from records into _season_pack_items."""
+        count = 0
+        for record in records:
+            if 0 < batch_size <= count:
+                break
+            if self._is_tag_filtered_out(record):
+                continue
+            if check_availability and not self._is_available(record):
+                continue
+            if self._is_within_retry_window(record):
+                continue
+            series_id = self._get_series_id(record)
+            season_number = self._get_season_number(record)
+            if series_id is None or season_number is None:
+                continue
+            key = (series_id, season_number)
+            if key not in seen_seasons:
+                seen_seasons.add(key)
+                title = self._get_season_title(record, season_number)
+                self._season_pack_items.append((series_id, season_number, reason, title))
+                count += 1
+
     @override
     def get_media_to_search(self, missing_batch_size: int, upgrade_batch_size: int) -> list[MediaItem]:
         if not self.season_packs:
@@ -537,40 +567,14 @@ class SonarrClient(ArrClient):
         self._season_pack_items = []
         seen_seasons: set[tuple[int, int]] = set()
 
-        missing_records = self._fetch_unlimited(self.ENDPOINT_WANTED_MISSING)
-        for record in missing_records:
-            if self._is_tag_filtered_out(record):
-                continue
-            if not self._is_available(record):
-                continue
-            if self._is_within_retry_window(record):
-                continue
-            series_id = self._get_series_id(record)
-            season_number = self._get_season_number(record)
-            if series_id is None or season_number is None:
-                continue
-            key = (series_id, season_number)
-            if key not in seen_seasons:
-                seen_seasons.add(key)
-                title = self._get_season_title(record, season_number)
-                self._season_pack_items.append((series_id, season_number, 'missing', title))
+        if missing_batch_size != 0:
+            missing_records = self._fetch_unlimited(self.ENDPOINT_WANTED_MISSING)
+            self._collect_season_pack_records(missing_records, missing_batch_size, 'missing', seen_seasons, True)
 
-        upgrade_records = self._fetch_unlimited(self.ENDPOINT_WANTED_CUTOFF)
-        for record in upgrade_records:
-            # Availability check intentionally omitted for upgrades (matches base class behaviour).
-            if self._is_tag_filtered_out(record):
-                continue
-            if self._is_within_retry_window(record):
-                continue
-            series_id = self._get_series_id(record)
-            season_number = self._get_season_number(record)
-            if series_id is None or season_number is None:
-                continue
-            key = (series_id, season_number)
-            if key not in seen_seasons:
-                seen_seasons.add(key)
-                title = self._get_season_title(record, season_number)
-                self._season_pack_items.append((series_id, season_number, 'upgrade', title))
+        if upgrade_batch_size != 0:
+            # Availability check omitted for upgrades (matches base class behaviour).
+            upgrade_records = self._fetch_unlimited(self.ENDPOINT_WANTED_CUTOFF)
+            self._collect_season_pack_records(upgrade_records, upgrade_batch_size, 'upgrade', seen_seasons, False)
 
         return [(series_id, reason, title) for series_id, unused_season, reason, title in self._season_pack_items]
 
