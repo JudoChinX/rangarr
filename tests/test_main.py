@@ -193,6 +193,25 @@ def test_build_arr_clients(
                 assert clients[index].weight == weight
 
 
+def test_build_arr_clients_instance_settings_override_global() -> None:
+    """Test that instance-level settings override global settings for that client only."""
+    instances_config = {
+        'sonarr': [
+            {
+                'name': 'Sonarr SP',
+                'url': 'http://test',
+                'api_key': 'key1',
+                'season_packs': True,
+            }
+        ]
+    }
+    global_settings = {'season_packs': False}
+    clients = build_arr_clients(instances_config, global_settings)
+    assert len(clients) == 1
+    assert clients[0].season_packs is True
+    assert global_settings['season_packs'] is False
+
+
 _calculate_eta_cases = {
     'no_stagger_returns_empty_string': {
         'item_count': 5,
