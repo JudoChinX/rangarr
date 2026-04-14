@@ -18,57 +18,64 @@ Pushing a `v*` tag to `main` triggers the CI/CD pipeline, which:
 
 Before cutting a release, confirm:
 
-- [ ] `main` branch is clean (`git status` shows no uncommitted changes)
 - [ ] All intended changes are merged to `main`
-- [ ] `CHANGELOG.md` has a dated entry for the new version (move from `[Unreleased]` to `[X.Y.Z] - YYYY-MM-DD`)
+- [ ] `CHANGELOG.md` `[Unreleased]` section is empty — all notable changes moved into the versioned section
+- [ ] User-facing docs are accurate (`docs/user-guide.md`, `docs/technical-audit.md`, `config.example.yaml`)
 - [ ] The version follows [Semantic Versioning](https://semver.org/): `MAJOR.MINOR.PATCH`
 
 ---
 
 ## Steps
 
-### 1. Update CHANGELOG.md
+### 1. Run the release script
 
-Move the unreleased changes into a versioned section:
-
-```diff
--## [Unreleased]
-+## [Unreleased]
-+
-+## [X.Y.Z] - YYYY-MM-DD
-```
-
-Add the release date and ensure all notable changes are documented.
-
-### 2. Run the Release Script
-
-The `utils/release.sh` script handles the version bump, commit, push, and tagging in one step:
+The `utils/release.sh` script handles branch creation, version bump, changelog validation, commit, and push:
 
 ```bash
 ./utils/release.sh
 ```
 
-It will prompt for the version, validate pre-flight checks, show a diff of the `pyproject.toml` change, and ask for confirmation before proceeding.
-
 **What the script does:**
-1. Validates the version format (`MAJOR.MINOR.PATCH`)
-2. Confirms you are on `main` with a clean working tree
-3. Confirms the version is new and not already tagged
-4. Confirms a `CHANGELOG.md` entry exists for the version
-5. Bumps the version in `pyproject.toml`
-6. Commits and pushes to `main`
-7. Creates and pushes the `v*` tag
+1. Validates the version format (`MAJOR.MINOR.PATCH`) and pre-flight checks
+2. Creates a `release-vX.Y.Z` branch from `main`
+3. Bumps the version in `pyproject.toml`
+4. Pauses for manual steps (see below)
+5. Validates `CHANGELOG.md` — versioned entry exists and `[Unreleased]` is empty
+6. Commits `CHANGELOG.md` + `pyproject.toml` and pushes the release branch
+
+### 2. Manual steps (while the script is paused)
+
+Before confirming in the script:
+
+- **Update `CHANGELOG.md`** — move all `[Unreleased]` entries into a `[X.Y.Z] - YYYY-MM-DD` section and leave `[Unreleased]` empty:
+
+  ```diff
+   ## [Unreleased]
+  +
+  +## [X.Y.Z] - YYYY-MM-DD
+  +
+  +### Added
+  +- ...
+  +
+  +### Fixed
+  +- ...
+  ```
+
+- **Review user-facing docs** — check `docs/user-guide.md`, `docs/technical-audit.md`, and `config.example.yaml` for accuracy (defaults, feature descriptions, line counts).
+
+### 3. Open and merge the PR
+
+The script prints the `gh pr create` command on completion. Merge once reviewed.
+
+### 4. Tag main after the PR merges
+
+```bash
+git fetch origin
+git tag vX.Y.Z origin/main
+git push origin vX.Y.Z
+```
 
 The tag push triggers the CI release pipeline.
-
-> **Note:** If you prefer to run steps manually:
-> ```bash
-> git add CHANGELOG.md pyproject.toml
-> git commit -m "new: Rangarr vX.Y.Z release."
-> git push origin main
-> git tag vX.Y.Z
-> git push origin vX.Y.Z
-> ```
 
 ---
 
