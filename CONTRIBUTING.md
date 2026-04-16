@@ -70,7 +70,9 @@ pytest tests/test_arr_client.py::test_function_name -v  # Run specific test
 
 ### Code Style Requirements
 
-All submissions must pass the automated checks listed above (Ruff, Pylint, Mypy, Bandit, Pytest). Code should be clear, minimal, and consistent with the existing patterns in the codebase.
+All submissions must pass the automated checks listed above (Ruff, Pylint, Mypy, Bandit, Pytest).
+
+For detailed coding conventions — naming, docstrings, type hints, testing patterns, and more — see the [Style Guide](docs/style-guide.md).
 
 ## Security-Conscious Contribution Guidelines
 
