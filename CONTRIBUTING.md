@@ -113,7 +113,7 @@ All user input and configuration must be validated:
 2. **Update tests**: Add tests for new functionality or bug fixes.
 3. **Update documentation**: Update README.md or docs/user-guide.md if applicable.
 4. **Review your changes**: Self-review for correctness, test coverage, and alignment with the coding standards in this file.
-5. **Clean commit history**: Squash WIP commits; write clear commit messages.
+5. **Clean commit history**: Squash WIP commits; write clear commit messages (see [Commit Messages](#commit-messages) below).
 
 ### Creating a Pull Request
 
@@ -133,5 +133,43 @@ All user input and configuration must be validated:
 - Maintainers may request changes or additional tests.
 - Large PRs may take longer to review; consider breaking into smaller PRs.
 - Security-related PRs receive priority review.
+
+## Commit Messages
+
+Every commit message starts with a type prefix followed by a colon and a space:
+
+| Prefix | When to use |
+|---|---|
+| `new:` | A new feature, file, or capability that didn't exist before |
+| `chg:` | A change or improvement to existing behavior, docs, or config |
+| `fix:` | A bug fix |
+
+The subject line is sentence case and must end with punctuation (a period in most cases).
+
+```
+new: Add tag-based filtering for *arr instances.
+chg: Update retry interval default from 7 to 30 days.
+fix: Enforce batch size limits in Sonarr season packs.
+```
+
+Keep the subject under 72 characters. If more context is needed, add a blank line followed by a body paragraph.
+
+Squash WIP commits before opening a PR — the merged history should read as a clean sequence of meaningful changes.
+
+## GitHub Actions
+
+CI runs automatically on every push and pull request. The following checks must pass before a PR can be merged:
+
+| Check | What it runs |
+|---|---|
+| Lint & format | `ruff check . && ruff format --check .` |
+| Type checking | `mypy rangarr/ tests/` |
+| Code quality | `pylint rangarr/ tests/` |
+| Security scan | `bandit -r rangarr/ -lll` |
+| Test suite | `pytest` (95% coverage required) |
+
+These are the same checks run by the local pre-push hook in `utils/pre-push.sh`. If CI fails on your PR, run the failing check locally to reproduce it — the output is identical.
+
+Security-related failures (Bandit) block merge regardless of other results.
 
 Thank you for contributing to Rangarr!
