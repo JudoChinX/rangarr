@@ -7,12 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.5] - 2026-04-17
+
+### Added
+
+- `active_hours` global setting to restrict searches to a configured time window, sleeping until the window opens when a cycle falls outside it.
+
 ## [0.5.0] - 2026-04-14
 
 ### Added
 
 - `include_tags` and `exclude_tags` global settings to filter searches by *arr tags.
-- `active_hours` global setting to restrict searches to a configured time window, sleeping until the window opens when a cycle falls outside it.
 
 ### Fixed
 
