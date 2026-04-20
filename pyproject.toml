@@ -1,6 +1,6 @@
 [project]
 name = "rangarr"
-version = "0.5.5"
+version = "0.5.6"
 description = "Python-based orchestration service for *arr clients"
 requires-python = ">=3.13"
 dependencies = [

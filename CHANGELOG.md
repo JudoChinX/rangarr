@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.6] - 2026-04-20
+
+### Fixed
+
+- Sorting is now applied client-side after fetching all records, replacing the previous approach of passing sort parameters to the *arr API. This ensures consistent ordering across all `search_order` modes.
+
 ## [0.5.5] - 2026-04-17
 
 ### Added

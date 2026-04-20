@@ -216,15 +216,15 @@ global:
 **Type:** String | **Default:** `last_searched_ascending`
 
 **Options:**
-- `alphabetical_ascending`: Alphabetical by title (A-Z). Uses cursor-based pagination.
-- `alphabetical_descending`: Reverse alphabetical (Z-A). Uses cursor-based pagination.
+- `alphabetical_ascending`: Alphabetical by title (A-Z).
+- `alphabetical_descending`: Reverse alphabetical (Z-A).
 - `last_added_ascending`: Oldest added to *arr first.
 - `last_added_descending`: Most recently added to *arr first.
 - `last_searched_ascending`: Oldest last-searched first (items never searched come first).
 - `last_searched_descending`: Most recently searched first.
 - `random`: Randomized order.
-- `release_date_ascending`: Oldest release date first. Uses cursor-based pagination.
-- `release_date_descending`: Newest release date first. Uses cursor-based pagination.
+- `release_date_ascending`: Oldest release date first.
+- `release_date_descending`: Newest release date first.
 
 #### `season_packs`
 
@@ -811,7 +811,7 @@ environment:
   LOG_LEVEL: DEBUG
 ```
 
-Debug logs show: unlimited fetch triggers, backlog resets, items skipped due to availability filtering, and per-item stagger delays.
+Debug logs show: unlimited fetch triggers, items skipped due to availability filtering, and per-item stagger delays.
 
 ### Reporting Bugs
 

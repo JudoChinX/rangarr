@@ -45,7 +45,7 @@ To be absolutely clear, Rangarr does not and will never:
 
 ## Architecture Overview
 
-Rangarr is a ~1,195-line Python service with three core modules:
+Rangarr is a ~1,224-line Python service with three core modules:
 
 ```
 rangarr/
@@ -94,16 +94,17 @@ config.yaml → config_parser.py → main.py → ArrClient instances → *arr AP
 **Purpose:** Implements *arr API interactions.
 
 **Classes:**
-- `ArrClient`: Abstract base class with shared pagination, in-memory buffering, and filtering logic.
+- `ArrClient`: Abstract base class with shared fetch, client-side sorting, and filtering logic.
 - `RadarrClient`: Radarr-specific implementation.
 - `SonarrClient`: Sonarr-specific implementation.
 - `LidarrClient`: Lidarr-specific implementation (uses `/api/v1/` endpoints).
 
 **Key Methods:**
-- `get_media_to_search()`: Retrieves, buffers, and interleaves missing/upgrade items from wanted endpoints. It actively fills requested batch sizes by fetching additional pages if items are filtered.
-- `_get_target_media()`: Core pagination and buffering method; advances or resets per-instance cursors and applies retry-window and availability filtering.
+- `get_media_to_search()`: Fetches, sorts, and interleaves missing/upgrade items from wanted endpoints up to the configured batch sizes.
+- `_get_target_media()`: Fetches all records via `_fetch_unlimited()`, sorts them client-side, and applies retry-window and availability filtering.
 - `trigger_search()`: Dispatches search commands via POST to `/api/v3/command` (Radarr/Sonarr) or `/api/v1/command` (Lidarr), staggered by `stagger_interval_seconds`.
-- `_fetch_batch()` / `_fetch_unlimited()`: Low-level paged HTTP fetchers (uses requests.Session).
+- `_fetch_unlimited()`: Low-level paged HTTP fetcher that collects all records across pages (uses requests.Session).
+- `_sort_records_client_side()`: Sorts fetched records in-place according to `search_order`.
 - `_is_within_retry_window()`: Filters out items searched within `retry_interval_days`.
 
 **Security Note:** This is the ONLY module that makes network requests. All API calls use the session configured in `__init__` with `X-Api-Key` header.
@@ -205,7 +206,7 @@ Rangarr operates entirely within your local network (or wherever you host your *
 
 ### 4. Test Coverage as Documentation
 
-**Decision:** 197 tests covering all code paths, including error conditions.
+**Decision:** 223 tests covering all code paths, including error conditions.
 
 **Why:** Tests serve three purposes:
 1. Prevent regressions.
@@ -271,14 +272,14 @@ Rangarr operates entirely within your local network (or wherever you host your *
 
 ### Stateless Operation
 
-**Choice:** No database, no persistent state beyond `config.yaml`. Uses transient in-memory buffers for batch fulfillment.
+**Choice:** No database, no persistent state beyond `config.yaml`. All sorting and filtering is done in-memory per cycle with no carry-over state.
 
 **Why:**
 - Nothing to corrupt.
 - Easy to backup (copy one file).
 - Transparent behavior (state is visible in *arr instances, not hidden in Rangarr).
 
-**Trade-off:** Cursors reset when the service restarts. This is acceptable — the next cycle picks up where it left off.
+**Trade-off:** Every cycle fetches all records and re-sorts client-side. This is acceptable — the wanted endpoints are read-only and the full fetch ensures correct ordering regardless of service restarts.
 
 ### AI-Assisted Development
 
@@ -298,6 +299,7 @@ Every line of AI-generated code was reviewed, tested, and validated against requ
 
 - `test_config_parser.py`: Configuration validation without network calls.
 - `test_arr_client.py`: Client logic with mocked HTTP responses.
+- `test_arr_client_sort.py`: Client-side sorting for all search orders across all client types.
 - `test_sonarr_season_packs.py`: Season pack search logic with mocked HTTP responses.
 - `test_env_config.py`: Environment variable configuration loading.
 - `test_main.py`: Orchestration loop with mocked clients.
@@ -322,10 +324,10 @@ Both are widely-used, well-maintained libraries with public security disclosure 
 
 ## File Sizes
 
-- `main.py`: ~257 lines
-- `config_parser.py`: ~332 lines
-- `clients/arr.py`: ~606 lines
-- **Total:** ~1,195 lines of Python (excluding tests/comments)
+- `main.py`: ~288 lines
+- `config_parser.py`: ~361 lines
+- `clients/arr.py`: ~550 lines
+- **Total:** ~1,224 lines of Python (excluding tests/comments)
 
 The small codebase size makes comprehensive security auditing feasible.
 
