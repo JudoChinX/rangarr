@@ -16,7 +16,7 @@ from tests.builders import ClientBuilder
 from tests.builders import LidarrRecordBuilder
 from tests.builders import RadarrRecordBuilder
 from tests.builders import SonarrRecordBuilder
-from tests.builders import mock_fetch_wanted_factory
+from tests.builders import mock_fetch_unlimited_factory
 from tests.builders import mock_http_response
 from tests.builders import mock_session_get_factory
 
@@ -29,81 +29,6 @@ _client_map: dict[str, type[RadarrClient] | type[SonarrClient] | type[LidarrClie
     'sonarr': SonarrClient,
     'lidarr': LidarrClient,
 }
-
-
-_cursor_cases = {
-    'advances_missing_cursor_on_full_page': {
-        'missing_batch_size': 3,
-        'upgrade_batch_size': 3,
-        'missing_records': [{'id': num, 'title': f'Missing {num}', 'isAvailable': True} for num in range(1, 4)],
-        'upgrade_records': [],
-        'expected_missing_cursor': 2,
-        'expected_upgrade_cursor': 1,
-        'search_order': 'alphabetical_ascending',
-    },
-    'resets_missing_cursor_at_end_of_backlog': {
-        'missing_batch_size': 5,
-        'upgrade_batch_size': 5,
-        'missing_records': [{'id': num, 'title': f'Missing {num}', 'isAvailable': True} for num in range(1, 3)],
-        'upgrade_records': [],
-        'expected_missing_cursor': 1,
-        'expected_upgrade_cursor': 1,
-        'search_order': 'alphabetical_descending',
-    },
-    'advances_upgrade_cursor_on_full_page': {
-        'missing_batch_size': 3,
-        'upgrade_batch_size': 3,
-        'missing_records': [],
-        'upgrade_records': [{'id': num, 'title': f'Upgrade {num}', 'isAvailable': True} for num in range(1, 4)],
-        'expected_missing_cursor': 1,
-        'expected_upgrade_cursor': 2,
-        'search_order': 'alphabetical_ascending',
-    },
-}
-
-
-@pytest.mark.parametrize(
-    'missing_batch_size, upgrade_batch_size, missing_records, upgrade_records, expected_missing_cursor, expected_upgrade_cursor, search_order',
-    [
-        (
-            case['missing_batch_size'],
-            case['upgrade_batch_size'],
-            case['missing_records'],
-            case['upgrade_records'],
-            case['expected_missing_cursor'],
-            case['expected_upgrade_cursor'],
-            case['search_order'],
-        )
-        for case in _cursor_cases.values()
-    ],
-    ids=list(_cursor_cases.keys()),
-)
-def test_arr_client_cursor_management(
-    missing_batch_size: Any,
-    upgrade_batch_size: Any,
-    missing_records: Any,
-    upgrade_records: Any,
-    expected_missing_cursor: Any,
-    expected_upgrade_cursor: Any,
-    search_order: Any,
-) -> None:
-    """Test cursor advancement and reset logic in get_media_to_search simulating HTTP requests."""
-    client = RadarrClient(
-        name='test',
-        url='http://test',
-        api_key='testkey',
-        settings={'retry_interval_days': 0, 'search_order': search_order},
-    )
-
-    client.session.get = MagicMock(side_effect=mock_session_get_factory(missing_records, upgrade_records))
-
-    client.get_media_to_search(
-        missing_batch_size=missing_batch_size,
-        upgrade_batch_size=upgrade_batch_size,
-    )
-
-    assert client.missing_cursor == expected_missing_cursor
-    assert client.upgrade_cursor == expected_upgrade_cursor
 
 
 @pytest.mark.parametrize('client_class', ['radarr', 'sonarr', 'lidarr'])
@@ -123,114 +48,6 @@ def test_arr_client_dry_run(caplog: pytest.LogCaptureFixture, client_class: str)
     client.session.post.assert_not_called()
     assert 'Would search (missing): Dry Run' in caplog.text
     assert '[DRY RUN]' in caplog.text
-
-
-_fetch_wanted_cases = {
-    'batch_mode_returns_records_from_api': {
-        'missing_batch_size': 5,
-        'upgrade_batch_size': 5,
-        'session_responses': [
-            {'records': [{'id': num, 'title': f'Missing {num}', 'isAvailable': True} for num in range(1, 4)]},
-            {'records': []},
-        ],
-        'raises_exception': False,
-        'expected_result_count': 3,
-    },
-    'unlimited_mode_returns_all_records': {
-        'missing_batch_size': -1,
-        'upgrade_batch_size': 5,
-        'session_responses': [
-            {'records': [{'id': num, 'title': f'Missing {num}', 'isAvailable': True} for num in range(1, 6)]},
-            {'records': []},
-        ],
-        'raises_exception': False,
-        'expected_result_count': 5,
-    },
-    'handles_request_exception_and_returns_empty': {
-        'missing_batch_size': 5,
-        'upgrade_batch_size': 5,
-        'session_responses': None,
-        'raises_exception': True,
-        'expected_result_count': 0,
-    },
-    'unlimited_mode_fetches_multiple_pages': {
-        'missing_batch_size': -1,
-        'upgrade_batch_size': 5,
-        'session_responses': [
-            {'records': [{'id': num, 'title': f'Missing {num}', 'isAvailable': True} for num in range(1000)]},
-            {'records': [{'id': 1000, 'title': 'Missing 1000', 'isAvailable': True}]},
-            {'records': []},
-        ],
-        'raises_exception': False,
-        'expected_result_count': 1001,
-    },
-    'unlimited_mode_handles_exception_in_loop': {
-        'missing_batch_size': -1,
-        'upgrade_batch_size': 5,
-        'session_responses': None,
-        'raises_exception': 'unlimited',
-        'expected_result_count': 0,
-    },
-}
-
-
-@pytest.mark.parametrize(
-    'missing_batch_size, upgrade_batch_size, session_responses, raises_exception, expected_result_count',
-    [
-        (
-            case['missing_batch_size'],
-            case['upgrade_batch_size'],
-            case['session_responses'],
-            case['raises_exception'],
-            case['expected_result_count'],
-        )
-        for case in _fetch_wanted_cases.values()
-    ],
-    ids=list(_fetch_wanted_cases.keys()),
-)
-def test_arr_client_fetch_wanted(
-    missing_batch_size: Any,
-    upgrade_batch_size: Any,
-    session_responses: Any,
-    raises_exception: Any,
-    expected_result_count: Any,
-) -> None:
-    """Test _fetch_wanted via get_media_to_search with mocked HTTP session."""
-    client = RadarrClient(
-        name='test',
-        url='http://test',
-        api_key='testkey',
-        settings={'retry_interval_days': 0},
-    )
-
-    if raises_exception is True:
-        # Batch mode exception: all calls raise.
-        client.session.get = MagicMock(side_effect=requests.RequestException('Network error'))
-    elif raises_exception == 'unlimited':
-        # Unlimited mode exception: first call (missing unlimited) raises, second (upgrade batch) returns empty.
-        client.session.get = MagicMock(
-            side_effect=[
-                requests.RequestException('Network error'),
-                mock_http_response({'records': []}),
-            ]
-        )
-    else:
-
-        def mock_get(*_args: Any, **_kwargs: Any) -> Any:
-            try:
-                data = next(resp_iter)
-            except StopIteration:
-                data = {'records': []}
-            return mock_http_response(data)
-
-        resp_iter = iter(session_responses or [])
-        client.session.get = MagicMock(side_effect=mock_get)
-
-    results = client.get_media_to_search(
-        missing_batch_size=missing_batch_size,
-        upgrade_batch_size=upgrade_batch_size,
-    )
-    assert len(results) == expected_result_count
 
 
 _processing_pipeline_cases = {
@@ -459,9 +276,9 @@ def test_arr_client_processing_pipeline(
     _get_record_title, _interleave_items.
     """
     client = _client_map[client_class](name='test', url='http://test', api_key='testkey', settings=settings)
-    mock_fetch = mock_fetch_wanted_factory(missing_records, upgrade_records)
+    mock_fetch = mock_fetch_unlimited_factory(missing_records, upgrade_records)
 
-    with patch.object(client, '_fetch_wanted', side_effect=mock_fetch):
+    with patch.object(client, '_fetch_unlimited', side_effect=mock_fetch):
         results = client.get_media_to_search(
             missing_batch_size=missing_batch_size,
             upgrade_batch_size=upgrade_batch_size,
@@ -475,97 +292,20 @@ def test_arr_client_processing_pipeline(
         assert expected_title in result_titles
 
 
-_search_order_cases = {
-    'alphabetical_ascending_sends_correct_params': {
-        'settings': {'search_order': 'alphabetical_ascending', 'retry_interval_days': 0},
-        'missing_batch_size': 5,
-        'expected_sort_key': 'title',
-        'expected_sort_direction': 'ascending',
-    },
-    'alphabetical_descending_sends_correct_params': {
-        'settings': {'search_order': 'alphabetical_descending', 'retry_interval_days': 0},
-        'missing_batch_size': 5,
-        'expected_sort_key': 'title',
-        'expected_sort_direction': 'descending',
-    },
-    'last_searched_ascending_sends_correct_params': {
-        'settings': {'search_order': 'last_searched_ascending', 'retry_interval_days': 0},
-        'missing_batch_size': 5,
-        'expected_sort_key': 'lastSearchTime',
-        'expected_sort_direction': 'ascending',
-    },
-    'last_searched_descending_sends_correct_params': {
-        'settings': {'search_order': 'last_searched_descending', 'retry_interval_days': 0},
-        'missing_batch_size': 5,
-        'expected_sort_key': 'lastSearchTime',
-        'expected_sort_direction': 'descending',
-    },
-    'last_added_ascending_sends_correct_params': {
-        'settings': {'search_order': 'last_added_ascending', 'retry_interval_days': 0},
-        'missing_batch_size': 5,
-        'expected_sort_key': 'dateAdded',
-        'expected_sort_direction': 'ascending',
-    },
-    'last_added_descending_sends_correct_params': {
-        'settings': {'search_order': 'last_added_descending', 'retry_interval_days': 0},
-        'missing_batch_size': 5,
-        'expected_sort_key': 'dateAdded',
-        'expected_sort_direction': 'descending',
-    },
-    'release_date_ascending_sends_correct_params': {
-        'settings': {'search_order': 'release_date_ascending', 'retry_interval_days': 0},
-        'missing_batch_size': 5,
-        'expected_sort_key': 'releaseDate',
-        'expected_sort_direction': 'ascending',
-    },
-    'release_date_descending_sends_correct_params': {
-        'settings': {'search_order': 'release_date_descending', 'retry_interval_days': 0},
-        'missing_batch_size': 5,
-        'expected_sort_key': 'releaseDate',
-        'expected_sort_direction': 'descending',
-    },
-}
-
-
-@pytest.mark.parametrize(
-    'settings, missing_batch_size, expected_sort_key, expected_sort_direction',
-    [
-        (
-            case['settings'],
-            case['missing_batch_size'],
-            case['expected_sort_key'],
-            case['expected_sort_direction'],
-        )
-        for case in _search_order_cases.values()
-    ],
-    ids=list(_search_order_cases.keys()),
-)
-def test_arr_client_search_order_parameters(
-    settings: Any,
-    missing_batch_size: Any,
-    expected_sort_key: Any,
-    expected_sort_direction: Any,
-) -> None:
-    """Test that search order settings send correct sort parameters to API."""
-    client = RadarrClient(
-        name='test',
-        url='http://test',
-        api_key='testkey',
-        settings=settings,
-    )
+def test_fetch_does_not_send_sort_params() -> None:
+    """Test that API fetch calls do not include sortKey or sortDirection parameters."""
+    client = ClientBuilder().radarr().with_settings(search_order='last_searched_ascending').build()
+    captured: dict = {}
 
     def mock_get(_url: str, *_args: Any, **kwargs: Any) -> Any:
-        params = kwargs.get('params', {})
-        assert params.get('sortKey') == expected_sort_key
-        assert params.get('sortDirection') == expected_sort_direction
-        mock_resp = MagicMock()
-        mock_resp.raise_for_status.return_value = None
-        mock_resp.json.return_value = {'records': []}
-        return mock_resp
+        captured.update(kwargs.get('params', {}))
+        return mock_http_response({'records': []})
 
     client.session.get = MagicMock(side_effect=mock_get)
-    client.get_media_to_search(missing_batch_size=missing_batch_size, upgrade_batch_size=0)
-    client.session.get.assert_called()
+    client.get_media_to_search(missing_batch_size=1, upgrade_batch_size=0)
+
+    assert 'sortKey' not in captured
+    assert 'sortDirection' not in captured
 
 
 _test_cases = {
@@ -577,7 +317,7 @@ _test_cases = {
         'upgrade_batch_size': 5,
         'expected_result_len': 10,
     },
-    'get_media_last_searched_ascending_unlimited_fetch': {
+    'get_media_last_searched_ascending': {
         'settings': {'search_order': 'last_searched_ascending', 'retry_interval_days': 0},
         'missing_records': [{'id': num, 'title': f'Missing {num}', 'isAvailable': True} for num in range(1, 4)],
         'upgrade_records': [],
@@ -585,7 +325,7 @@ _test_cases = {
         'upgrade_batch_size': 5,
         'expected_result_len': 3,
     },
-    'get_media_last_searched_descending_unlimited_fetch': {
+    'get_media_last_searched_descending': {
         'settings': {'search_order': 'last_searched_descending', 'retry_interval_days': 0},
         'missing_records': [{'id': num, 'title': f'Missing {num}', 'isAvailable': True} for num in range(1, 4)],
         'upgrade_records': [],
@@ -593,7 +333,7 @@ _test_cases = {
         'upgrade_batch_size': 5,
         'expected_result_len': 3,
     },
-    'get_media_last_added_ascending_unlimited_fetch': {
+    'get_media_last_added_ascending': {
         'settings': {'search_order': 'last_added_ascending', 'retry_interval_days': 0},
         'missing_records': [{'id': num, 'title': f'Missing {num}', 'isAvailable': True} for num in range(1, 4)],
         'upgrade_records': [],
@@ -601,7 +341,7 @@ _test_cases = {
         'upgrade_batch_size': 5,
         'expected_result_len': 3,
     },
-    'get_media_last_added_descending_unlimited_fetch': {
+    'get_media_last_added_descending': {
         'settings': {'search_order': 'last_added_descending', 'retry_interval_days': 0},
         'missing_records': [{'id': num, 'title': f'Missing {num}', 'isAvailable': True} for num in range(1, 4)],
         'upgrade_records': [],
@@ -889,12 +629,10 @@ def test_get_target_media_modes(
     """Test _get_target_media disabled and unlimited modes."""
     client = ClientBuilder().radarr().with_settings(search_order=search_order).build()
 
-    with patch.object(client, '_fetch_wanted', return_value=fetch_wanted_records) as mock_fetch:
+    with patch.object(client, '_fetch_unlimited', return_value=fetch_wanted_records) as mock_fetch:
         result = client._get_target_media(  # pylint: disable=protected-access
             endpoint='movie/wanted/missing',
             target_batch_size=target_batch_size,
-            cursor_attr='missing_cursor',
-            buffer_attr='missing_buffer',
             reason='missing',
             seen=set(),
         )

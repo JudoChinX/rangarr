@@ -55,10 +55,6 @@ class ArrClient(ABC):
         self.session.headers.update({'X-Api-Key': api_key, 'Content-Type': 'application/json'})
 
         self.dry_run = self.settings.get('dry_run', False)
-        self.missing_cursor: int = 1
-        self.upgrade_cursor: int = 1
-        self.missing_buffer: list[dict] = []
-        self.upgrade_buffer: list[dict] = []
         self._include_tag_ids: set[int] = set()
         self._exclude_tag_ids: set[int] = set()
         self._resolve_tag_ids()
@@ -75,28 +71,8 @@ class ArrClient(ABC):
         return (record_id, reason, title)
 
     def _extra_fetch_params(self) -> dict[str, str]:
-        """Return additional parameterss to include in fetch requests."""
+        """Return additional parameters to include in fetch requests."""
         return {}
-
-    def _fetch_batch(self, endpoint: str, page: int, page_size: int) -> list[dict]:
-        """Fetch single page of records."""
-        url = f'{self.url}{endpoint}'
-        result = []
-        sort_key, sort_direction = self._get_sort_params()
-        params = {
-            **self._extra_fetch_params(),
-            'sortKey': sort_key,
-            'sortDirection': sort_direction,
-            'page': page,
-            'pageSize': page_size,
-        }
-        try:
-            response = self.session.get(url, params=params, timeout=15)
-            response.raise_for_status()
-            result = response.json().get('records', [])
-        except requests.RequestException as error:
-            logger.error(f'[{self.name}] Failed to fetch {endpoint} (page {page}): {error}')
-        return result
 
     def _fetch_unlimited(self, endpoint: str) -> list[dict]:
         """Fetch all available records across all pages."""
@@ -104,16 +80,10 @@ class ArrClient(ABC):
         result = []
         current_page = 1
         page_size = 1000
-        sort_key, sort_direction = self._get_sort_params()
-        base_params = {
-            **self._extra_fetch_params(),
-            'sortKey': sort_key,
-            'sortDirection': sort_direction,
-        }
 
         while True:
             params = {
-                **base_params,
+                **self._extra_fetch_params(),
                 'page': current_page,
                 'pageSize': page_size,
             }
@@ -130,15 +100,6 @@ class ArrClient(ABC):
                 break
         return result
 
-    def _fetch_wanted(self, endpoint: str, page: int, batch_size: int) -> list[dict]:
-        """Fetch wanted items based on batch size."""
-        result = []
-        if batch_size == 0:
-            result = self._fetch_unlimited(endpoint)
-        else:
-            result = self._fetch_batch(endpoint, page, batch_size)
-        return result
-
     @abstractmethod
     def _get_record_tags(self, record: dict) -> list[int]:
         """Return the list of tag IDs from a record."""
@@ -147,25 +108,14 @@ class ArrClient(ABC):
     def _get_record_title(self, record: dict) -> str:
         """Extract a human-readable title from the API response record."""
 
-    def _get_sort_params(self) -> tuple[str, str]:
-        """Return the API sort key and direction for the configured search order."""
-        if self.search_order in ('last_searched_ascending', 'last_searched_descending'):
-            sort_key = 'lastSearchTime'
-        elif self.search_order in ('last_added_ascending', 'last_added_descending'):
-            sort_key = 'dateAdded'
-        elif self.search_order in ('release_date_ascending', 'release_date_descending'):
-            sort_key = 'releaseDate'
-        else:
-            sort_key = 'title'
-        sort_direction = 'descending' if self.search_order.endswith('_descending') else 'ascending'
-        return sort_key, sort_direction
+    @abstractmethod
+    def _get_release_date(self, record: dict) -> str:
+        """Return the release date string for client-side sorting, or '' if absent."""
 
     def _get_target_media(
         self,
         endpoint: str,
         target_batch_size: int,
-        cursor_attr: str,
-        buffer_attr: str,
         reason: str,
         seen: set[int],
         check_availability: bool = False,
@@ -174,43 +124,15 @@ class ArrClient(ABC):
         items: list[MediaItem] = []
 
         if target_batch_size != 0:
-            last_searched = self.search_order in ('last_searched_ascending', 'last_searched_descending')
-            last_added = self.search_order in ('last_added_ascending', 'last_added_descending')
-            unlimited_mode = target_batch_size == -1 or self.search_order == 'random' or last_searched or last_added
+            records = self._fetch_unlimited(endpoint)
+            self._sort_records_client_side(records)
 
-            if unlimited_mode:
-                logger.debug(f'[{self.name}] {endpoint}: unlimited fetch triggered.')
-                setattr(self, buffer_attr, [])
-                records = self._fetch_wanted(endpoint, 1, 0)  # 0 triggers unlimited fetch internally
-                if self.search_order == 'random':
-                    random.shuffle(records)
-
-                for record in records:
-                    if 0 < target_batch_size <= len(items):
-                        break
-                    item = self._process_record(record, reason, seen, check_availability)
-                    if item:
-                        items.append(item)
-            else:
-                buffer: list[dict] = getattr(self, buffer_attr)
-                cursor: int = getattr(self, cursor_attr)
-
-                while len(items) < target_batch_size:
-                    if not buffer:
-                        records = self._fetch_wanted(endpoint, cursor, target_batch_size)
-                        if not records:
-                            logger.debug(f'[{self.name}] {endpoint}: end of backlog at cursor {cursor}, resetting.')
-                            cursor = 1
-                            break
-                        buffer.extend(records)
-                        cursor += 1
-
-                    record = buffer.pop(0)
-                    item = self._process_record(record, reason, seen, check_availability)
-                    if item:
-                        items.append(item)
-
-                setattr(self, cursor_attr, cursor)
+            for record in records:
+                if 0 < target_batch_size <= len(items):
+                    break
+                item = self._process_record(record, reason, seen, check_availability)
+                if item:
+                    items.append(item)
 
         return items
 
@@ -335,6 +257,21 @@ class ArrClient(ABC):
                 result.add(tag_id)
         return result
 
+    def _sort_records_client_side(self, records: list[dict]) -> None:
+        """Sort records in-place according to the configured search order."""
+        sort_keys = {
+            'alphabetical': self._get_record_title,
+            'last_added': lambda rec: rec.get('dateAdded') or '',
+            'last_searched': lambda rec: rec.get('lastSearchTime') or '',
+            'release_date': self._get_release_date,
+        }
+        if self.search_order == 'random':
+            random.shuffle(records)
+        else:
+            base = self.search_order.rsplit('_', 1)[0]
+            reverse = self.search_order.endswith('_descending')
+            records.sort(key=sort_keys[base], reverse=reverse)
+
     def _trigger_single(self, item_id: int, reason: str, title: str, index: int, total: int) -> None:
         """Dispatch a search command for a single media item."""
         if self.dry_run:
@@ -366,8 +303,6 @@ class ArrClient(ABC):
         missing_items = self._get_target_media(
             self.ENDPOINT_WANTED_MISSING,
             missing_batch_size,
-            'missing_cursor',
-            'missing_buffer',
             'missing',
             seen,
             check_availability=True,
@@ -376,11 +311,8 @@ class ArrClient(ABC):
         upgrade_items = self._get_target_media(
             self.ENDPOINT_WANTED_CUTOFF,
             upgrade_batch_size,
-            'upgrade_cursor',
-            'upgrade_buffer',
             'upgrade',
             seen,
-            check_availability=False,
         )
 
         merged = self._interleave_items(missing_items, upgrade_items)
@@ -432,6 +364,10 @@ class LidarrClient(ArrClient):
         return f'{artist_name} - {album_title}'
 
     @override
+    def _get_release_date(self, record: dict) -> str:
+        return record.get('releaseDate') or ''
+
+    @override
     def _is_available(self, record: dict) -> bool:
         return self._is_date_past(record.get('releaseDate'))
 
@@ -456,6 +392,10 @@ class RadarrClient(ArrClient):
     @override
     def _get_record_title(self, record: dict) -> str:
         return record.get('title', f'Movie {record.get("id", "Unknown")}')
+
+    @override
+    def _get_release_date(self, record: dict) -> str:
+        return record.get('releaseDate') or ''
 
     @override
     def _is_available(self, record: dict) -> bool:
@@ -485,6 +425,10 @@ class SonarrClient(ArrClient):
         episode = record.get('episodeNumber', 0)
         episode_title = record.get('title', 'Unknown Episode')
         return f'{series_title} - S{season:02d}E{episode:02d} - {episode_title}'
+
+    @override
+    def _get_release_date(self, record: dict) -> str:
+        return record.get('airDateUtc') or ''
 
     def _get_season_number(self, record: dict) -> int | None:
         """Return the season number from an episode record."""

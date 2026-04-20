@@ -16,6 +16,18 @@ class _RecordBuilder:
 
     _data: dict[str, Any]
 
+    def added_long_ago(self) -> Self:
+        """Set date added to 30 days ago."""
+        now = datetime.datetime.now(datetime.UTC)
+        self._data['dateAdded'] = (now - datetime.timedelta(days=30)).strftime('%Y-%m-%dT%H:%M:%SZ')
+        return self
+
+    def added_recently(self) -> Self:
+        """Set date added to 1 day ago."""
+        now = datetime.datetime.now(datetime.UTC)
+        self._data['dateAdded'] = (now - datetime.timedelta(days=1)).strftime('%Y-%m-%dT%H:%M:%SZ')
+        return self
+
     def build(self) -> dict[str, Any]:
         """Build and return the record dictionary."""
         return self._data.copy()
@@ -35,6 +47,11 @@ class _RecordBuilder:
     def with_id(self, record_id: int) -> Self:
         """Set the record ID."""
         self._data['id'] = record_id
+        return self
+
+    def with_release_date(self, date_str: str) -> Self:
+        """Set the release date field."""
+        self._data['releaseDate'] = date_str
         return self
 
     def with_tags(self, tag_ids: list[int]) -> Self:
@@ -196,19 +213,12 @@ class ClientBuilder:
         return self
 
 
-def mock_fetch_wanted_factory(missing_records: list[dict], upgrade_records: list[dict]) -> Any:
-    """Create mock_fetch_wanted function for testing."""
+def mock_fetch_unlimited_factory(missing_records: list[dict], upgrade_records: list[dict]) -> Any:
+    """Create mock _fetch_unlimited function for testing."""
 
-    def mock_fetch(endpoint: str, page: int, _batch_size: int) -> list[dict]:
-        """Mock function that returns missing or upgrade records based on endpoint."""
-        result = []
-        if page > 1:
-            return result
-        if 'missing' in endpoint:
-            result = missing_records.copy()
-        else:
-            result = upgrade_records.copy()
-        return result
+    def mock_fetch(endpoint: str) -> list[dict]:
+        records = missing_records if 'missing' in endpoint else upgrade_records
+        return records.copy()
 
     return mock_fetch
 
