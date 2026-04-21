@@ -18,10 +18,11 @@ type MediaItem = tuple[int, str, str]
 class ArrClient(ABC):
     """Abstract base class for *arr application clients."""
 
-    ENDPOINT_WANTED_MISSING = '/api/v3/wanted/missing'
-    ENDPOINT_WANTED_CUTOFF = '/api/v3/wanted/cutoff'
     ENDPOINT_COMMAND = '/api/v3/command'
+    ENDPOINT_QUALITY_PROFILE = '/api/v3/qualityprofile'
     ENDPOINT_TAG = '/api/v3/tag'
+    ENDPOINT_WANTED_CUTOFF = '/api/v3/wanted/cutoff'
+    ENDPOINT_WANTED_MISSING = '/api/v3/wanted/missing'
 
     def __init__(
         self,
@@ -74,6 +75,26 @@ class ArrClient(ABC):
         """Return additional parameters to include in fetch requests."""
         return {}
 
+    def _fetch_list(self, endpoint: str, params: dict[str, str | int | list[int]] | None = None) -> list[dict]:
+        """Fetch all records from a non-paginated list endpoint."""
+        url = f'{self.url}{endpoint}'
+        try:
+            response = self.session.get(url, params=params or {}, timeout=30)
+            response.raise_for_status()
+            return response.json()
+        except requests.RequestException as error:
+            logger.error(f'[{self.name}] Failed to fetch {endpoint}: {error}')
+            return []
+
+    def _fetch_quality_profile_cutoffs(self) -> dict[int, int]:
+        """Return {profileId: cutoffFormatScore} for profiles where cutoffFormatScore > 0."""
+        profiles = self._fetch_list(self.ENDPOINT_QUALITY_PROFILE)
+        return {
+            profile['id']: profile['cutoffFormatScore']
+            for profile in profiles
+            if profile.get('cutoffFormatScore', 0) > 0
+        }
+
     def _fetch_unlimited(self, endpoint: str) -> list[dict]:
         """Fetch all available records across all pages."""
         url = f'{self.url}{endpoint}'
@@ -99,6 +120,17 @@ class ArrClient(ABC):
                 logger.error(f'[{self.name}] Failed to fetch unlimited {endpoint}: {error}')
                 break
         return result
+
+    def _get_custom_format_score_unmet_records(self) -> list[dict]:
+        """Orchestrate the supplemental custom format score upgrade pass."""
+        profile_cutoffs = self._fetch_quality_profile_cutoffs()
+        if not profile_cutoffs:
+            return []
+        return self._get_custom_format_upgrade_records(profile_cutoffs)
+
+    def _get_custom_format_upgrade_records(self, _profile_cutoffs: dict[int, int]) -> list[dict]:
+        """Return records for items where customFormatScore falls below the profile cutoff."""
+        return []
 
     @abstractmethod
     def _get_record_tags(self, record: dict) -> list[int]:
@@ -315,6 +347,16 @@ class ArrClient(ABC):
             seen,
         )
 
+        if upgrade_batch_size != 0:
+            supplemental = self._get_custom_format_score_unmet_records()
+            self._sort_records_client_side(supplemental)
+            for record in supplemental:
+                if 0 < upgrade_batch_size <= len(upgrade_items):
+                    break
+                item = self._process_record(record, 'upgrade', seen)
+                if item:
+                    upgrade_items.append(item)
+
         merged = self._interleave_items(missing_items, upgrade_items)
 
         if self.search_order == 'random':
@@ -338,15 +380,19 @@ class ArrClient(ABC):
 class LidarrClient(ArrClient):
     """Lidarr API client."""
 
-    ENDPOINT_WANTED_MISSING = '/api/v1/wanted/missing'
-    ENDPOINT_WANTED_CUTOFF = '/api/v1/wanted/cutoff'
     ENDPOINT_COMMAND = '/api/v1/command'
     ENDPOINT_TAG = '/api/v1/tag'
+    ENDPOINT_WANTED_CUTOFF = '/api/v1/wanted/cutoff'
+    ENDPOINT_WANTED_MISSING = '/api/v1/wanted/missing'
 
     @property
     @override
     def _command_name(self) -> str:
         return 'AlbumSearch'
+
+    @override
+    def _fetch_quality_profile_cutoffs(self) -> dict[int, int]:
+        return {}
 
     @property
     @override
@@ -375,15 +421,42 @@ class LidarrClient(ArrClient):
 class RadarrClient(ArrClient):
     """Radarr API client."""
 
+    ENDPOINT_MOVIE = '/api/v3/movie'
+    ENDPOINT_MOVIE_FILE = '/api/v3/moviefile'
+    MOVIE_FILE_BATCH_SIZE = 100
+
     @property
     @override
     def _command_name(self) -> str:
         return 'MoviesSearch'
 
-    @property
+    def _fetch_movie_file_scores(self, file_ids: list[int]) -> dict[int, int]:
+        """Return {fileId: customFormatScore} for the given movie file IDs."""
+        scores: dict[int, int] = {}
+        for batch_start in range(0, len(file_ids), self.MOVIE_FILE_BATCH_SIZE):
+            batch = file_ids[batch_start : batch_start + self.MOVIE_FILE_BATCH_SIZE]
+            movie_files = self._fetch_list(self.ENDPOINT_MOVIE_FILE, {'movieFileIds': batch})
+            for mfile in movie_files:
+                score = mfile.get('customFormatScore')
+                scores[mfile['id']] = score if score is not None else 0
+        return scores
+
     @override
-    def _id_field(self) -> str:
-        return 'movieIds'
+    def _get_custom_format_upgrade_records(self, profile_cutoffs: dict[int, int]) -> list[dict]:
+        movies = self._fetch_list(self.ENDPOINT_MOVIE)
+        candidates: dict[int, tuple[dict, int]] = {}
+        for movie in movies:
+            cutoff_score = profile_cutoffs.get(movie.get('qualityProfileId', -1), 0)
+            file_id = movie.get('movieFileId')
+            if cutoff_score > 0 and file_id:
+                candidates[file_id] = (movie, cutoff_score)
+        result: list[dict] = []
+        if candidates:
+            scores = self._fetch_movie_file_scores(list(candidates.keys()))
+            result = [
+                movie for file_id, (movie, cutoff_score) in candidates.items() if scores.get(file_id, 0) < cutoff_score
+            ]
+        return result
 
     @override
     def _get_record_tags(self, record: dict) -> list[int]:
@@ -397,6 +470,11 @@ class RadarrClient(ArrClient):
     def _get_release_date(self, record: dict) -> str:
         return record.get('releaseDate') or ''
 
+    @property
+    @override
+    def _id_field(self) -> str:
+        return 'movieIds'
+
     @override
     def _is_available(self, record: dict) -> bool:
         return record.get('isAvailable', True)
@@ -404,6 +482,10 @@ class RadarrClient(ArrClient):
 
 class SonarrClient(ArrClient):
     """Sonarr API client."""
+
+    ENDPOINT_EPISODE = '/api/v3/episode'
+    ENDPOINT_EPISODE_FILE = '/api/v3/episodefile'
+    ENDPOINT_SERIES = '/api/v3/series'
 
     @property
     @override
@@ -413,6 +495,31 @@ class SonarrClient(ArrClient):
     @override
     def _extra_fetch_params(self) -> dict[str, str]:
         return {'includeSeries': 'true'}
+
+    def _fetch_episode_file_scores(self, series_id: int, cutoff_score: int) -> set[int]:
+        """Return episode file IDs where customFormatScore is below cutoff_score."""
+        episode_files = self._fetch_list(self.ENDPOINT_EPISODE_FILE, {'seriesId': series_id})
+        return {
+            episode_file['id']
+            for episode_file in episode_files
+            if episode_file.get('customFormatScore', 0) < cutoff_score
+        }
+
+    @override
+    def _get_custom_format_upgrade_records(self, profile_cutoffs: dict[int, int]) -> list[dict]:
+        series_list = self._fetch_list(self.ENDPOINT_SERIES)
+        result = []
+        for series in series_list:
+            cutoff_score = profile_cutoffs.get(series.get('qualityProfileId', -1), 0)
+            if cutoff_score > 0:
+                low_score_file_ids = self._fetch_episode_file_scores(series['id'], cutoff_score)
+                if low_score_file_ids:
+                    episodes = self._fetch_list(self.ENDPOINT_EPISODE, {'seriesId': series['id'], 'hasFile': 'true'})
+                    for episode in episodes:
+                        if episode.get('episodeFileId', -1) in low_score_file_ids:
+                            episode['series'] = series
+                            result.append(episode)
+        return result
 
     @override
     def _get_record_tags(self, record: dict) -> list[int]:
@@ -516,9 +623,14 @@ class SonarrClient(ArrClient):
             self._collect_season_pack_records(missing_records, missing_batch_size, 'missing', seen_seasons, True)
 
         if upgrade_batch_size != 0:
-            # Availability check omitted for upgrades (matches base class behaviour).
             upgrade_records = self._fetch_unlimited(self.ENDPOINT_WANTED_CUTOFF)
             self._collect_season_pack_records(upgrade_records, upgrade_batch_size, 'upgrade', seen_seasons, False)
+
+            upgrades_so_far = sum(1 for item in self._season_pack_items if item[2] == 'upgrade')
+            remaining = max(0, upgrade_batch_size - upgrades_so_far) if upgrade_batch_size > 0 else upgrade_batch_size
+            if remaining != 0:
+                supplemental = self._get_custom_format_score_unmet_records()
+                self._collect_season_pack_records(supplemental, remaining, 'upgrade', seen_seasons, False)
 
         return [(series_id, reason, title) for series_id, unused_season, reason, title in self._season_pack_items]
 

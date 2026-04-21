@@ -185,6 +185,13 @@ Target number of upgrade items to search globally per cycle.
 
 When set to a limited value (positive integer), items are distributed across instances based on their `weight` settings. When set to unlimited (`-1`), all instances fetch all available items and weights are ignored.
 
+Upgrade candidates come from two sources each cycle:
+
+1. **Cutoff Unmet** — items reported by *arr's Cutoff Unmet endpoint (quality level below the profile cutoff).
+2. **Custom format score pass** (Radarr and Sonarr only) — items where `customFormatScore` is below the profile's `cutoffFormatScore`. *arr's Cutoff Unmet endpoint silently omits these even though they are eligible for a better release.
+
+Both sources share the same `upgrade_batch_size` budget. Tag filters and `retry_interval_days` apply to both. Lidarr uses only the Cutoff Unmet source.
+
 ```yaml
 global:
   upgrade_batch_size: 10   # Limited to 10 items
@@ -708,7 +715,7 @@ Choosing the right search order depends on your library size and goals:
      LOG_LEVEL: DEBUG
    ```
 
-3. **Verify in *arr UI:** Go to Wanted → Missing/Cutoff Unmet to see what *arr reports.
+3. **Verify in *arr UI:** Go to Wanted → Missing/Cutoff Unmet to see what *arr reports. Note that items eligible only via the custom format score pass will not appear there — they are found by Rangarr separately.
 
 #### Items found but not being searched
 

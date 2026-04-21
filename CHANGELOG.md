@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Upgrade searches now include a supplemental pass for Radarr and Sonarr that finds items where `customFormatScore` is below the profile's `cutoffFormatScore`. *arr's Cutoff Unmet endpoint silently omits these items even though they are eligible for a better release. The supplemental results share the same `upgrade_batch_size` limit, `retry_interval_days`, and tag filters as standard cutoff upgrades. Lidarr is unaffected — the supplemental pass is a no-op for Lidarr instances.
+
 ## [0.5.6] - 2026-04-20
 
 ### Fixed

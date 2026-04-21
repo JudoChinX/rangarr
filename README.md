@@ -28,6 +28,7 @@
 - **Proportional Interleaving:** Balanced searching between missing items and upgrades.
 - **Weighted Distribution:** Prioritize specific instances (e.g., prioritize Movies over Music).
 - **Retry Logic:** Intelligent skip windows for items recently searched.
+- **Custom Format Score Awareness:** Finds Radarr and Sonarr items below their custom format score target — candidates *arr's Cutoff Unmet endpoint silently omits.
 - **No External Connections:** Only communicates with the *arr instances you configure. No telemetry, no phone-home, no external services.
 
 ## Why Rangarr?
