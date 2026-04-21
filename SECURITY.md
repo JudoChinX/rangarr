@@ -30,12 +30,18 @@ The only direct dependencies are [`requests`](https://github.com/psf/requests) a
 Rangarr interacts exclusively with your configured Radarr, Sonarr, and Lidarr instances through their official APIs. Specifically:
 
 **API Endpoints Called:**
-- `GET /api/v3/wanted/missing` (or `/api/v1/wanted/missing` for Lidarr) - Retrieves lists of missing media items (not yet downloaded)
-- `GET /api/v3/wanted/cutoff` (or `/api/v1/wanted/cutoff` for Lidarr) - Retrieves lists of items eligible for quality upgrades
-- `POST /api/v3/command` (or `/api/v1/command` for Lidarr) - Sends search commands (`MoviesSearch` for Radarr, `EpisodeSearch` for Sonarr, `AlbumSearch` for Lidarr)
+- `GET /api/v3/wanted/missing` (or `/api/v1/wanted/missing` for Lidarr) — Retrieves lists of missing media items (not yet downloaded)
+- `GET /api/v3/wanted/cutoff` (or `/api/v1/wanted/cutoff` for Lidarr) — Retrieves lists of items eligible for quality upgrades
+- `GET /api/v3/qualityprofile` (Radarr/Sonarr only) — Reads quality profile definitions to identify cutoff format score thresholds; only called when the supplemental upgrade pass is active
+- `GET /api/v3/movie` (Radarr only) — Reads the full movie list to find custom format score upgrade candidates; only called when profiles have non-zero cutoff format scores
+- `GET /api/v3/moviefile` (Radarr only) — Reads movie file metadata (scores only) to compare against profile cutoffs; batched at 100 IDs per request
+- `GET /api/v3/series` (Sonarr only) — Reads the full series list to find custom format score upgrade candidates; only called when profiles have non-zero cutoff format scores
+- `GET /api/v3/episodefile` (Sonarr only) — Reads episode file metadata (scores only) to compare against profile cutoffs; called once per series with a tracked profile
+- `GET /api/v3/episode` (Sonarr only) — Reads episode list for series where low-scoring files were found; used to map file IDs back to episode records
+- `POST /api/v3/command` (or `/api/v1/command` for Lidarr) — Sends search commands (`MoviesSearch` for Radarr, `EpisodeSearch` or `SeasonSearch` for Sonarr, `AlbumSearch` for Lidarr)
 
 **Data Accessed:**
-- Media metadata only: titles, IDs, air dates, search timestamps
+- Media metadata only: titles, IDs, air dates, search timestamps, quality profile IDs, custom format scores
 - No media files, no user data, no download client information
 - No access to authentication credentials beyond the API keys provided in `config.yaml`
 
