@@ -65,6 +65,139 @@ class _RecordBuilder:
         return self
 
 
+class LidarrRecordBuilder(_RecordBuilder):
+    """Builder for Lidarr API response records."""
+
+    def __init__(self) -> None:
+        """Initialize builder with default Lidarr record."""
+        self._data: dict[str, Any] = {
+            'id': 1,
+            'title': 'Test Album',
+            'artist': {'artistName': 'Test Artist'},
+            'releaseDate': '2020-01-01T00:00:00Z',
+        }
+
+    def not_released(self) -> Self:
+        """Set release date to future (not available)."""
+        self._data['releaseDate'] = '2030-01-01T00:00:00Z'
+        return self
+
+    def released(self) -> Self:
+        """Set release date to past (available)."""
+        self._data['releaseDate'] = '2020-01-01T00:00:00Z'
+        return self
+
+    def with_artist(self, artist_name: str) -> Self:
+        """Set the artist name."""
+        self._data['artist']['artistName'] = artist_name
+        return self
+
+
+class QualityProfileBuilder:
+    """Builder for *arr quality profile API response records."""
+
+    def __init__(self) -> None:
+        """Initialize builder with default quality profile."""
+        self._data: dict[str, Any] = {'id': 1, 'name': 'Test Profile', 'cutoffFormatScore': 0}
+
+    def build(self) -> dict[str, Any]:
+        """Build and return the quality profile dictionary."""
+        return self._data.copy()
+
+    def with_cutoff_score(self, score: int) -> Self:
+        """Set the cutoffFormatScore."""
+        self._data['cutoffFormatScore'] = score
+        return self
+
+    def with_id(self, profile_id: int) -> Self:
+        """Set the profile ID."""
+        self._data['id'] = profile_id
+        return self
+
+    def with_name(self, name: str) -> Self:
+        """Set the profile name."""
+        self._data['name'] = name
+        return self
+
+
+class RadarrMovieFileRecordBuilder:
+    """Builder for Radarr /api/v3/moviefile response records."""
+
+    def __init__(self) -> None:
+        """Initialize builder with default movie file record."""
+        self._data: dict[str, Any] = {
+            'id': 1,
+            'movieId': 1,
+            'customFormatScore': 0,
+        }
+
+    def build(self) -> dict[str, Any]:
+        """Build and return the movie file dictionary."""
+        return self._data.copy()
+
+    def with_id(self, file_id: int) -> Self:
+        """Set the file ID."""
+        self._data['id'] = file_id
+        return self
+
+    def with_movie_id(self, movie_id: int) -> Self:
+        """Set the movie ID."""
+        self._data['movieId'] = movie_id
+        return self
+
+    def with_score(self, score: int) -> Self:
+        """Set the custom format score."""
+        self._data['customFormatScore'] = score
+        return self
+
+
+class RadarrMovieRecordBuilder(_RecordBuilder):
+    """Builder for Radarr /api/v3/movie list response records."""
+
+    def __init__(self) -> None:
+        """Initialize builder with default Radarr movie record."""
+        self._data: dict[str, Any] = {
+            'id': 1,
+            'title': 'Test Movie',
+            'isAvailable': True,
+            'tags': [],
+            'qualityProfileId': 1,
+            'movieFileId': 1,
+            'movieFile': {'customFormatScore': 0},
+        }
+
+    def available(self) -> Self:
+        """Mark movie as available."""
+        self._data['isAvailable'] = True
+        return self
+
+    def unavailable(self) -> Self:
+        """Mark movie as unavailable."""
+        self._data['isAvailable'] = False
+        return self
+
+    def with_movie_file_id(self, file_id: int) -> Self:
+        """Set the movie file ID."""
+        self._data['movieFileId'] = file_id
+        return self
+
+    def with_profile(self, profile_id: int) -> Self:
+        """Set the quality profile ID."""
+        self._data['qualityProfileId'] = profile_id
+        return self
+
+    def with_score(self, score: int) -> Self:
+        """Set the custom format score on the movie file."""
+        self._data['movieFile']['customFormatScore'] = score
+        return self
+
+    def without_movie_file(self) -> Self:
+        """Remove movieFile (simulates a movie with no downloaded file)."""
+        self._data.pop('movieFile', None)
+        self._data['movieFileId'] = 0
+        return self
+
+
 class RadarrRecordBuilder(_RecordBuilder):
     """Builder for Radarr API response records."""
 
@@ -80,6 +213,49 @@ class RadarrRecordBuilder(_RecordBuilder):
     def unavailable(self) -> Self:
         """Mark record as unavailable."""
         self._data['isAvailable'] = False
+        return self
+
+
+class SonarrEpisodeFileRecordBuilder:
+    """Builder for Sonarr /api/v3/episodefile response records."""
+
+    def __init__(self) -> None:
+        """Initialize builder with default episode file record."""
+        self._data: dict[str, Any] = {
+            'id': 1,
+            'seriesId': 1,
+            'seasonNumber': 1,
+            'episodeIds': [1],
+            'customFormatScore': 0,
+        }
+
+    def build(self) -> dict[str, Any]:
+        """Build and return the episode file dictionary."""
+        return self._data.copy()
+
+    def with_episode_ids(self, episode_ids: list[int]) -> Self:
+        """Set the episode IDs covered by this file."""
+        self._data['episodeIds'] = episode_ids
+        return self
+
+    def with_id(self, file_id: int) -> Self:
+        """Set the file ID."""
+        self._data['id'] = file_id
+        return self
+
+    def with_score(self, score: int) -> Self:
+        """Set the custom format score."""
+        self._data['customFormatScore'] = score
+        return self
+
+    def with_season(self, season_number: int) -> Self:
+        """Set the season number."""
+        self._data['seasonNumber'] = season_number
+        return self
+
+    def with_series_id(self, series_id: int) -> Self:
+        """Set the series ID."""
+        self._data['seriesId'] = series_id
         return self
 
 
@@ -113,6 +289,11 @@ class SonarrRecordBuilder(_RecordBuilder):
         self._data['episodeNumber'] = episode
         return self
 
+    def with_episode_file_id(self, file_id: int) -> Self:
+        """Set the episode file ID."""
+        self._data['episodeFileId'] = file_id
+        return self
+
     def with_series(self, series_title: str) -> Self:
         """Set the series title."""
         self._data['series']['title'] = series_title
@@ -134,31 +315,40 @@ class SonarrRecordBuilder(_RecordBuilder):
         return self
 
 
-class LidarrRecordBuilder(_RecordBuilder):
-    """Builder for Lidarr API response records."""
+class SonarrSeriesRecordBuilder:
+    """Builder for Sonarr /api/v3/series list response records."""
 
     def __init__(self) -> None:
-        """Initialize builder with default Lidarr record."""
+        """Initialize builder with default series record."""
         self._data: dict[str, Any] = {
             'id': 1,
-            'title': 'Test Album',
-            'artist': {'artistName': 'Test Artist'},
-            'releaseDate': '2020-01-01T00:00:00Z',
+            'title': 'Test Series',
+            'qualityProfileId': 1,
+            'tags': [],
         }
 
-    def not_released(self) -> Self:
-        """Set release date to future (not available)."""
-        self._data['releaseDate'] = '2030-01-01T00:00:00Z'
+    def build(self) -> dict[str, Any]:
+        """Build and return the series dictionary."""
+        return self._data.copy()
+
+    def with_id(self, series_id: int) -> Self:
+        """Set the series ID."""
+        self._data['id'] = series_id
         return self
 
-    def released(self) -> Self:
-        """Set release date to past (available)."""
-        self._data['releaseDate'] = '2020-01-01T00:00:00Z'
+    def with_profile(self, profile_id: int) -> Self:
+        """Set the quality profile ID."""
+        self._data['qualityProfileId'] = profile_id
         return self
 
-    def with_artist(self, artist_name: str) -> Self:
-        """Set the artist name."""
-        self._data['artist']['artistName'] = artist_name
+    def with_tags(self, tag_ids: list[int]) -> Self:
+        """Set the series tag IDs."""
+        self._data['tags'] = tag_ids
+        return self
+
+    def with_title(self, title: str) -> Self:
+        """Set the series title."""
+        self._data['title'] = title
         return self
 
 
@@ -213,6 +403,18 @@ class ClientBuilder:
         return self
 
 
+def mock_fetch_list_factory(responses: dict[str, list[dict[str, Any]]]) -> Any:
+    """Create mock _fetch_list function routing by endpoint substring."""
+
+    def mock_fetch(endpoint: str, _params: dict[str, str | int | list[int]] | None = None) -> list[dict[str, Any]]:
+        for key, value in responses.items():
+            if key in endpoint:
+                return value
+        return []
+
+    return mock_fetch
+
+
 def mock_fetch_unlimited_factory(missing_records: list[dict], upgrade_records: list[dict]) -> Any:
     """Create mock _fetch_unlimited function for testing."""
 
@@ -235,6 +437,8 @@ def mock_session_get_factory(missing_records: list[dict], upgrade_records: list[
     """Create a session.get mock that routes records by URL and returns empty on page > 1."""
 
     def mock_get(url: str, *_args: Any, **kwargs: Any) -> Any:
+        if 'qualityprofile' in url:
+            return mock_http_response([])
         page = kwargs.get('params', {}).get('page', 1)
         if page > 1:
             records = []

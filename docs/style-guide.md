@@ -89,6 +89,31 @@ id = record['id']
 x = datetime.timedelta(seconds=n * s)
 ```
 
+### Constants — No Magic Numbers or Strings
+
+Bare numeric and string literals used as meaningful values must be assigned a named constant.
+Place class-level constants in alphabetical order.
+
+```python
+# Do (from arr.py)
+class RadarrClient(ArrClient):
+    ENDPOINT_MOVIE = '/api/v3/movie'
+    ENDPOINT_MOVIE_FILE = '/api/v3/moviefile'
+    MOVIE_FILE_BATCH_SIZE = 100
+
+    def _fetch_movie_file_scores(self, file_ids: list[int]) -> dict[int, int]:
+        for batch_start in range(0, len(file_ids), self.MOVIE_FILE_BATCH_SIZE):
+            batch = file_ids[batch_start : batch_start + self.MOVIE_FILE_BATCH_SIZE]
+            ...
+
+
+# Don't — bare literal obscures intent and creates a maintenance hazard
+def _fetch_movie_file_scores(self, file_ids: list[int]) -> dict[int, int]:
+    for idx in range(0, len(file_ids), 100):
+        batch = file_ids[idx : idx + 100]
+        ...
+```
+
 ### Comments
 
 Write comments only when the WHY is non-obvious — a hidden constraint, a workaround, a subtle
@@ -327,12 +352,12 @@ MediaItem = tuple[int, str, str]
 
 ### Self for Fluent Builders
 
-Use `Self` from `typing` for builder return types in class hierarchies — where subclasses need
-to preserve the concrete type through the chain. For non-subclassed concrete builders, a forward
-string reference annotation (`-> 'ClassName'`) is also acceptable and is used by `ClientBuilder`.
+Use `Self` from `typing` for all builder return types — both in class hierarchies and in
+standalone concrete builders. Forward-reference strings (`-> 'ClassName'`) are not acceptable;
+they break under subclassing and are harder to refactor.
 
 ```python
-# Do (from builders.py) — Self preserves the subclass type through the chain
+# Do (from builders.py) — Self works for both base classes and standalone builders
 from typing import Self
 
 
@@ -342,11 +367,8 @@ def with_id(self, record_id: int) -> Self:
     return self
 
 
-# Don't — string annotation on a base class loses the concrete subclass type
-def with_id(
-    self, record_id: int
-) -> '_RecordBuilder':  # RadarrRecordBuilder.with_id() would return _RecordBuilder, not RadarrRecordBuilder
-    ...
+# Don't — string annotation loses the concrete subclass type and is fragile on rename
+def with_id(self, record_id: int) -> 'RadarrMovieFileRecordBuilder': ...
 ```
 
 ### @override
