@@ -45,7 +45,7 @@ To be absolutely clear, Rangarr does not and will never:
 
 ## Architecture Overview
 
-Rangarr is a ~1,224-line Python service with three core modules:
+Rangarr is a ~1,311-line Python service with three core modules:
 
 ```
 rangarr/
@@ -102,8 +102,13 @@ config.yaml → config_parser.py → main.py → ArrClient instances → *arr AP
 **Key Methods:**
 - `get_media_to_search()`: Fetches, sorts, and interleaves missing/upgrade items from wanted endpoints up to the configured batch sizes.
 - `_get_target_media()`: Fetches all records via `_fetch_unlimited()`, sorts them client-side, and applies retry-window and availability filtering.
+- `_get_custom_format_score_unmet_records()`: Orchestrates the supplemental upgrade pass — fetches quality profiles, then delegates to `_get_custom_format_upgrade_records()`.
+- `_get_custom_format_upgrade_records()`: Per-client override that finds items where `customFormatScore` is below the profile's `cutoffFormatScore`. No-op in base class and `LidarrClient`.
+- `_fetch_movie_file_scores()`: Radarr — fetches custom format scores for a list of movie file IDs, batched at 100 IDs per request.
+- `_fetch_episode_file_scores()`: Sonarr — fetches episode file IDs for a series where the score is below the cutoff.
 - `trigger_search()`: Dispatches search commands via POST to `/api/v3/command` (Radarr/Sonarr) or `/api/v1/command` (Lidarr), staggered by `stagger_interval_seconds`.
 - `_fetch_unlimited()`: Low-level paged HTTP fetcher that collects all records across pages (uses requests.Session).
+- `_fetch_list()`: Low-level single-page HTTP fetcher for non-paginated list endpoints.
 - `_sort_records_client_side()`: Sorts fetched records in-place according to `search_order`.
 - `_is_within_retry_window()`: Filters out items searched within `retry_interval_days`.
 
@@ -117,6 +122,12 @@ config.yaml → config_parser.py → main.py → ArrClient instances → *arr AP
 |----------|--------|---------|-----------|------------|
 | `/api/v3/wanted/missing` (Radarr/Sonarr), `/api/v1/wanted/missing` (Lidarr) | GET | Fetch missing items | Per cycle per instance | Read-only |
 | `/api/v3/wanted/cutoff` (Radarr/Sonarr), `/api/v1/wanted/cutoff` (Lidarr) | GET | Fetch upgrade candidates | Per cycle per instance | Read-only |
+| `/api/v3/qualityprofile` (Radarr/Sonarr) | GET | Fetch quality profiles to identify cutoff format score thresholds | Per cycle per instance | Read-only |
+| `/api/v3/movie` (Radarr) | GET | Fetch all movies to find custom format score upgrade candidates | Per cycle when profiles have non-zero cutoff format scores | Read-only |
+| `/api/v3/moviefile` (Radarr) | GET | Fetch movie file scores to compare against profile cutoff | Per cycle when movie candidates exist, batched at 100 IDs | Read-only |
+| `/api/v3/series` (Sonarr) | GET | Fetch all series to find custom format score upgrade candidates | Per cycle when profiles have non-zero cutoff format scores | Read-only |
+| `/api/v3/episodefile` (Sonarr) | GET | Fetch episode file scores to compare against profile cutoff | Per series with a tracked profile, per cycle | Read-only |
+| `/api/v3/episode` (Sonarr) | GET | Fetch episodes with files for series where low-scoring files exist | Per series with low-scoring files, per cycle | Read-only |
 | `/api/v3/command` (Radarr/Sonarr), `/api/v1/command` (Lidarr) | POST | Trigger search command | Per item | **Write** |
 
 **Search Commands Sent:**
@@ -125,7 +136,7 @@ config.yaml → config_parser.py → main.py → ArrClient instances → *arr AP
 - Lidarr: `{"name": "AlbumSearch", "albumIds": [...]}`
 
 **Data Accessed:**
-- Media metadata only: titles, IDs, air dates, search timestamps
+- Media metadata only: titles, IDs, air dates, search timestamps, quality profile IDs, custom format scores
 - No media files, no user data, no download client information
 
 ---
@@ -179,7 +190,7 @@ Rangarr operates entirely within your local network (or wherever you host your *
 
 ### 1. Security Through Simplicity
 
-**Decision:** ~1,195 lines of core Python code, zero external dependencies beyond requests and PyYAML.
+**Decision:** ~1,311 lines of core Python code, zero external dependencies beyond requests and PyYAML.
 
 **Why:** Small codebases are auditable. Every line of code is a potential attack surface. By keeping the codebase minimal, security reviewers can read and understand the entire project in under an hour.
 
@@ -206,7 +217,7 @@ Rangarr operates entirely within your local network (or wherever you host your *
 
 ### 4. Test Coverage as Documentation
 
-**Decision:** 223 tests covering all code paths, including error conditions.
+**Decision:** 250 tests covering all code paths, including error conditions.
 
 **Why:** Tests serve three purposes:
 1. Prevent regressions.
@@ -326,8 +337,8 @@ Both are widely-used, well-maintained libraries with public security disclosure 
 
 - `main.py`: ~288 lines
 - `config_parser.py`: ~361 lines
-- `clients/arr.py`: ~550 lines
-- **Total:** ~1,224 lines of Python (excluding tests/comments)
+- `clients/arr.py`: ~662 lines
+- **Total:** ~1,311 lines of Python (excluding tests/comments)
 
 The small codebase size makes comprehensive security auditing feasible.
 
@@ -338,7 +349,7 @@ The small codebase size makes comprehensive security auditing feasible.
 Don't trust documentation — verify the claims:
 
 1. **Run the tests:** `pytest` — See that security-relevant code is tested.
-2. **Read the code:** Start with `rangarr/main.py` — ~257 lines.
+2. **Read the code:** Start with `rangarr/main.py` — ~288 lines.
 3. **Check the API calls:** Enable `LOG_LEVEL=DEBUG` — Every HTTP request is logged.
 4. **Review dependencies:** `cat requirements.txt` — Two libraries, both standard.
 
