@@ -13,6 +13,7 @@
 [![pytest](https://img.shields.io/badge/tested%20with-pytest-0a9edc)](https://pytest.org)
 [![Docker Scout](https://img.shields.io/badge/docker%20scout-enabled-blue)](https://hub.docker.com/r/judochinx/rangarr)
 [![Architectures](https://img.shields.io/badge/arch-amd64%20%7C%20arm64-blue)](https://hub.docker.com/r/judochinx/rangarr/tags)
+[![Sponsor](https://img.shields.io/badge/Sponsor-JudoChinX-ea4aaa?logo=github-sponsors)](https://github.com/sponsors/JudoChinX)
 
 <p align="center">
   <img src="https://github.com/JudoChinX/unraid-templates/raw/main/assets/rangarr-logo.png" alt="Rangarr Logo">
