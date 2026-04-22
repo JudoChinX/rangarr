@@ -125,7 +125,7 @@ config.yaml → config_parser.py → main.py → ArrClient instances → *arr AP
 | `/api/v3/qualityprofile` (Radarr/Sonarr) | GET | Fetch quality profiles to identify cutoff format score thresholds | Per cycle per instance | Read-only |
 | `/api/v3/movie` (Radarr) | GET | Fetch all movies to find custom format score upgrade candidates | Per cycle when profiles have non-zero cutoff format scores | Read-only |
 | `/api/v3/moviefile` (Radarr) | GET | Fetch movie file scores to compare against profile cutoff | Per cycle when movie candidates exist, batched at 100 IDs | Read-only |
-| `/api/v3/series` (Sonarr) | GET | Fetch all series to find custom format score upgrade candidates | Per cycle when profiles have non-zero cutoff format scores | Read-only |
+| `/api/v3/series` (Sonarr) | GET | Fetch all series — (1) to find custom format score upgrade candidates; (2) to determine season air status when `season_packs: true` | Per cycle per Sonarr instance when either condition applies | Read-only |
 | `/api/v3/episodefile` (Sonarr) | GET | Fetch episode file scores to compare against profile cutoff | Per series with a tracked profile, per cycle | Read-only |
 | `/api/v3/episode` (Sonarr) | GET | Fetch episodes with files for series where low-scoring files exist | Per series with low-scoring files, per cycle | Read-only |
 | `/api/v3/command` (Radarr/Sonarr), `/api/v1/command` (Lidarr) | POST | Trigger search command | Per item | **Write** |

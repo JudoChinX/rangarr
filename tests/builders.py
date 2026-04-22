@@ -341,6 +341,11 @@ class SonarrSeriesRecordBuilder:
         self._data['qualityProfileId'] = profile_id
         return self
 
+    def with_seasons(self, seasons: list[dict]) -> Self:
+        """Set the seasons list."""
+        self._data['seasons'] = seasons
+        return self
+
     def with_tags(self, tag_ids: list[int]) -> Self:
         """Set the series tag IDs."""
         self._data['tags'] = tag_ids
