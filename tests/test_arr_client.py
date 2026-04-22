@@ -717,16 +717,16 @@ def test_get_target_media_modes(
         mock_fetch.assert_not_called()
 
 
-_include_series_param_cases = {
-    'sonarr_sends_include_series': {
+_fetch_extra_params_cases = {
+    'sonarr_sends_include_series_and_monitored': {
         'client_class': 'sonarr',
         'expect_include_series': True,
     },
-    'radarr_omits_include_series': {
+    'radarr_omits_include_series_sends_monitored': {
         'client_class': 'radarr',
         'expect_include_series': False,
     },
-    'lidarr_omits_include_series': {
+    'lidarr_omits_include_series_sends_monitored': {
         'client_class': 'lidarr',
         'expect_include_series': False,
     },
@@ -735,11 +735,11 @@ _include_series_param_cases = {
 
 @pytest.mark.parametrize(
     'client_class, expect_include_series',
-    [(case['client_class'], case['expect_include_series']) for case in _include_series_param_cases.values()],
-    ids=list(_include_series_param_cases.keys()),
+    [(case['client_class'], case['expect_include_series']) for case in _fetch_extra_params_cases.values()],
+    ids=list(_fetch_extra_params_cases.keys()),
 )
-def test_fetch_include_series_param(client_class: str, expect_include_series: bool) -> None:
-    """Test that only SonarrClient sends includeSeries in fetch params."""
+def test_fetch_extra_params(client_class: str, expect_include_series: bool) -> None:
+    """Test that all clients send monitored=true and only Sonarr sends includeSeries."""
     client = _client_map[client_class](
         name='test',
         url='http://test',
@@ -749,6 +749,7 @@ def test_fetch_include_series_param(client_class: str, expect_include_series: bo
 
     def mock_get(_url: str, *_args: Any, **kwargs: Any) -> Any:
         params = kwargs.get('params', {})
+        assert params.get('monitored') == 'true'
         if expect_include_series:
             assert params.get('includeSeries') == 'true'
         else:

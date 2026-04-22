@@ -72,8 +72,8 @@ class ArrClient(ABC):
         return (record_id, reason, title)
 
     def _extra_fetch_params(self) -> dict[str, str]:
-        """Return additional parameters to include in fetch requests."""
-        return {}
+        """Return additional parameters injected into every ``_fetch_unlimited`` request."""
+        return {'monitored': 'true'}
 
     def _fetch_list(self, endpoint: str, params: dict[str, str | int | list[int]] | None = None) -> list[dict]:
         """Fetch all records from a non-paginated list endpoint."""
@@ -494,7 +494,7 @@ class SonarrClient(ArrClient):
 
     @override
     def _extra_fetch_params(self) -> dict[str, str]:
-        return {'includeSeries': 'true'}
+        return {'includeSeries': 'true', 'monitored': 'true'}
 
     def _fetch_episode_file_scores(self, series_id: int, cutoff_score: int) -> set[int]:
         """Return episode file IDs where customFormatScore is below cutoff_score."""
