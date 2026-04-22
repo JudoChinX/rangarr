@@ -239,6 +239,8 @@ global:
 
 When `true`, Sonarr searches are grouped by season. Instead of sending one `EpisodeSearch` command per missing or upgrade-eligible episode, Rangarr sends one `SeasonSearch` command per `(series, season)` pair that has at least one affected episode. This is more efficient when many episodes of the same season are missing.
 
+Rangarr automatically skips seasons that have not yet finished airing — there is no complete season pack to find for an in-progress season.
+
 `missing_batch_size` and `upgrade_batch_size` apply as normal — they limit the number of seasons searched per cycle.
 
 ```yaml

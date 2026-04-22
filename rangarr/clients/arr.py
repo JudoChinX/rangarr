@@ -505,6 +505,20 @@ class SonarrClient(ArrClient):
             if episode_file.get('customFormatScore', 0) < cutoff_score
         }
 
+    def _fetch_season_air_status(self) -> dict[tuple[int, int], str | None]:
+        """Return {(series_id, season_number): nextAiring} for every season across all series."""
+        series_list = self._fetch_list(self.ENDPOINT_SERIES)
+        result: dict[tuple[int, int], str | None] = {}
+        for series in series_list:
+            series_id = series.get('id')
+            for season in series.get('seasons', []):
+                season_number = season.get('seasonNumber')
+                if series_id is None or season_number is None:
+                    continue
+                next_airing = season.get('statistics', {}).get('nextAiring')
+                result[(series_id, season_number)] = next_airing
+        return result
+
     @override
     def _get_custom_format_upgrade_records(self, profile_cutoffs: dict[int, int]) -> list[dict]:
         series_list = self._fetch_list(self.ENDPOINT_SERIES)
@@ -559,6 +573,16 @@ class SonarrClient(ArrClient):
     def _is_available(self, record: dict) -> bool:
         return self._is_date_past(record.get('airDateUtc'))
 
+    def _is_season_still_airing(
+        self,
+        series_id: int,
+        season_number: int,
+        season_air_status: dict[tuple[int, int], str | None],
+    ) -> bool:
+        """Return True if the season has upcoming episodes scheduled; False otherwise (fail open)."""
+        next_airing = season_air_status.get((series_id, season_number))
+        return bool(next_airing and not self._is_date_past(next_airing))
+
     def __init__(
         self,
         name: str,
@@ -587,6 +611,7 @@ class SonarrClient(ArrClient):
         reason: str,
         seen_seasons: set[tuple[int, int]],
         check_availability: bool,
+        season_air_status: dict[tuple[int, int], str | None],
     ) -> None:
         """Collect unique (series, season) pairs from records into _season_pack_items."""
         count = 0
@@ -604,11 +629,17 @@ class SonarrClient(ArrClient):
             if series_id is None or season_number is None:
                 continue
             key = (series_id, season_number)
-            if key not in seen_seasons:
+            if key in seen_seasons:
+                continue
+            if self._is_season_still_airing(series_id, season_number, season_air_status):
                 seen_seasons.add(key)
                 title = self._get_season_title(record, season_number)
-                self._season_pack_items.append((series_id, season_number, reason, title))
-                count += 1
+                logger.debug(f'[{self.name}] Skipping {reason} season pack (still airing): {title}')
+                continue
+            seen_seasons.add(key)
+            title = self._get_season_title(record, season_number)
+            self._season_pack_items.append((series_id, season_number, reason, title))
+            count += 1
 
     @override
     def get_media_to_search(self, missing_batch_size: int, upgrade_batch_size: int) -> list[MediaItem]:
@@ -617,20 +648,27 @@ class SonarrClient(ArrClient):
 
         self._season_pack_items = []
         seen_seasons: set[tuple[int, int]] = set()
+        season_air_status = self._fetch_season_air_status()
 
         if missing_batch_size != 0:
             missing_records = self._fetch_unlimited(self.ENDPOINT_WANTED_MISSING)
-            self._collect_season_pack_records(missing_records, missing_batch_size, 'missing', seen_seasons, True)
+            self._collect_season_pack_records(
+                missing_records, missing_batch_size, 'missing', seen_seasons, True, season_air_status
+            )
 
         if upgrade_batch_size != 0:
             upgrade_records = self._fetch_unlimited(self.ENDPOINT_WANTED_CUTOFF)
-            self._collect_season_pack_records(upgrade_records, upgrade_batch_size, 'upgrade', seen_seasons, False)
+            self._collect_season_pack_records(
+                upgrade_records, upgrade_batch_size, 'upgrade', seen_seasons, False, season_air_status
+            )
 
             upgrades_so_far = sum(1 for item in self._season_pack_items if item[2] == 'upgrade')
             remaining = max(0, upgrade_batch_size - upgrades_so_far) if upgrade_batch_size > 0 else upgrade_batch_size
             if remaining != 0:
                 supplemental = self._get_custom_format_score_unmet_records()
-                self._collect_season_pack_records(supplemental, remaining, 'upgrade', seen_seasons, False)
+                self._collect_season_pack_records(
+                    supplemental, remaining, 'upgrade', seen_seasons, False, season_air_status
+                )
 
         return [(series_id, reason, title) for series_id, unused_season, reason, title in self._season_pack_items]
 
