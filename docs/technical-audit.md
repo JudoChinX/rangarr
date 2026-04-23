@@ -335,10 +335,10 @@ Both are widely-used, well-maintained libraries with public security disclosure 
 
 ## File Sizes
 
-- `main.py`: ~288 lines
+- `main.py`: ~329 lines
 - `config_parser.py`: ~361 lines
-- `clients/arr.py`: ~662 lines
-- **Total:** ~1,311 lines of Python (excluding tests/comments)
+- `clients/arr.py`: ~710 lines
+- **Total:** ~1,400 lines of Python (excluding tests/comments)
 
 The small codebase size makes comprehensive security auditing feasible.
 

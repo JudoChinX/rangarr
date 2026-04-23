@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.1] - 2026-04-23
+
 ### Fixed
 
 - Rangarr now explicitly passes `monitored=true` to the `wanted/missing` and `wanted/cutoff` endpoints for all *arr clients. Some API versions returned unmonitored items by default, causing Rangarr to search for media the user had deliberately unmonitored. (#36)
