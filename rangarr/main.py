@@ -44,6 +44,9 @@ _CLIENT_MAP: dict[str, type[ArrClient]] = {
     'sonarr': SonarrClient,
 }
 
+_MAX_CONNECTION_ATTEMPTS: int = 3
+_RETRY_DELAY_SECONDS: int = 10
+
 _SEARCH_ORDER_LABELS: dict[str, str] = {
     'alphabetical_ascending': 'Alphabetical (Ascending)',
     'alphabetical_descending': 'Alphabetical (Descending)',
@@ -258,10 +261,15 @@ def run() -> None:
         sys.exit(1)
 
     settings = config.get('global_settings', {})
-    active_clients = build_arr_clients(config.get('instances', {}), settings)
+    built_clients = build_arr_clients(config.get('instances', {}), settings)
 
-    if not active_clients:
+    if not built_clients:
         logger.warning("No *arr instances are configured. Add at least one entry under 'instances' to begin.")
+        sys.exit(1)
+
+    active_clients = verify_arr_clients(built_clients)
+    if not active_clients:
+        logger.error('All configured *arr instances failed to connect. Check network connectivity and instance URLs.')
         sys.exit(1)
 
     _log_rangarr_start(active_clients, settings)
@@ -282,6 +290,39 @@ def run() -> None:
         _run_search_cycle(active_clients, settings)
         logger.info(f'--- Cycle complete. Sleeping for {_get_setting(settings, "run_interval_minutes")}m. ---')
         time.sleep(run_interval_seconds)
+
+
+def verify_arr_clients(clients: list[ArrClient]) -> list[ArrClient]:
+    """Verify connectivity to each client, retrying before dropping unreachable ones.
+
+    Args:
+        clients: List of *arr clients to verify.
+
+    Returns:
+        Filtered list of clients that successfully connected within the retry limit.
+    """
+    verified: list[ArrClient] = []
+    for client in clients:
+        connected = False
+        for attempt in range(1, _MAX_CONNECTION_ATTEMPTS + 1):
+            if client.check_connection():
+                if attempt > 1:
+                    logger.info(f'[{client.name}] Connected on attempt {attempt}/{_MAX_CONNECTION_ATTEMPTS}.')
+                connected = True
+                break
+            if attempt < _MAX_CONNECTION_ATTEMPTS:
+                logger.warning(
+                    f'[{client.name}] Connection attempt {attempt}/{_MAX_CONNECTION_ATTEMPTS} failed. '
+                    f'Retrying in {_RETRY_DELAY_SECONDS}s...'
+                )
+                time.sleep(_RETRY_DELAY_SECONDS)
+            else:
+                logger.error(
+                    f'[{client.name}] Could not connect after {_MAX_CONNECTION_ATTEMPTS} attempts. Skipping instance.'
+                )
+        if connected:
+            verified.append(client)
+    return verified
 
 
 if __name__ == '__main__':

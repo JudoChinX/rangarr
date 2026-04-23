@@ -295,9 +295,10 @@ def test_main_run_with_env_config() -> None:
     }
     with mock.patch.dict(os.environ, env, clear=True):
         with mock.patch('rangarr.main._run_search_cycle') as mock_cycle:
-            with mock.patch('time.sleep', side_effect=InterruptedError):
-                with pytest.raises(InterruptedError):
-                    run()
+            with mock.patch('rangarr.main.verify_arr_clients', side_effect=lambda clients: clients):
+                with mock.patch('time.sleep', side_effect=InterruptedError):
+                    with pytest.raises(InterruptedError):
+                        run()
             mock_cycle.assert_called_once()
 
 

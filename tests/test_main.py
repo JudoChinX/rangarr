@@ -15,6 +15,7 @@ from rangarr.main import _calculate_batch
 from rangarr.main import _calculate_eta
 from rangarr.main import _format_batch_info
 from rangarr.main import build_arr_clients
+from rangarr.main import verify_arr_clients
 
 
 @pytest.fixture
@@ -400,6 +401,7 @@ def test_run(
         patch('pathlib.Path.is_file', new=is_file_mock),
         patch('rangarr.main.load_config') as mock_load,
         patch('rangarr.main.build_arr_clients') as mock_build,
+        patch('rangarr.main.verify_arr_clients', side_effect=lambda clients: clients),
     ):
         if load_config_raises == 'FileNotFoundError':
             mock_load.side_effect = FileNotFoundError()
@@ -791,3 +793,118 @@ def test_log_rangarr_start(
     assert expected_missing in caplog.text
     assert expected_upgrade in caplog.text
     assert expected_active_hours in caplog.text
+
+
+_verify_arr_clients_cases = {
+    'all_succeed_first_attempt': {
+        'connection_results': [[True], [True]],
+        'expected_count': 2,
+        'expected_sleep_count': 0,
+        'expected_log_fragments': [],
+    },
+    'one_fails_all_attempts': {
+        'connection_results': [[True], [False, False, False]],
+        'expected_count': 1,
+        'expected_sleep_count': 2,
+        'expected_log_fragments': [
+            'Connection attempt 1/3 failed',
+            'Connection attempt 2/3 failed',
+            'Could not connect after 3 attempts',
+        ],
+    },
+    'one_succeeds_on_second_attempt': {
+        'connection_results': [[False, True]],
+        'expected_count': 1,
+        'expected_sleep_count': 1,
+        'expected_log_fragments': [
+            'Connection attempt 1/3 failed',
+            'Connected on attempt 2/3',
+        ],
+    },
+    'all_fail': {
+        'connection_results': [[False, False, False]],
+        'expected_count': 0,
+        'expected_sleep_count': 2,
+        'expected_log_fragments': [
+            'Connection attempt 1/3 failed',
+            'Connection attempt 2/3 failed',
+            'Could not connect after 3 attempts',
+        ],
+    },
+    'no_clients': {
+        'connection_results': [],
+        'expected_count': 0,
+        'expected_sleep_count': 0,
+        'expected_log_fragments': [],
+    },
+    'succeeds_on_third_attempt': {
+        'connection_results': [[False, False, True]],
+        'expected_count': 1,
+        'expected_sleep_count': 2,
+        'expected_log_fragments': [
+            'Connection attempt 1/3 failed',
+            'Connection attempt 2/3 failed',
+            'Connected on attempt 3/3',
+        ],
+    },
+}
+
+
+@pytest.mark.parametrize(
+    'connection_results, expected_count, expected_sleep_count, expected_log_fragments',
+    [
+        (
+            case['connection_results'],
+            case['expected_count'],
+            case['expected_sleep_count'],
+            case['expected_log_fragments'],
+        )
+        for case in _verify_arr_clients_cases.values()
+    ],
+    ids=list(_verify_arr_clients_cases.keys()),
+)
+def test_verify_arr_clients(
+    connection_results: list[list[bool]],
+    expected_count: int,
+    expected_sleep_count: int,
+    expected_log_fragments: list[str],
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    """Test verify_arr_clients retries and filters clients based on connection results."""
+    clients = []
+    for results in connection_results:
+        client = Mock()
+        client.name = 'test-instance'
+        client.check_connection = Mock(side_effect=results)
+        clients.append(client)
+
+    with caplog.at_level(logging.INFO):
+        with patch('rangarr.main.time.sleep') as mock_sleep:
+            verified = verify_arr_clients(clients)
+
+    assert len(verified) == expected_count
+    assert mock_sleep.call_count == expected_sleep_count
+    if expected_sleep_count > 0:
+        mock_sleep.assert_called_with(10)
+    for fragment in expected_log_fragments:
+        assert fragment in caplog.text
+
+
+def test_run_exits_when_all_clients_fail_connection() -> None:
+    """Test run exits when all clients fail connection verification."""
+    run_client = MagicMock()
+    run_client.name = 'Test'
+    run_client.weight = 1.0
+
+    with (
+        patch('pathlib.Path.is_file', return_value=True),
+        patch('rangarr.main.load_config', return_value=_make_run_config()),
+        patch('rangarr.main.build_arr_clients', return_value=[run_client]),
+        patch('rangarr.main.verify_arr_clients', return_value=[]),
+        pytest.raises(SystemExit) as exc_info,
+    ):
+        from rangarr.main import run
+
+        run()
+
+    assert exc_info.value.code == 1

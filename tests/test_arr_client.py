@@ -1354,3 +1354,46 @@ def test_sonarr_season_pack_supplemental_deduplicates_seen_seasons() -> None:
 
     result_ids = [item_id for item_id, _, _ in results]
     assert result_ids.count(10) == 1
+
+
+_check_connection_cases = {
+    'success': {
+        'raises': None,
+        'expected': True,
+    },
+    'connection_error': {
+        'raises': requests.ConnectionError('Connection refused'),
+        'expected': False,
+    },
+    'http_error': {
+        'raises': requests.HTTPError('401 Unauthorized'),
+        'expected': False,
+    },
+    'timeout': {
+        'raises': requests.Timeout('timed out'),
+        'expected': False,
+    },
+}
+
+
+@pytest.mark.parametrize(
+    'raises, expected',
+    [(case['raises'], case['expected']) for case in _check_connection_cases.values()],
+    ids=list(_check_connection_cases.keys()),
+)
+def test_check_connection(raises: requests.RequestException | None, expected: bool) -> None:
+    """Test check_connection returns True on success and False on any RequestException."""
+    client = ClientBuilder().radarr().build()
+    mock_response = MagicMock()
+    mock_response.raise_for_status.return_value = None
+
+    if raises is not None:
+        client.session.get = MagicMock(side_effect=raises)
+    else:
+        client.session.get = MagicMock(return_value=mock_response)
+
+    assert client.check_connection() == expected
+
+    if raises is None:
+        client.session.get.assert_called_once_with('http://test/api/v3/tag', timeout=15)
+        mock_response.raise_for_status.assert_called_once()

@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Rangarr now explicitly passes `monitored=true` to the `wanted/missing` and `wanted/cutoff` endpoints for all *arr clients. Some API versions returned unmonitored items by default, causing Rangarr to search for media the user had deliberately unmonitored. (#36)
 - Season pack searches now skip seasons that have not finished airing. When `season_packs: true`, Rangarr queries Sonarr for each season's `nextAiring` date and skips any season with upcoming episodes, avoiding pointless searches for incomplete season packs. (#35)
+- Rangarr now retries each configured *arr instance up to 3 times (10 seconds between attempts) on startup before dropping an unreachable instance. Instances that fail all 3 attempts are excluded from the current session; instances that succeed are kept. This prevents a slow-starting Docker container from causing a failed first cycle and a full-interval wait. (#7)
 
 ## [0.6.0] - 2026-04-21
 

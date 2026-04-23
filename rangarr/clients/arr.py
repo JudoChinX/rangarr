@@ -320,6 +320,16 @@ class ArrClient(ABC):
                     f'[{self.name}] Failed to trigger {self._command_name} for {title} (ID: {item_id}): {error}'
                 )
 
+    def check_connection(self) -> bool:
+        """Return True if the tag endpoint is reachable, False on any network error."""
+        url = f'{self.url}{self.ENDPOINT_TAG}'
+        try:
+            response = self.session.get(url, timeout=15)
+            response.raise_for_status()
+            return True
+        except requests.RequestException:
+            return False
+
     def get_media_to_search(self, missing_batch_size: int, upgrade_batch_size: int) -> list[MediaItem]:
         """Build a deduplicated list of missing and upgrade media items to search.
 
