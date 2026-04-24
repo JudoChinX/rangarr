@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- When `season_packs: true`, Rangarr now falls back to individual episode searches for seasons that are still airing, instead of skipping them entirely. Missing or upgrade-eligible episodes in currently airing seasons are searched via `EpisodeSearch` rather than a `SeasonSearch` that would never find a complete pack. (#36)
+
 ## [0.6.1] - 2026-04-23
 
 ### Fixed

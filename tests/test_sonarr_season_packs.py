@@ -523,3 +523,60 @@ def test_sonarr_season_pack_skips_series_with_excluded_tag() -> None:
     item_ids = [item_id for item_id, unused_reason, unused_title in result]
     assert item_ids == [20]
     assert client._season_pack_items == [(20, 1, 'missing', 'Show B - Season 01')]  # pylint: disable=protected-access
+
+
+def test_sonarr_season_pack_falls_back_to_individual_for_airing_season() -> None:
+    """Verify that airing seasons yield individual episodes when season_packs is True."""
+    settings = {'season_packs': True, 'retry_interval_days': 0}
+    client = SonarrClient(
+        name='test',
+        url='http://test',
+        api_key='testkey',
+        settings=settings,
+    )
+
+    missing_records = [
+        SonarrRecordBuilder()
+        .with_id(1)
+        .with_series('Show A')
+        .with_series_id(10)
+        .with_episode(1, 1)
+        .with_title('Test Episode')
+        .aired()
+        .build(),
+    ]
+
+    season_air_status = {(10, 1): '2030-01-01T00:00:00Z'}
+
+    with (
+        patch.object(client, '_fetch_unlimited', return_value=missing_records),
+        patch.object(client, '_fetch_season_air_status', return_value=season_air_status),
+        patch.object(client, '_get_custom_format_score_unmet_records', return_value=[]),
+    ):
+        items = client.get_media_to_search(missing_batch_size=10, upgrade_batch_size=10)
+
+        expected_item = (1, 'missing', 'Show A - S01E01 - Test Episode')
+        assert expected_item in items
+        assert (10, 'missing', 'Show A - Season 01') not in items
+
+
+def test_sonarr_season_pack_trigger_search_handles_mixed_types() -> None:
+    """Verify trigger_search sends SeasonSearch for packs and EpisodeSearch for individuals."""
+    settings = {'season_packs': True, 'stagger_interval_seconds': 0}
+    client = SonarrClient(name='test', url='http://test', api_key='testkey', settings=settings)
+
+    client._season_pack_items = [(10, 1, 'missing', 'Show A - Season 01')]  # pylint: disable=protected-access
+    client._individual_items = [(100, 'missing', 'Show B - S02E01 - Title')]  # pylint: disable=protected-access
+
+    with patch.object(client.session, 'post') as mock_post:
+        mock_post.return_value.status_code = 201
+        client.trigger_search([])
+
+        assert mock_post.call_count == 2
+        first_call_args = mock_post.call_args_list[0]
+        assert first_call_args.args[0] == 'http://test/api/v3/command'
+        assert first_call_args.kwargs['json'] == {'name': 'SeasonSearch', 'seriesId': 10, 'seasonNumber': 1}
+
+        second_call_args = mock_post.call_args_list[1]
+        assert second_call_args.args[0] == 'http://test/api/v3/command'
+        assert second_call_args.kwargs['json'] == {'name': 'EpisodeSearch', 'episodeIds': [100]}
