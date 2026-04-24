@@ -497,6 +497,59 @@ class SonarrClient(ArrClient):
     ENDPOINT_EPISODE_FILE = '/api/v3/episodefile'
     ENDPOINT_SERIES = '/api/v3/series'
 
+    @override
+    def __init__(
+        self,
+        name: str,
+        url: str,
+        api_key: str,
+        settings: dict,
+        weight: float = 1.0,
+    ) -> None:
+        super().__init__(name, url, api_key, settings, weight)
+        self.season_packs: bool = self.settings.get('season_packs', False)
+        self._individual_items: list[MediaItem] = []
+        self._season_pack_items: list[tuple[int, int, str, str]] = []
+
+    def _collect_season_pack_records(
+        self,
+        records: list[dict],
+        batch_size: int,
+        reason: str,
+        seen_seasons: set[tuple[int, int]],
+        check_availability: bool,
+        season_air_status: dict[tuple[int, int], str | None],
+    ) -> None:
+        """Collect unique (series, season) pairs from records into _season_pack_items."""
+        count = 0
+        for record in records:
+            if 0 < batch_size <= count:
+                break
+            if self._is_tag_filtered_out(record):
+                continue
+            if check_availability and not self._is_available(record):
+                continue
+            if self._is_within_retry_window(record):
+                continue
+            series_id = self._get_series_id(record)
+            season_number = self._get_season_number(record)
+            if series_id is None or season_number is None:
+                continue
+            key = (series_id, season_number)
+            if key in seen_seasons:
+                continue
+            if self._is_season_still_airing(series_id, season_number, season_air_status):
+                title = self._get_record_title(record)
+                record_id = record.get('id')
+                if record_id:
+                    self._individual_items.append((record_id, reason, title))
+                    count += 1
+                continue
+            seen_seasons.add(key)
+            title = self._get_season_title(record, season_number)
+            self._season_pack_items.append((series_id, season_number, reason, title))
+            count += 1
+
     @property
     @override
     def _command_name(self) -> str:
@@ -593,69 +646,12 @@ class SonarrClient(ArrClient):
         next_airing = season_air_status.get((series_id, season_number))
         return bool(next_airing and not self._is_date_past(next_airing))
 
-    def __init__(
-        self,
-        name: str,
-        url: str,
-        api_key: str,
-        settings: dict,
-        weight: float = 1.0,
-    ) -> None:
-        """Initialize the Sonarr client.
-
-        Args:
-            name: Human-readable name for the client instance.
-            url: Base URL of the Sonarr service API.
-            api_key: Secret API key for authentication.
-            settings: Dictionary of configuration settings.
-            weight: Relative priority of this client instance.
-        """
-        super().__init__(name, url, api_key, settings, weight)
-        self.season_packs: bool = self.settings.get('season_packs', False)
-        self._season_pack_items: list[tuple[int, int, str, str]] = []
-
-    def _collect_season_pack_records(
-        self,
-        records: list[dict],
-        batch_size: int,
-        reason: str,
-        seen_seasons: set[tuple[int, int]],
-        check_availability: bool,
-        season_air_status: dict[tuple[int, int], str | None],
-    ) -> None:
-        """Collect unique (series, season) pairs from records into _season_pack_items."""
-        count = 0
-        for record in records:
-            if 0 < batch_size <= count:
-                break
-            if self._is_tag_filtered_out(record):
-                continue
-            if check_availability and not self._is_available(record):
-                continue
-            if self._is_within_retry_window(record):
-                continue
-            series_id = self._get_series_id(record)
-            season_number = self._get_season_number(record)
-            if series_id is None or season_number is None:
-                continue
-            key = (series_id, season_number)
-            if key in seen_seasons:
-                continue
-            if self._is_season_still_airing(series_id, season_number, season_air_status):
-                seen_seasons.add(key)
-                title = self._get_season_title(record, season_number)
-                logger.debug(f'[{self.name}] Skipping {reason} season pack (still airing): {title}')
-                continue
-            seen_seasons.add(key)
-            title = self._get_season_title(record, season_number)
-            self._season_pack_items.append((series_id, season_number, reason, title))
-            count += 1
-
     @override
     def get_media_to_search(self, missing_batch_size: int, upgrade_batch_size: int) -> list[MediaItem]:
         if not self.season_packs:
             return super().get_media_to_search(missing_batch_size, upgrade_batch_size)
 
+        self._individual_items = []
         self._season_pack_items = []
         seen_seasons: set[tuple[int, int]] = set()
         season_air_status = self._fetch_season_air_status()
@@ -673,6 +669,7 @@ class SonarrClient(ArrClient):
             )
 
             upgrades_so_far = sum(1 for item in self._season_pack_items if item[2] == 'upgrade')
+            upgrades_so_far += sum(1 for item in self._individual_items if item[1] == 'upgrade')
             remaining = max(0, upgrade_batch_size - upgrades_so_far) if upgrade_batch_size > 0 else upgrade_batch_size
             if remaining != 0:
                 supplemental = self._get_custom_format_score_unmet_records()
@@ -680,7 +677,9 @@ class SonarrClient(ArrClient):
                     supplemental, remaining, 'upgrade', seen_seasons, False, season_air_status
                 )
 
-        return [(series_id, reason, title) for series_id, unused_season, reason, title in self._season_pack_items]
+        return [
+            (series_id, reason, title) for series_id, unused_season, reason, title in self._season_pack_items
+        ] + self._individual_items
 
     @override
     def trigger_search(self, items: list[MediaItem]) -> None:
@@ -705,6 +704,10 @@ class SonarrClient(ArrClient):
                         f'(Series: {series_id}, Season: {season_number}): {error}'
                     )
 
-            if self.stagger_seconds > 0 and index < total:
-                logger.debug(f'[{self.name}] Staggering next search by {self.stagger_seconds}s.')
-                time.sleep(self.stagger_seconds)
+            if index < total or self._individual_items:
+                if self.stagger_seconds > 0:
+                    logger.debug(f'[{self.name}] Staggering next search by {self.stagger_seconds}s.')
+                    time.sleep(self.stagger_seconds)
+
+        if self._individual_items:
+            super().trigger_search(self._individual_items)

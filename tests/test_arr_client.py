@@ -649,7 +649,7 @@ def test_is_season_still_airing(season_air_status: dict, series_id: int, season_
 
 
 _season_pack_unaired_filter_cases = {
-    'missing_path_skips_season_still_airing': {
+    'missing_path_falls_back_to_individual_for_airing_season': {
         'missing_batch_size': 10,
         'upgrade_batch_size': 0,
         'missing_records': [
@@ -664,9 +664,9 @@ _season_pack_unaired_filter_cases = {
         'upgrade_records': [],
         'supplemental_records': [],
         'season_air_status': {(10, 1): '2030-01-01T00:00:00Z'},
-        'expected_ids': [],
+        'expected_ids': [1],
     },
-    'upgrade_path_skips_season_still_airing': {
+    'upgrade_path_falls_back_to_individual_for_airing_season': {
         'missing_batch_size': 0,
         'upgrade_batch_size': 10,
         'missing_records': [],
@@ -681,7 +681,7 @@ _season_pack_unaired_filter_cases = {
         ],
         'supplemental_records': [],
         'season_air_status': {(20, 2): '2030-01-01T00:00:00Z'},
-        'expected_ids': [],
+        'expected_ids': [2],
     },
     'completed_season_is_included': {
         'missing_batch_size': 10,
@@ -700,7 +700,7 @@ _season_pack_unaired_filter_cases = {
         'season_air_status': {(30, 3): None},
         'expected_ids': [30],
     },
-    'supplemental_path_skips_season_still_airing': {
+    'supplemental_path_falls_back_to_individual_for_airing_season': {
         'missing_batch_size': 0,
         'upgrade_batch_size': 10,
         'missing_records': [],
@@ -715,7 +715,7 @@ _season_pack_unaired_filter_cases = {
             .build(),
         ],
         'season_air_status': {(40, 4): '2030-01-01T00:00:00Z'},
-        'expected_ids': [],
+        'expected_ids': [4],
     },
 }
 
@@ -736,7 +736,7 @@ _season_pack_unaired_filter_cases = {
     ],
     ids=list(_season_pack_unaired_filter_cases.keys()),
 )
-def test_season_pack_skips_unaired_seasons(
+def test_season_pack_falls_back_to_individual_for_airing_seasons(
     missing_batch_size: int,
     upgrade_batch_size: int,
     missing_records: list,
@@ -745,7 +745,7 @@ def test_season_pack_skips_unaired_seasons(
     season_air_status: dict,
     expected_ids: list,
 ) -> None:
-    """Test season pack collection skips seasons where nextAiring is in the future."""
+    """Test season pack collection falls back to individual episodes for airing seasons."""
     client = ClientBuilder().sonarr().with_settings(season_packs=True, retry_interval_days=0).build()
 
     def fake_fetch_unlimited(endpoint: str) -> list[dict]:

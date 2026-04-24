@@ -132,7 +132,7 @@ config.yaml → config_parser.py → main.py → ArrClient instances → *arr AP
 
 **Search Commands Sent:**
 - Radarr: `{"name": "MoviesSearch", "movieIds": [...]}`
-- Sonarr: `{"name": "EpisodeSearch", "episodeIds": [...]}` (or `{"name": "SeasonSearch", "seriesId": ..., "seasonNumber": ...}` when `season_packs: true`)
+- Sonarr: `{"name": "EpisodeSearch", "episodeIds": [...]}` (or `{"name": "SeasonSearch", "seriesId": ..., "seasonNumber": ...}` when `season_packs: true`; airing seasons always use `EpisodeSearch` regardless)
 - Lidarr: `{"name": "AlbumSearch", "albumIds": [...]}`
 
 **Data Accessed:**
