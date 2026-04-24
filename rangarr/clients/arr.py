@@ -456,6 +456,8 @@ class RadarrClient(ArrClient):
         movies = self._fetch_list(self.ENDPOINT_MOVIE)
         candidates: dict[int, tuple[dict, int]] = {}
         for movie in movies:
+            if not movie.get('monitored', False):
+                continue
             cutoff_score = profile_cutoffs.get(movie.get('qualityProfileId', -1), 0)
             file_id = movie.get('movieFileId')
             if cutoff_score > 0 and file_id:
@@ -587,12 +589,16 @@ class SonarrClient(ArrClient):
         series_list = self._fetch_list(self.ENDPOINT_SERIES)
         result = []
         for series in series_list:
+            if not series.get('monitored', False):
+                continue
             cutoff_score = profile_cutoffs.get(series.get('qualityProfileId', -1), 0)
             if cutoff_score > 0:
                 low_score_file_ids = self._fetch_episode_file_scores(series['id'], cutoff_score)
                 if low_score_file_ids:
                     episodes = self._fetch_list(self.ENDPOINT_EPISODE, {'seriesId': series['id'], 'hasFile': 'true'})
                     for episode in episodes:
+                        if not episode.get('monitored', False):
+                            continue
                         if episode.get('episodeFileId', -1) in low_score_file_ids:
                             episode['series'] = series
                             result.append(episode)

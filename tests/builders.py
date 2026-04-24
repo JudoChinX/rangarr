@@ -44,6 +44,11 @@ class _RecordBuilder:
         self._data['lastSearchTime'] = (now - datetime.timedelta(days=1)).strftime('%Y-%m-%dT%H:%M:%SZ')
         return self
 
+    def unmonitored(self) -> Self:
+        """Mark record as unmonitored."""
+        self._data['monitored'] = False
+        return self
+
     def with_id(self, record_id: int) -> Self:
         """Set the record ID."""
         self._data['id'] = record_id
@@ -160,6 +165,7 @@ class RadarrMovieRecordBuilder(_RecordBuilder):
             'id': 1,
             'title': 'Test Movie',
             'isAvailable': True,
+            'monitored': True,
             'tags': [],
             'qualityProfileId': 1,
             'movieFileId': 1,
@@ -271,6 +277,7 @@ class SonarrRecordBuilder(_RecordBuilder):
             'seasonNumber': 1,
             'episodeNumber': 1,
             'airDateUtc': '2020-01-01T00:00:00Z',
+            'monitored': True,
         }
 
     def aired(self) -> Self:
@@ -324,12 +331,18 @@ class SonarrSeriesRecordBuilder:
             'id': 1,
             'title': 'Test Series',
             'qualityProfileId': 1,
+            'monitored': True,
             'tags': [],
         }
 
     def build(self) -> dict[str, Any]:
         """Build and return the series dictionary."""
         return self._data.copy()
+
+    def unmonitored(self) -> Self:
+        """Mark series as unmonitored."""
+        self._data['monitored'] = False
+        return self
 
     def with_id(self, series_id: int) -> Self:
         """Set the series ID."""

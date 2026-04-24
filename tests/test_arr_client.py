@@ -1093,12 +1093,14 @@ _radarr_custom_format_cases = {
         ],
         'expected_ids': [1],
     },
-    'skips_movie_without_movie_file': {
+    'skips_movie_at_or_above_cutoff_score': {
         'profile_cutoffs': {1: 100},
         'movies': [
-            RadarrMovieRecordBuilder().with_id(1).with_profile(1).without_movie_file().available().build(),
+            RadarrMovieRecordBuilder().with_id(1).with_profile(1).available().build(),
         ],
-        'movie_files': [],
+        'movie_files': [
+            RadarrMovieFileRecordBuilder().with_id(1).with_score(100).build(),
+        ],
         'expected_ids': [],
     },
     'skips_movie_on_untracked_profile': {
@@ -1109,13 +1111,21 @@ _radarr_custom_format_cases = {
         'movie_files': [],
         'expected_ids': [],
     },
-    'skips_movie_at_or_above_cutoff_score': {
+    'skips_movie_without_movie_file': {
         'profile_cutoffs': {1: 100},
         'movies': [
-            RadarrMovieRecordBuilder().with_id(1).with_profile(1).available().build(),
+            RadarrMovieRecordBuilder().with_id(1).with_profile(1).without_movie_file().available().build(),
+        ],
+        'movie_files': [],
+        'expected_ids': [],
+    },
+    'skips_unmonitored_movie': {
+        'profile_cutoffs': {1: 100},
+        'movies': [
+            RadarrMovieRecordBuilder().with_id(1).with_profile(1).unmonitored().available().build(),
         ],
         'movie_files': [
-            RadarrMovieFileRecordBuilder().with_id(1).with_score(100).build(),
+            RadarrMovieFileRecordBuilder().with_id(1).with_score(50).build(),
         ],
         'expected_ids': [],
     },
@@ -1227,6 +1237,33 @@ def test_sonarr_supplemental_finds_episode_with_low_score_file() -> None:
     assert [rec['id'] for rec in result] == [100]
 
 
+def test_sonarr_supplemental_injects_series_into_episode_record() -> None:
+    """Test SonarrClient._get_custom_format_upgrade_records injects series data into returned episodes."""
+    client = ClientBuilder().sonarr().build()
+    profile_cutoffs = {1: 100}
+    series_list = [SonarrSeriesRecordBuilder().with_id(1).with_profile(1).with_title('My Show').build()]
+    episode_files = [
+        SonarrEpisodeFileRecordBuilder().with_id(10).with_series_id(1).with_score(0).with_episode_ids([100]).build(),
+    ]
+    episodes = [
+        SonarrRecordBuilder()
+        .with_id(100)
+        .with_series('My Show')
+        .with_series_id(1)
+        .with_episode(1, 1)
+        .aired()
+        .with_episode_file_id(10)
+        .build(),
+    ]
+    mock_fetch = mock_fetch_list_factory({'episodefile': episode_files, 'episode': episodes, 'series': series_list})
+
+    with patch.object(client, '_fetch_list', side_effect=mock_fetch):
+        result = client._get_custom_format_upgrade_records(profile_cutoffs)  # pylint: disable=protected-access
+
+    assert result[0]['series']['id'] == 1
+    assert result[0]['series']['title'] == 'My Show'
+
+
 def test_sonarr_supplemental_skips_series_on_untracked_profile() -> None:
     """Test SonarrClient._get_custom_format_upgrade_records skips series with untracked profiles."""
     client = ClientBuilder().sonarr().build()
@@ -1258,18 +1295,47 @@ def test_sonarr_supplemental_skips_series_when_all_files_meet_cutoff() -> None:
     assert result == []
 
 
-def test_sonarr_supplemental_injects_series_into_episode_record() -> None:
-    """Test SonarrClient._get_custom_format_upgrade_records injects series data into returned episodes."""
-    client = ClientBuilder().sonarr().build()
+def test_sonarr_supplemental_skips_unmonitored_episodes() -> None:
+    """Test SonarrClient._get_custom_format_upgrade_records skips unmonitored episodes."""
+    client = ClientBuilder().sonarr().with_settings(retry_interval_days=0).build()
     profile_cutoffs = {1: 100}
-    series_list = [SonarrSeriesRecordBuilder().with_id(1).with_profile(1).with_title('My Show').build()]
+    series_list = [SonarrSeriesRecordBuilder().with_id(1).with_profile(1).with_title('Test Series').build()]
     episode_files = [
-        SonarrEpisodeFileRecordBuilder().with_id(10).with_series_id(1).with_score(0).with_episode_ids([100]).build(),
+        SonarrEpisodeFileRecordBuilder().with_id(10).with_series_id(1).with_score(50).with_episode_ids([100]).build(),
     ]
     episodes = [
         SonarrRecordBuilder()
         .with_id(100)
-        .with_series('My Show')
+        .with_series('Test Series')
+        .with_series_id(1)
+        .with_episode(1, 1)
+        .aired()
+        .with_episode_file_id(10)
+        .unmonitored()
+        .build(),
+    ]
+    mock_fetch = mock_fetch_list_factory({'episodefile': episode_files, 'episode': episodes, 'series': series_list})
+
+    with patch.object(client, '_fetch_list', side_effect=mock_fetch):
+        result = client._get_custom_format_upgrade_records(profile_cutoffs)  # pylint: disable=protected-access
+
+    assert [rec['id'] for rec in result] == []
+
+
+def test_sonarr_supplemental_skips_unmonitored_series() -> None:
+    """Test SonarrClient._get_custom_format_upgrade_records skips unmonitored series."""
+    client = ClientBuilder().sonarr().with_settings(retry_interval_days=0).build()
+    profile_cutoffs = {1: 100}
+    series_list = [
+        SonarrSeriesRecordBuilder().with_id(1).with_profile(1).with_title('Test Series').unmonitored().build()
+    ]
+    episode_files = [
+        SonarrEpisodeFileRecordBuilder().with_id(10).with_series_id(1).with_score(50).with_episode_ids([100]).build(),
+    ]
+    episodes = [
+        SonarrRecordBuilder()
+        .with_id(100)
+        .with_series('Test Series')
         .with_series_id(1)
         .with_episode(1, 1)
         .aired()
@@ -1281,8 +1347,7 @@ def test_sonarr_supplemental_injects_series_into_episode_record() -> None:
     with patch.object(client, '_fetch_list', side_effect=mock_fetch):
         result = client._get_custom_format_upgrade_records(profile_cutoffs)  # pylint: disable=protected-access
 
-    assert result[0]['series']['id'] == 1
-    assert result[0]['series']['title'] == 'My Show'
+    assert [rec['id'] for rec in result] == []
 
 
 def test_sonarr_season_pack_supplemental_appended_to_items() -> None:

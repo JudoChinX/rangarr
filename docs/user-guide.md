@@ -190,6 +190,8 @@ Upgrade candidates come from two sources each cycle:
 1. **Cutoff Unmet** — items reported by *arr's Cutoff Unmet endpoint (quality level below the profile cutoff).
 2. **Custom format score pass** (Radarr and Sonarr only) — items where `customFormatScore` is below the profile's `cutoffFormatScore`. *arr's Cutoff Unmet endpoint silently omits these even though they are eligible for a better release.
 
+In both passes, only items marked as **monitored** in *arr are considered.
+
 Both sources share the same `upgrade_batch_size` budget. Tag filters and `retry_interval_days` apply to both. Lidarr uses only the Cutoff Unmet source.
 
 ```yaml

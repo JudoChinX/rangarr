@@ -103,7 +103,7 @@ config.yaml → config_parser.py → main.py → ArrClient instances → *arr AP
 - `get_media_to_search()`: Fetches, sorts, and interleaves missing/upgrade items from wanted endpoints up to the configured batch sizes.
 - `_get_target_media()`: Fetches all records via `_fetch_unlimited()`, sorts them client-side, and applies retry-window and availability filtering.
 - `_get_custom_format_score_unmet_records()`: Orchestrates the supplemental upgrade pass — fetches quality profiles, then delegates to `_get_custom_format_upgrade_records()`.
-- `_get_custom_format_upgrade_records()`: Per-client override that finds items where `customFormatScore` is below the profile's `cutoffFormatScore`. No-op in base class and `LidarrClient`.
+- `_get_custom_format_upgrade_records()`: Per-client override that finds items where `customFormatScore` is below the profile's `cutoffFormatScore`. Monitored status is enforced for all records (movies, series, and episodes) before scoring. No-op in base class and `LidarrClient`.
 - `_fetch_movie_file_scores()`: Radarr — fetches custom format scores for a list of movie file IDs, batched at 100 IDs per request.
 - `_fetch_episode_file_scores()`: Sonarr — fetches episode file IDs for a series where the score is below the cutoff.
 - `trigger_search()`: Dispatches search commands via POST to `/api/v3/command` (Radarr/Sonarr) or `/api/v1/command` (Lidarr), staggered by `stagger_interval_seconds`.
@@ -120,14 +120,14 @@ config.yaml → config_parser.py → main.py → ArrClient instances → *arr AP
 
 | Endpoint | Method | Purpose | Frequency | Read/Write |
 |----------|--------|---------|-----------|------------|
-| `/api/v3/wanted/missing` (Radarr/Sonarr), `/api/v1/wanted/missing` (Lidarr) | GET | Fetch missing items | Per cycle per instance | Read-only |
-| `/api/v3/wanted/cutoff` (Radarr/Sonarr), `/api/v1/wanted/cutoff` (Lidarr) | GET | Fetch upgrade candidates | Per cycle per instance | Read-only |
+| `/api/v3/wanted/missing` (Radarr/Sonarr), `/api/v1/wanted/missing` (Lidarr) | GET | Fetch missing items (`monitored=true`) | Per cycle per instance | Read-only |
+| `/api/v3/wanted/cutoff` (Radarr/Sonarr), `/api/v1/wanted/cutoff` (Lidarr) | GET | Fetch upgrade candidates (`monitored=true`) | Per cycle per instance | Read-only |
 | `/api/v3/qualityprofile` (Radarr/Sonarr) | GET | Fetch quality profiles to identify cutoff format score thresholds | Per cycle per instance | Read-only |
-| `/api/v3/movie` (Radarr) | GET | Fetch all movies to find custom format score upgrade candidates | Per cycle when profiles have non-zero cutoff format scores | Read-only |
+| `/api/v3/movie` (Radarr) | GET | Fetch movies to find upgrade candidates (skips unmonitored) | Per cycle when profiles have non-zero cutoff format scores | Read-only |
 | `/api/v3/moviefile` (Radarr) | GET | Fetch movie file scores to compare against profile cutoff | Per cycle when movie candidates exist, batched at 100 IDs | Read-only |
-| `/api/v3/series` (Sonarr) | GET | Fetch all series — (1) to find custom format score upgrade candidates; (2) to determine season air status when `season_packs: true` | Per cycle per Sonarr instance when either condition applies | Read-only |
+| `/api/v3/series` (Sonarr) | GET | Fetch series — find upgrade candidates (skips unmonitored); determine air status | Per cycle per Sonarr instance when either condition applies | Read-only |
 | `/api/v3/episodefile` (Sonarr) | GET | Fetch episode file scores to compare against profile cutoff | Per series with a tracked profile, per cycle | Read-only |
-| `/api/v3/episode` (Sonarr) | GET | Fetch episodes with files for series where low-scoring files exist | Per series with low-scoring files, per cycle | Read-only |
+| `/api/v3/episode` (Sonarr) | GET | Fetch episodes with files (skips unmonitored) | Per series with low-scoring files, per cycle | Read-only |
 | `/api/v3/command` (Radarr/Sonarr), `/api/v1/command` (Lidarr) | POST | Trigger search command | Per item | **Write** |
 
 **Search Commands Sent:**
