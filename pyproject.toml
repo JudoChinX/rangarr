@@ -99,5 +99,8 @@ skips = []
 
 [tool.pytest.ini_options]
 pythonpath = ["."]
-addopts = "--cov=rangarr --cov-fail-under=95"
+addopts = "--cov=rangarr --cov-fail-under=95 -n auto"
+filterwarnings = [
+    "error",
+]
 

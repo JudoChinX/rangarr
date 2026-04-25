@@ -58,7 +58,7 @@ jobs:
         run: pip-audit -r requirements.txt
 
       - name: pytest
-        run: pytest tests/ -v
+        run: pytest
 
   release:
     needs: tests_and_quality

@@ -486,8 +486,31 @@ if not active_clients:
 
 ## Testing
 
-### Case Dict + Parametrize Pattern
+### Core Principles
 
+#### 1. Absolute Isolation
+Tests must be isolated from the environment. The root `tests/conftest.py` enforces this via `autouse` fixtures:
+- **Network:** Real network calls are blocked. Unmocked calls raise `UnmockedNetworkError`.
+- **Time:** System time is pinned to a constant (`FIXED_NOW`), and `time.sleep` is a no-op.
+
+#### 2. Determinism
+Tests must produce the same result regardless of the machine or time. Normalize all volatile outputs (UUIDs, paths, timestamps) before assertion.
+
+#### 3. Tiered Structure
+Separate fast logic tests from broader integration flows:
+- `rangarr/**`: Unit tests adjacent to source code (e.g., `rangarr/test_config_parser.py`, `rangarr/clients/test_radarr.py`). Fast, isolated tests for individual modules.
+- `tests/integration/`: Cross-module tests verifying interactions between components.
+- `tests/system/`: End-to-end tests using realistic API fixtures.
+
+### Standards & Strictness
+
+- **Warnings as Errors:** All Python warnings are treated as hard failures (`filterwarnings = error` in `pyproject.toml`).
+- **Coverage:** A 95% coverage floor is enforced. Every branch must be tested.
+- **No Side Effects:** Tests must not modify the local filesystem (outside of `tmp_path`) or environment variables.
+
+### Patterns
+
+#### Case Dict + Parametrize Pattern
 Test data lives in a module-level dict named `_<function>_cases`. Dict keys become the
 parametrize `ids`. Test functions receive unpacked values, not the dict itself.
 
@@ -504,12 +527,6 @@ _calculate_batch_cases = {
         'weight_share': 0.0,
         'expected': 1,
     },
-    'unlimited': {
-        'global_batch': -1,
-        'weight_share': 0.5,
-        'expected': -1,
-    },
-    # ... additional cases follow the same pattern
 }
 
 
@@ -521,22 +538,9 @@ _calculate_batch_cases = {
 def test_calculate_batch(global_batch: int, weight_share: float, expected: int) -> None:
     """Test _calculate_batch distributes appropriately and bounds to minimum 1 when global > 0."""
     assert _calculate_batch(global_batch, weight_share) == expected
-
-
-# Don't — data inlined in parametrize, no ids
-@pytest.mark.parametrize(
-    'global_batch, weight_share, expected',
-    [
-        (20, 1.0, 20),
-        (20, 0.0, 1),
-    ],
-)
-def test_calculate_batch(global_batch, weight_share, expected):
-    assert _calculate_batch(global_batch, weight_share) == expected
 ```
 
-### Builder Pattern
-
+#### Builder Pattern
 Use builders from `tests/builders.py` to construct test objects. Extend `tests/builders.py`
 when you need a new builder — do not inline raw dicts in tests.
 
@@ -547,85 +551,30 @@ from tests.builders import RadarrRecordBuilder
 
 client = ClientBuilder().radarr().with_settings(search_order='alphabetical_ascending').build()
 record = RadarrRecordBuilder().with_id(42).with_title('Test Movie').available().build()
-
-# Don't — inline construction
-client = RadarrClient(name='test', url='http://test', api_key='key', settings={})
-record = {'id': 42, 'title': 'Test Movie', 'isAvailable': True}
 ```
 
-### Test Function Naming
+### Conventions
 
-- Standalone test: `test_<function>_<scenario>`
-- Parametrized test: `test_<function>` (the case dict key serves as the scenario id)
+#### Naming
+- **Files:** `test_<module>.py` either adjacent to source (`rangarr/test_<module>.py`) for unit tests, or inside `tests/integration/` or `tests/system/` for broader tests.
+- **Standalone test:** `test_<function>_<scenario>`.
+- **Parametrized test:** `test_<function>` (the case dict key serves as the scenario id).
 
-```python
-# Do
-def test_run_search_cycle_both_disabled(...): ...  # standalone
-def test_calculate_batch(...): ...                 # parametrized — scenario from case key
+#### Fixtures
+Declare fixtures with `@pytest.fixture` at the top of the test file. Use `tests/conftest.py` for shared or global safety fixtures.
 
-# Don't
-def test_1(...): ...
-def test_calculate_batch_full_share_case(...): ... # scenario already in the id
-```
-
-### Fixtures
-
-Declare fixtures with `@pytest.fixture` at the top of the test file, before the first test.
-For fixtures shared across files, use `tests/conftest.py`.
-
-```python
-# Do (from test_main.py)
-@pytest.fixture
-def mock_client() -> Mock:
-    """Create a mock ArrClient for testing."""
-    client = Mock()
-    client.name = 'test-instance'
-    client.weight = 1.0
-    client.get_media_to_search = Mock(return_value=[])
-    client.trigger_search = Mock()
-    return client
-```
-
-### Log Assertions
-
+#### Log Assertions
 Assert log output via `caplog` with an explicit log level.
 
 ```python
 # Do (from test_main.py)
-def test_run_search_cycle_both_disabled(mock_client: Mock, caplog: pytest.LogCaptureFixture) -> None:
-    """Test that search cycle skips instance when both batch types disabled."""
-    settings = {'missing_batch_size': 0, 'upgrade_batch_size': 0, 'stagger_interval_seconds': 30}
-    with caplog.at_level(logging.INFO):
-        _run_search_cycle([mock_client], settings)
-    assert 'Missing and upgrade items disabled, skipping' in caplog.text
-
-
-# Don't — no level specified
-def test_logs_warning(caplog):
-    run_thing()
-    assert 'something' in caplog.text
+with caplog.at_level(logging.INFO):
+    _run_search_cycle([mock_client], settings)
+assert 'Missing and upgrade items disabled, skipping' in caplog.text
 ```
 
-### Test Data
-
-No identifying information in test data. Use generic placeholders.
-
-```python
-# Do
-name = 'test'
-url = 'http://test'
-api_key = 'testkey'
-
-# Don't
-name = 'My Radarr'
-url = 'http://192.168.1.50:7878'
-api_key = 'abc123realkey'
-```
-
-### Coverage
-
-The 95% coverage floor is enforced by Pytest (`--cov-fail-under=95`). Every new function or
-branch requires a corresponding test.
+#### Generic Data
+No identifying information in test data. Use generic placeholders: `name = 'test'`, `url = 'http://test'`, `api_key = 'testkey'`.
 
 ---
 

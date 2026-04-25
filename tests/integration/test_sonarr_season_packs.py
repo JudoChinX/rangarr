@@ -10,6 +10,7 @@ import requests
 
 from rangarr.clients.arr import SonarrClient
 from tests.builders import SonarrRecordBuilder
+from tests.builders import mock_http_response
 
 _season_pack_get_media_cases = {
     'season_packs_disabled_delegates_to_base': {
@@ -395,6 +396,7 @@ def test_sonarr_season_pack_get_media_to_search(
 ) -> None:
     """Test SonarrClient.get_media_to_search season pack path."""
     client = SonarrClient(name='test', url='http://test', api_key='testkey', settings=settings)
+    client.session.get = MagicMock(return_value=mock_http_response([]))
 
     def mock_fetch_unlimited(endpoint: str) -> list[dict]:
         if 'missing' in endpoint:
@@ -511,6 +513,8 @@ def test_sonarr_season_pack_skips_series_with_excluded_tag() -> None:
         .build(),
         SonarrRecordBuilder().with_id(2).with_series('Show B').with_series_id(20).with_episode(1, 1).aired().build(),
     ]
+
+    client.session.get = MagicMock(return_value=mock_http_response([]))
 
     def mock_fetch_unlimited(endpoint: str) -> list[dict]:
         if 'missing' in endpoint:
