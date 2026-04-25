@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.2] - 2026-04-25
+
 ### Fixed
 
 - The supplemental upgrade pass now skips unmonitored items. Unmonitored movies, series, and individual episodes are excluded before scoring, matching the behavior already applied to the `wanted/cutoff` and `wanted/missing` passes. (#36)

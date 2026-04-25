@@ -4,7 +4,7 @@ This document reflects the current direction of Rangarr. No dates are attached �
 
 ## Planned
 
-- **Season pack threshold** — search as a season pack only when a minimum number or ratio of episodes in a season are missing, falling back to individual episode searches otherwise.
+- **Season pack threshold** — search as a season pack only when a minimum number or ratio of episodes in a season are missing, falling back to individual episode searches otherwise. (Airing season fallback implemented in v0.6.2).
 - **Whisparr v3 support**
 - **Readarr support**
 
