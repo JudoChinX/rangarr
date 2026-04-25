@@ -94,4 +94,4 @@ def test_full_search_cycle_with_radarr(caplog: pytest.LogCaptureFixture) -> None
 
     assert len(clients) == 1
     assert '--- Starting search cycle ---' in caplog.text
-    assert 'Triggering search' in caplog.text
+    assert 'Searching' in caplog.text

@@ -63,7 +63,7 @@ _season_pack_get_media_cases = {
             (10, 1, 'missing', 'Show A - Season 01'),
             (10, 2, 'missing', 'Show A - Season 02'),
         ],
-        'expected_media_item_ids': [10, 10],
+        'expected_media_item_ids': [(10, 1), (10, 2)],
         'expected_fetch_call_count': None,
     },
     'deduplicates_same_season_across_missing_and_upgrade': {
@@ -91,7 +91,7 @@ _season_pack_get_media_cases = {
         'expected_season_pack_items': [
             (10, 1, 'missing', 'Show A - Season 01'),
         ],
-        'expected_media_item_ids': [10],
+        'expected_media_item_ids': [(10, 1)],
         'expected_fetch_call_count': None,
     },
     'skips_unavailable_episodes': {
@@ -188,7 +188,7 @@ _season_pack_get_media_cases = {
             (10, 1, 'missing', 'Show A - Season 01'),
             (20, 2, 'upgrade', 'Show B - Season 02'),
         ],
-        'expected_media_item_ids': [10, 20],
+        'expected_media_item_ids': [(10, 1), (20, 2)],
         'expected_fetch_call_count': None,
     },
     'missing_disabled_skips_missing': {
@@ -216,7 +216,7 @@ _season_pack_get_media_cases = {
         'expected_season_pack_items': [
             (20, 1, 'upgrade', 'Show B - Season 01'),
         ],
-        'expected_media_item_ids': [20],
+        'expected_media_item_ids': [(20, 1)],
         'expected_fetch_call_count': 1,
     },
     'upgrade_disabled_skips_upgrades': {
@@ -244,7 +244,7 @@ _season_pack_get_media_cases = {
         'expected_season_pack_items': [
             (10, 1, 'missing', 'Show A - Season 01'),
         ],
-        'expected_media_item_ids': [10],
+        'expected_media_item_ids': [(10, 1)],
         'expected_fetch_call_count': 1,
     },
     'both_disabled_returns_empty': {
@@ -297,7 +297,7 @@ _season_pack_get_media_cases = {
         'expected_season_pack_items': [
             (10, 1, 'missing', 'Show A - Season 01'),
         ],
-        'expected_media_item_ids': [10],
+        'expected_media_item_ids': [(10, 1)],
         'expected_fetch_call_count': None,
     },
     'upgrade_batch_size_limits_upgrade_seasons': {
@@ -324,7 +324,7 @@ _season_pack_get_media_cases = {
         'expected_season_pack_items': [
             (10, 1, 'upgrade', 'Show A - Season 01'),
         ],
-        'expected_media_item_ids': [10],
+        'expected_media_item_ids': [(10, 1)],
         'expected_fetch_call_count': None,
     },
     'unlimited_batch_size_collects_all_seasons': {
@@ -361,7 +361,7 @@ _season_pack_get_media_cases = {
             (10, 2, 'missing', 'Show A - Season 02'),
             (20, 1, 'upgrade', 'Show B - Season 01'),
         ],
-        'expected_media_item_ids': [10, 10, 20],
+        'expected_media_item_ids': [(10, 1), (10, 2), (20, 1)],
         'expected_fetch_call_count': None,
     },
 }
@@ -408,7 +408,7 @@ def test_sonarr_season_pack_get_media_to_search(
             missing_batch_size=missing_batch_size, upgrade_batch_size=upgrade_batch_size
         )
 
-    assert [item_id for item_id, unused_reason, unused_title in result] == expected_media_item_ids
+    assert [item[0] for item in result] == expected_media_item_ids
     assert client._season_pack_items == expected_season_pack_items  # pylint: disable=protected-access
     if expected_fetch_call_count is not None:
         assert mock_fetch.call_count == expected_fetch_call_count
@@ -422,13 +422,12 @@ def test_sonarr_season_pack_trigger_search_posts_correct_payload() -> None:
         api_key='testkey',
         settings={'season_packs': True, 'stagger_interval_seconds': 0},
     )
-    client._season_pack_items = [(10, 1, 'missing', 'Show A - Season 01')]  # pylint: disable=protected-access
 
     mock_resp = MagicMock()
     mock_resp.raise_for_status.return_value = None
     client.session.post = MagicMock(return_value=mock_resp)
 
-    client.trigger_search([(10, 'missing', 'Show A - Season 01')])
+    client.trigger_search([((10, 1), 'missing', 'Show A - Season 01')])
 
     client.session.post.assert_called_once()
     call_args = client.session.post.call_args
@@ -444,10 +443,9 @@ def test_sonarr_season_pack_trigger_search_handles_request_exception() -> None:
         api_key='testkey',
         settings={'season_packs': True, 'stagger_interval_seconds': 0},
     )
-    client._season_pack_items = [(10, 1, 'missing', 'Show A - Season 01')]  # pylint: disable=protected-access
     client.session.post = MagicMock(side_effect=requests.RequestException('timeout'))
 
-    client.trigger_search([(10, 'missing', 'Show A - Season 01')])
+    client.trigger_search([((10, 1), 'missing', 'Show A - Season 01')])
 
     client.session.post.assert_called_once()
 
@@ -460,11 +458,10 @@ def test_sonarr_season_pack_trigger_search_dry_run(caplog: pytest.LogCaptureFixt
         api_key='testkey',
         settings={'season_packs': True, 'stagger_interval_seconds': 0, 'dry_run': True},
     )
-    client._season_pack_items = [(10, 1, 'missing', 'Show A - Season 01')]  # pylint: disable=protected-access
     client.session.post = MagicMock()
 
     with caplog.at_level(logging.INFO):
-        client.trigger_search([(10, 'missing', 'Show A - Season 01')])
+        client.trigger_search([((10, 1), 'missing', 'Show A - Season 01')])
 
     client.session.post.assert_not_called()
     assert 'DRY RUN' in caplog.text
@@ -478,16 +475,12 @@ def test_sonarr_season_pack_trigger_search_applies_stagger_between_items() -> No
         api_key='testkey',
         settings={'season_packs': True, 'stagger_interval_seconds': 5},
     )
-    client._season_pack_items = [  # pylint: disable=protected-access
-        (10, 1, 'missing', 'Show A - Season 01'),
-        (10, 2, 'missing', 'Show A - Season 02'),
-    ]
     mock_resp = MagicMock()
     mock_resp.raise_for_status.return_value = None
     client.session.post = MagicMock(return_value=mock_resp)
 
     with patch('time.sleep') as mock_sleep:
-        client.trigger_search([(10, 'missing', 'Show A - Season 01'), (10, 'missing', 'Show A - Season 02')])
+        client.trigger_search([((10, 1), 'missing', 'Show A - Season 01'), ((10, 2), 'missing', 'Show A - Season 02')])
 
     mock_sleep.assert_called_once_with(5)
 
@@ -524,8 +517,8 @@ def test_sonarr_season_pack_skips_series_with_excluded_tag() -> None:
     with patch.object(client, '_fetch_unlimited', side_effect=mock_fetch_unlimited):
         result = client.get_media_to_search(missing_batch_size=10, upgrade_batch_size=10)
 
-    item_ids = [item_id for item_id, unused_reason, unused_title in result]
-    assert item_ids == [20]
+    item_ids = [item[0] for item in result]
+    assert item_ids == [(20, 1)]
     assert client._season_pack_items == [(20, 1, 'missing', 'Show B - Season 01')]  # pylint: disable=protected-access
 
 
@@ -561,7 +554,7 @@ def test_sonarr_season_pack_falls_back_to_individual_for_airing_season() -> None
 
         expected_item = (1, 'missing', 'Show A - S01E01 - Test Episode')
         assert expected_item in items
-        assert (10, 'missing', 'Show A - Season 01') not in items
+        assert ((10, 1), 'missing', 'Show A - Season 01') not in items
 
 
 def test_sonarr_season_pack_trigger_search_handles_mixed_types() -> None:
@@ -569,12 +562,16 @@ def test_sonarr_season_pack_trigger_search_handles_mixed_types() -> None:
     settings = {'season_packs': True, 'stagger_interval_seconds': 0}
     client = SonarrClient(name='test', url='http://test', api_key='testkey', settings=settings)
 
-    client._season_pack_items = [(10, 1, 'missing', 'Show A - Season 01')]  # pylint: disable=protected-access
-    client._individual_items = [(100, 'missing', 'Show B - S02E01 - Title')]  # pylint: disable=protected-access
+    items = [
+        ((10, 1), 'missing', 'Show A - Season 01'),
+        (100, 'missing', 'Show B - S02E01 - Title'),
+    ]
 
     with patch.object(client.session, 'post') as mock_post:
-        mock_post.return_value.status_code = 201
-        client.trigger_search([])
+        mock_resp = MagicMock()
+        mock_resp.status_code = 201
+        mock_post.return_value = mock_resp
+        client.trigger_search(items)
 
         assert mock_post.call_count == 2
         first_call_args = mock_post.call_args_list[0]

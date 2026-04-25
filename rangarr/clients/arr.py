@@ -6,13 +6,14 @@ import random
 import time
 from abc import ABC
 from abc import abstractmethod
+from typing import Any
 from typing import override
 
 import requests
 
 logger = logging.getLogger(__name__)
 
-type MediaItem = tuple[int, str, str]
+type MediaItem = tuple[Any, str, str]
 
 
 class ArrClient(ABC):
@@ -206,14 +207,6 @@ class ArrClient(ABC):
     def _is_available(self, record: dict) -> bool:
         """Determine if a media item is actually released and available."""
 
-    def _is_tag_filtered_out(self, record: dict) -> bool:
-        """Return True if the record should be excluded by tag filtering rules."""
-        record_tag_ids = set(self._get_record_tags(record))
-        return bool(
-            (self._exclude_tag_ids and record_tag_ids & self._exclude_tag_ids)
-            or (self._include_tag_ids and not record_tag_ids & self._include_tag_ids)
-        )
-
     def _is_date_past(self, date_str: str | None) -> bool:
         """Return True if the given ISO date string is in the past."""
         result = False
@@ -221,6 +214,14 @@ class ArrClient(ABC):
             now = datetime.datetime.now(datetime.UTC).strftime('%Y-%m-%dT%H:%M:%SZ')
             result = date_str <= now
         return result
+
+    def _is_tag_filtered_out(self, record: dict) -> bool:
+        """Return True if the record should be excluded by tag filtering rules."""
+        record_tag_ids = set(self._get_record_tags(record))
+        return bool(
+            (self._exclude_tag_ids and record_tag_ids & self._exclude_tag_ids)
+            or (self._include_tag_ids and not record_tag_ids & self._include_tag_ids)
+        )
 
     def _is_within_retry_window(self, record: dict) -> bool:
         """Return True if the item was last searched within the retry window."""
@@ -275,11 +276,11 @@ class ArrClient(ABC):
                 tag_map = {tag['label'].lower(): tag['id'] for tag in response.json()}
                 self._include_tag_ids = self._resolve_tag_names(tag_map, include_names)
                 self._exclude_tag_ids = self._resolve_tag_names(tag_map, exclude_names)
-            except requests.RequestException as err:
-                logger.error(f'[{self.name}] Failed to fetch tags, tag filtering disabled: {err}')
+            except requests.RequestException as error:
+                logger.error(f'[{self.name}] Failed to fetch tags, tag filtering disabled: {error}')
 
     def _resolve_tag_names(self, tag_map: dict[str, int], names: list[str]) -> set[int]:
-        """Resolve tag names to IDs, logging a warning for any unrecognised name."""
+        """Resolve tag names to IDs, logging a warning for any unrecognized name."""
         result: set[int] = set()
         for name in names:
             tag_id = tag_map.get(name.lower())
@@ -304,7 +305,7 @@ class ArrClient(ABC):
             reverse = self.search_order.endswith('_descending')
             records.sort(key=sort_keys[base], reverse=reverse)
 
-    def _trigger_single(self, item_id: int, reason: str, title: str, index: int, total: int) -> None:
+    def _trigger_single(self, item_id: Any, reason: str, title: str, index: int, total: int) -> None:
         """Dispatch a search command for a single media item."""
         if self.dry_run:
             logger.info(f'[{self.name}] [DRY RUN] Would search ({reason}): {title} ({index}/{total})')
@@ -321,7 +322,11 @@ class ArrClient(ABC):
                 )
 
     def check_connection(self) -> bool:
-        """Return True if the tag endpoint is reachable, False on any network error."""
+        """Verify connectivity to the *arr instance API.
+
+        Returns:
+            True if the instance is reachable and responding; False otherwise.
+        """
         url = f'{self.url}{self.ENDPOINT_TAG}'
         try:
             response = self.session.get(url, timeout=15)
@@ -404,11 +409,6 @@ class LidarrClient(ArrClient):
     def _fetch_quality_profile_cutoffs(self) -> dict[int, int]:
         return {}
 
-    @property
-    @override
-    def _id_field(self) -> str:
-        return 'albumIds'
-
     @override
     def _get_record_tags(self, record: dict) -> list[int]:
         return record.get('tags', [])
@@ -422,6 +422,11 @@ class LidarrClient(ArrClient):
     @override
     def _get_release_date(self, record: dict) -> str:
         return record.get('releaseDate') or ''
+
+    @property
+    @override
+    def _id_field(self) -> str:
+        return 'albumIds'
 
     @override
     def _is_available(self, record: dict) -> bool:
@@ -684,7 +689,8 @@ class SonarrClient(ArrClient):
                 )
 
         return [
-            (series_id, reason, title) for series_id, unused_season, reason, title in self._season_pack_items
+            ((series_id, season_number), reason, title)
+            for series_id, season_number, reason, title in self._season_pack_items
         ] + self._individual_items
 
     @override
@@ -693,27 +699,27 @@ class SonarrClient(ArrClient):
             super().trigger_search(items)
             return
 
-        total = len(self._season_pack_items)
-        for index, (series_id, season_number, reason, title) in enumerate(self._season_pack_items, start=1):
-            if self.dry_run:
-                logger.info(f'[{self.name}] [DRY RUN] Would search ({reason}): {title} ({index}/{total})')
+        total = len(items)
+        for index, (item_id, reason, title) in enumerate(items, start=1):
+            if isinstance(item_id, tuple):
+                series_id, season_number = item_id
+                if self.dry_run:
+                    logger.info(f'[{self.name}] [DRY RUN] Would search ({reason}): {title} ({index}/{total})')
+                else:
+                    url = f'{self.url}{self.ENDPOINT_COMMAND}'
+                    payload = {'name': 'SeasonSearch', 'seriesId': series_id, 'seasonNumber': season_number}
+                    try:
+                        response = self.session.post(url, json=payload, timeout=15)
+                        response.raise_for_status()
+                        logger.info(f'[{self.name}] Searching ({reason}): {title} ({index}/{total})')
+                    except requests.RequestException as error:
+                        logger.error(
+                            f'[{self.name}] Failed to trigger SeasonSearch for {title} '
+                            f'(Series: {series_id}, Season: {season_number}): {error}'
+                        )
             else:
-                url = f'{self.url}{self.ENDPOINT_COMMAND}'
-                payload = {'name': 'SeasonSearch', 'seriesId': series_id, 'seasonNumber': season_number}
-                try:
-                    response = self.session.post(url, json=payload, timeout=15)
-                    response.raise_for_status()
-                    logger.info(f'[{self.name}] Searching ({reason}): {title} ({index}/{total})')
-                except requests.RequestException as error:
-                    logger.error(
-                        f'[{self.name}] Failed to trigger SeasonSearch for {title} '
-                        f'(Series: {series_id}, Season: {season_number}): {error}'
-                    )
+                super().trigger_search([(item_id, reason, title)])
 
-            if index < total or self._individual_items:
-                if self.stagger_seconds > 0:
-                    logger.debug(f'[{self.name}] Staggering next search by {self.stagger_seconds}s.')
-                    time.sleep(self.stagger_seconds)
-
-        if self._individual_items:
-            super().trigger_search(self._individual_items)
+            if self.stagger_seconds > 0 and index < total:
+                logger.debug(f'[{self.name}] Staggering next search by {self.stagger_seconds}s.')
+                time.sleep(self.stagger_seconds)
