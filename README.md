@@ -14,6 +14,7 @@
 [![Docker Scout](https://img.shields.io/badge/docker%20scout-enabled-blue)](https://hub.docker.com/r/judochinx/rangarr)
 [![Architectures](https://img.shields.io/badge/arch-amd64%20%7C%20arm64-blue)](https://hub.docker.com/r/judochinx/rangarr/tags)
 [![Sponsor](https://img.shields.io/badge/Sponsor-JudoChinX-ea4aaa?logo=github-sponsors)](https://github.com/sponsors/JudoChinX)
+[![Pairs with Killarr](https://img.shields.io/badge/pairs%20with-Killarr-blue)](https://github.com/JudoChinX/killarr)
 
 <p align="center">
   <img src="https://github.com/JudoChinX/unraid-templates/raw/main/assets/rangarr-logo.png" alt="Rangarr Logo">
@@ -111,6 +112,10 @@ docker run -d \
 - **[Security & Trust](SECURITY.md)** — What Rangarr does and doesn't do, how to verify it, and how to report vulnerabilities.
 - **[Contributing](CONTRIBUTING.md)** — How to help improve Rangarr.
 - **[Roadmap](ROADMAP.md)** — Planned and in-progress features.
+
+## Related Projects
+
+- **[Killarr](https://github.com/JudoChinX/killarr)** — Detects and removes stalled downloads from Radarr, Sonarr, and Lidarr queues. Shares the same `config.yaml` format as Rangarr — both tools can run side-by-side from a single config file.
 
 ## Development Transparency
 
