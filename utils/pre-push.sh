@@ -82,12 +82,12 @@ if ! pip-audit -r requirements.txt; then
 fi
 
 echo "Running pytest..."
-if ! pytest tests/ -v; then
+if ! pytest; then
   echo ""
   echo "ERROR: pytest tests failed. To fix:"
   echo "   1. Review the test failures above"
   echo "   2. Fix the failing tests or the code causing failures"
-  echo "   3. Run: pytest tests/ -v to verify locally"
+  echo "   3. Run: pytest to verify locally"
   echo "   4. Commit your fixes and try pushing again"
   exit 1
 fi

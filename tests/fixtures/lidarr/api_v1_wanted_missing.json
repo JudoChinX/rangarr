@@ -1,0 +1,3098 @@
+{
+  "page": 1,
+  "pageSize": 10,
+  "sortKey": "releaseDate",
+  "sortDirection": "descending",
+  "totalRecords": 6,
+  "records": [
+    {
+      "title": "Piano Collections: Final Fantasy VII",
+      "disambiguation": "",
+      "overview": "",
+      "artistId": 66,
+      "foreignAlbumId": "92ecf836-5e3d-381c-94d9-b3c2b57ea870",
+      "monitored": true,
+      "anyReleaseOk": true,
+      "profileId": 1,
+      "duration": 2857489,
+      "albumType": "Album",
+      "secondaryTypes": [],
+      "mediumCount": 1,
+      "ratings": {
+        "votes": 1,
+        "value": 8.0
+      },
+      "releaseDate": "2003-12-03T00:00:00Z",
+      "releases": [
+        {
+          "id": 6751,
+          "albumId": 1660,
+          "foreignReleaseId": "56e1d705-07b5-3aac-8cbc-108addc9aa6a",
+          "title": "Piano Collections: Final Fantasy VII",
+          "status": "Official",
+          "duration": 2857489,
+          "trackCount": 13,
+          "media": [
+            {
+              "mediumNumber": 1,
+              "mediumName": "",
+              "mediumFormat": "CD"
+            }
+          ],
+          "mediumCount": 1,
+          "disambiguation": "",
+          "country": [
+            "Japan"
+          ],
+          "label": "REDACTED",
+          "format": "CD",
+          "monitored": true
+        },
+        {
+          "id": 6752,
+          "albumId": 1660,
+          "foreignReleaseId": "da8d0057-5963-4191-a195-7baf0f7b4f83",
+          "title": "Piano Collections: Final Fantasy VII",
+          "status": "Bootleg",
+          "duration": 2850000,
+          "trackCount": 13,
+          "media": [
+            {
+              "mediumNumber": 1,
+              "mediumName": "",
+              "mediumFormat": "CD"
+            }
+          ],
+          "mediumCount": 1,
+          "disambiguation": "",
+          "country": [
+            "Taiwan"
+          ],
+          "label": "REDACTED",
+          "format": "CD",
+          "monitored": false
+        },
+        {
+          "id": 6753,
+          "albumId": 1660,
+          "foreignReleaseId": "b54f0e83-990d-4e0e-8220-c9a52660ce22",
+          "title": "Piano Collections: Final Fantasy VII",
+          "status": "Bootleg",
+          "duration": 2850000,
+          "trackCount": 13,
+          "media": [
+            {
+              "mediumNumber": 1,
+              "mediumName": "",
+              "mediumFormat": "CD"
+            }
+          ],
+          "mediumCount": 1,
+          "disambiguation": "",
+          "country": [
+            "Taiwan"
+          ],
+          "label": "REDACTED",
+          "format": "CD",
+          "monitored": false
+        },
+        {
+          "id": 6754,
+          "albumId": 1660,
+          "foreignReleaseId": "db5259e6-19a2-4bf8-843d-4143c61e58e3",
+          "title": "Piano Collections: Final Fantasy VII",
+          "status": "Official",
+          "duration": 2850000,
+          "trackCount": 13,
+          "media": [
+            {
+              "mediumNumber": 1,
+              "mediumName": "",
+              "mediumFormat": "CD"
+            }
+          ],
+          "mediumCount": 1,
+          "disambiguation": "",
+          "country": [
+            "Japan"
+          ],
+          "label": "REDACTED",
+          "format": "CD",
+          "monitored": false
+        },
+        {
+          "id": 6755,
+          "albumId": 1660,
+          "foreignReleaseId": "01f93f12-14b6-4927-beec-6d718a94a886",
+          "title": "Piano Collections FINAL FANTASY VII",
+          "status": "Official",
+          "duration": 2857493,
+          "trackCount": 13,
+          "media": [
+            {
+              "mediumNumber": 1,
+              "mediumName": "",
+              "mediumFormat": "Digital Media"
+            }
+          ],
+          "mediumCount": 1,
+          "disambiguation": "",
+          "country": [],
+          "label": "REDACTED",
+          "format": "Digital Media",
+          "monitored": false
+        },
+        {
+          "id": 6756,
+          "albumId": 1660,
+          "foreignReleaseId": "7b080737-d1b1-4764-ae1a-686de6f509bd",
+          "title": "Piano Collections FINAL FANTASY VII",
+          "status": "Pseudo-Release",
+          "duration": 2857489,
+          "trackCount": 13,
+          "media": [
+            {
+              "mediumNumber": 1,
+              "mediumName": "",
+              "mediumFormat": "CD"
+            }
+          ],
+          "mediumCount": 1,
+          "disambiguation": "English Translation",
+          "country": [],
+          "label": "REDACTED",
+          "format": "CD",
+          "monitored": false
+        }
+      ],
+      "genres": [
+        "Classical"
+      ],
+      "media": [
+        {
+          "mediumNumber": 1,
+          "mediumName": "",
+          "mediumFormat": "CD"
+        }
+      ],
+      "artist": {
+        "status": "continuing",
+        "ended": false,
+        "artistName": "\u690d\u677e\u4f38\u592b",
+        "foreignArtistId": "92bb085a-2924-4479-b627-181a1835d2f5",
+        "tadbId": 0,
+        "discogsId": 0,
+        "overview": "Nobuo Uematsu is a Japanese composer and keyboardist best known for his contributions to the Final Fantasy video game series by Square Enix. A self-taught musician, he began playing the piano at the age of twelve, with English singer-songwriter Elton John as one of his biggest influences in pursuing a musical career.",
+        "artistType": "Person",
+        "disambiguation": "video game, film & anime composer known for Final Fantasy",
+        "links": [
+          {
+            "url": "REDACTED",
+            "name": "discogs"
+          },
+          {
+            "url": "REDACTED",
+            "name": "square-enix"
+          },
+          {
+            "url": "REDACTED",
+            "name": "co"
+          },
+          {
+            "url": "REDACTED",
+            "name": "imdb"
+          },
+          {
+            "url": "REDACTED",
+            "name": "ocremix"
+          },
+          {
+            "url": "REDACTED",
+            "name": "co"
+          },
+          {
+            "url": "REDACTED",
+            "name": "generasia"
+          },
+          {
+            "url": "REDACTED",
+            "name": "generasia"
+          },
+          {
+            "url": "REDACTED",
+            "name": "vgmdb"
+          },
+          {
+            "url": "REDACTED",
+            "name": "last"
+          },
+          {
+            "url": "REDACTED",
+            "name": "viaf"
+          },
+          {
+            "url": "REDACTED",
+            "name": "allmusic"
+          },
+          {
+            "url": "REDACTED",
+            "name": "wikidata"
+          },
+          {
+            "url": "REDACTED",
+            "name": "twitter"
+          },
+          {
+            "url": "REDACTED",
+            "name": "twitter"
+          },
+          {
+            "url": "REDACTED",
+            "name": "apple"
+          },
+          {
+            "url": "REDACTED",
+            "name": "wikimedia"
+          },
+          {
+            "url": "REDACTED",
+            "name": "soundtrackcollector"
+          },
+          {
+            "url": "REDACTED",
+            "name": "spotify"
+          },
+          {
+            "url": "REDACTED",
+            "name": "bbc"
+          },
+          {
+            "url": "REDACTED",
+            "name": "videogam"
+          },
+          {
+            "url": "REDACTED",
+            "name": "worldcat"
+          },
+          {
+            "url": "REDACTED",
+            "name": "bnf"
+          },
+          {
+            "url": "REDACTED",
+            "name": "mobygames"
+          },
+          {
+            "url": "REDACTED",
+            "name": "musik-sammler"
+          },
+          {
+            "url": "REDACTED",
+            "name": "google"
+          },
+          {
+            "url": "REDACTED",
+            "name": "go"
+          },
+          {
+            "url": "REDACTED",
+            "name": "d-nb"
+          },
+          {
+            "url": "REDACTED",
+            "name": "loc"
+          },
+          {
+            "url": "REDACTED",
+            "name": "facebook"
+          },
+          {
+            "url": "REDACTED",
+            "name": "instagram"
+          },
+          {
+            "url": "REDACTED",
+            "name": "anison"
+          },
+          {
+            "url": "REDACTED",
+            "name": "utaitedb"
+          },
+          {
+            "url": "REDACTED",
+            "name": "wikia"
+          },
+          {
+            "url": "REDACTED",
+            "name": "animenewsnetwork"
+          },
+          {
+            "url": "REDACTED",
+            "name": "spirit-of-metal"
+          },
+          {
+            "url": "REDACTED",
+            "name": "livefans"
+          },
+          {
+            "url": "REDACTED",
+            "name": "genius"
+          },
+          {
+            "url": "REDACTED",
+            "name": "setlist"
+          },
+          {
+            "url": "REDACTED",
+            "name": "songkick"
+          },
+          {
+            "url": "REDACTED",
+            "name": "co"
+          },
+          {
+            "url": "REDACTED",
+            "name": "openlibrary"
+          },
+          {
+            "url": "REDACTED",
+            "name": "bandsintown"
+          },
+          {
+            "url": "REDACTED",
+            "name": "imvdb"
+          },
+          {
+            "url": "REDACTED",
+            "name": "whosampled"
+          },
+          {
+            "url": "REDACTED",
+            "name": "maniadb"
+          },
+          {
+            "url": "REDACTED",
+            "name": "muzikum"
+          },
+          {
+            "url": "REDACTED",
+            "name": "deezer"
+          },
+          {
+            "url": "REDACTED",
+            "name": "apple"
+          },
+          {
+            "url": "REDACTED",
+            "name": "tidal"
+          },
+          {
+            "url": "REDACTED",
+            "name": "apple"
+          },
+          {
+            "url": "REDACTED",
+            "name": "apple"
+          },
+          {
+            "url": "REDACTED",
+            "name": "rateyourmusic"
+          },
+          {
+            "url": "REDACTED",
+            "name": "theaudiodb"
+          },
+          {
+            "url": "REDACTED",
+            "name": "theaudiodb"
+          },
+          {
+            "url": "REDACTED",
+            "name": "spotify"
+          },
+          {
+            "url": "REDACTED",
+            "name": "spotify"
+          }
+        ],
+        "nextAlbum": null,
+        "lastAlbum": null,
+        "images": [
+          {
+            "url": "REDACTED",
+            "coverType": "clearlogo",
+            "extension": ".png"
+          },
+          {
+            "url": "REDACTED",
+            "coverType": "banner",
+            "extension": ".jpg"
+          },
+          {
+            "url": "REDACTED",
+            "coverType": "poster",
+            "extension": ".jpg"
+          },
+          {
+            "url": "REDACTED",
+            "coverType": "fanart",
+            "extension": ".jpg"
+          }
+        ],
+        "path": "/media/music/jason/\u690d\u677e\u4f38\u592b",
+        "qualityProfileId": 1,
+        "metadataProfileId": 1,
+        "monitored": true,
+        "monitorNewItems": "none",
+        "genres": [
+          "Electronic",
+          "Symphonic Rock",
+          "Orchestral",
+          "Modern Classical",
+          "Rock",
+          "Japanese Classical",
+          "Chiptune",
+          "Cinematic Classical",
+          "Metal",
+          "New Age",
+          "Progressive Rock"
+        ],
+        "cleanName": "\u690d\u677e\u4f38\u592b",
+        "sortName": "\u690d\u677e\u4f38\u592b",
+        "tags": [
+          4
+        ],
+        "added": "2026-01-12T02:38:46Z",
+        "ratings": {
+          "votes": 8,
+          "value": 9.5
+        },
+        "id": 66
+      },
+      "images": [
+        {
+          "url": "REDACTED",
+          "coverType": "cover",
+          "extension": ".jpg",
+          "remoteUrl": "https://images.lidarr.audio/cache/https://coverartarchive.org/release/56e1d705-07b5-3aac-8cbc-108addc9aa6a/38713216490-1200.jpg"
+        },
+        {
+          "url": "REDACTED",
+          "coverType": "disc",
+          "extension": ".jpg",
+          "remoteUrl": "https://images.lidarr.audio/cache/https://coverartarchive.org/release/db5259e6-19a2-4bf8-843d-4143c61e58e3/24548906942-1200.jpg"
+        }
+      ],
+      "links": [
+        {
+          "url": "REDACTED",
+          "name": "discogs"
+        }
+      ],
+      "lastSearchTime": "2026-04-21T19:01:02Z",
+      "statistics": {
+        "trackFileCount": 0,
+        "trackCount": 13,
+        "totalTrackCount": 13,
+        "sizeOnDisk": 0,
+        "percentOfTracks": 0
+      },
+      "id": 1660
+    },
+    {
+      "title": "Piano Collections: Final Fantasy X",
+      "disambiguation": "",
+      "overview": "",
+      "artistId": 66,
+      "foreignAlbumId": "1eae56e3-cc34-303f-b14c-0982e70d8e4f",
+      "monitored": true,
+      "anyReleaseOk": true,
+      "profileId": 1,
+      "duration": 3403000,
+      "albumType": "Album",
+      "secondaryTypes": [],
+      "mediumCount": 1,
+      "ratings": {
+        "votes": 0,
+        "value": 0
+      },
+      "releaseDate": "2002-02-20T00:00:00Z",
+      "releases": [
+        {
+          "id": 6871,
+          "albumId": 1694,
+          "foreignReleaseId": "da436a69-b146-3ac1-88fc-4675551d42c8",
+          "title": "Piano Collections: Final Fantasy X",
+          "status": "Bootleg",
+          "duration": 3403000,
+          "trackCount": 15,
+          "media": [
+            {
+              "mediumNumber": 1,
+              "mediumName": "",
+              "mediumFormat": "CD"
+            }
+          ],
+          "mediumCount": 1,
+          "disambiguation": "",
+          "country": [
+            "Taiwan"
+          ],
+          "label": "REDACTED",
+          "format": "CD",
+          "monitored": true
+        },
+        {
+          "id": 6872,
+          "albumId": 1694,
+          "foreignReleaseId": "32253620-e628-36d2-941b-9844abc1f92b",
+          "title": "Piano Collections: Final Fantasy X",
+          "status": "Pseudo-Release",
+          "duration": 3402994,
+          "trackCount": 15,
+          "media": [
+            {
+              "mediumNumber": 1,
+              "mediumName": "",
+              "mediumFormat": "CD"
+            }
+          ],
+          "mediumCount": 1,
+          "disambiguation": "",
+          "country": [
+            "Japan"
+          ],
+          "label": "REDACTED",
+          "format": "CD",
+          "monitored": false
+        },
+        {
+          "id": 6873,
+          "albumId": 1694,
+          "foreignReleaseId": "63403ea7-734a-478f-8f4b-80759c3cc8dc",
+          "title": "Piano Collections: Final Fantasy X",
+          "status": "Bootleg",
+          "duration": 3403000,
+          "trackCount": 15,
+          "media": [
+            {
+              "mediumNumber": 1,
+              "mediumName": "",
+              "mediumFormat": "CD"
+            }
+          ],
+          "mediumCount": 1,
+          "disambiguation": "",
+          "country": [
+            "Taiwan"
+          ],
+          "label": "REDACTED",
+          "format": "CD",
+          "monitored": false
+        },
+        {
+          "id": 6874,
+          "albumId": 1694,
+          "foreignReleaseId": "fb9245c4-e362-3d64-8758-e56e472b922e",
+          "title": "Piano Collections: Final Fantasy X",
+          "status": "Official",
+          "duration": 3403000,
+          "trackCount": 15,
+          "media": [
+            {
+              "mediumNumber": 1,
+              "mediumName": "",
+              "mediumFormat": "CD"
+            }
+          ],
+          "mediumCount": 1,
+          "disambiguation": "",
+          "country": [
+            "Japan"
+          ],
+          "label": "REDACTED",
+          "format": "CD",
+          "monitored": false
+        },
+        {
+          "id": 6875,
+          "albumId": 1694,
+          "foreignReleaseId": "abc58710-d94f-4471-bb0e-9e0b2072ef46",
+          "title": "Piano Collections: Final Fantasy X",
+          "status": "Official",
+          "duration": 3403000,
+          "trackCount": 15,
+          "media": [
+            {
+              "mediumNumber": 1,
+              "mediumName": "",
+              "mediumFormat": "CD"
+            }
+          ],
+          "mediumCount": 1,
+          "disambiguation": "",
+          "country": [
+            "Japan"
+          ],
+          "label": "REDACTED",
+          "format": "CD",
+          "monitored": false
+        },
+        {
+          "id": 6876,
+          "albumId": 1694,
+          "foreignReleaseId": "ef5ffc95-c077-44b4-8e5d-9c6efa2c2288",
+          "title": "Piano Collections: Final Fantasy X",
+          "status": "Pseudo-Release",
+          "duration": 3402994,
+          "trackCount": 15,
+          "media": [
+            {
+              "mediumNumber": 1,
+              "mediumName": "",
+              "mediumFormat": "CD"
+            }
+          ],
+          "mediumCount": 1,
+          "disambiguation": "",
+          "country": [
+            "Japan"
+          ],
+          "label": "REDACTED",
+          "format": "CD",
+          "monitored": false
+        },
+        {
+          "id": 6877,
+          "albumId": 1694,
+          "foreignReleaseId": "192d0282-0b6f-4429-8f50-1b51c755395b",
+          "title": "FINAL FANTASY X - Piano Collections (Original Soundtrack)",
+          "status": "Official",
+          "duration": 3403293,
+          "trackCount": 15,
+          "media": [
+            {
+              "mediumNumber": 1,
+              "mediumName": "",
+              "mediumFormat": "Digital Media"
+            }
+          ],
+          "mediumCount": 1,
+          "disambiguation": "",
+          "country": [
+            "United States"
+          ],
+          "label": "REDACTED",
+          "format": "Digital Media",
+          "monitored": false
+        }
+      ],
+      "genres": [
+        "Classical"
+      ],
+      "media": [
+        {
+          "mediumNumber": 1,
+          "mediumName": "",
+          "mediumFormat": "CD"
+        }
+      ],
+      "artist": {
+        "status": "continuing",
+        "ended": false,
+        "artistName": "\u690d\u677e\u4f38\u592b",
+        "foreignArtistId": "92bb085a-2924-4479-b627-181a1835d2f5",
+        "tadbId": 0,
+        "discogsId": 0,
+        "overview": "Nobuo Uematsu is a Japanese composer and keyboardist best known for his contributions to the Final Fantasy video game series by Square Enix. A self-taught musician, he began playing the piano at the age of twelve, with English singer-songwriter Elton John as one of his biggest influences in pursuing a musical career.",
+        "artistType": "Person",
+        "disambiguation": "video game, film & anime composer known for Final Fantasy",
+        "links": [
+          {
+            "url": "REDACTED",
+            "name": "discogs"
+          },
+          {
+            "url": "REDACTED",
+            "name": "square-enix"
+          },
+          {
+            "url": "REDACTED",
+            "name": "co"
+          },
+          {
+            "url": "REDACTED",
+            "name": "imdb"
+          },
+          {
+            "url": "REDACTED",
+            "name": "ocremix"
+          },
+          {
+            "url": "REDACTED",
+            "name": "co"
+          },
+          {
+            "url": "REDACTED",
+            "name": "generasia"
+          },
+          {
+            "url": "REDACTED",
+            "name": "generasia"
+          },
+          {
+            "url": "REDACTED",
+            "name": "vgmdb"
+          },
+          {
+            "url": "REDACTED",
+            "name": "last"
+          },
+          {
+            "url": "REDACTED",
+            "name": "viaf"
+          },
+          {
+            "url": "REDACTED",
+            "name": "allmusic"
+          },
+          {
+            "url": "REDACTED",
+            "name": "wikidata"
+          },
+          {
+            "url": "REDACTED",
+            "name": "twitter"
+          },
+          {
+            "url": "REDACTED",
+            "name": "twitter"
+          },
+          {
+            "url": "REDACTED",
+            "name": "apple"
+          },
+          {
+            "url": "REDACTED",
+            "name": "wikimedia"
+          },
+          {
+            "url": "REDACTED",
+            "name": "soundtrackcollector"
+          },
+          {
+            "url": "REDACTED",
+            "name": "spotify"
+          },
+          {
+            "url": "REDACTED",
+            "name": "bbc"
+          },
+          {
+            "url": "REDACTED",
+            "name": "videogam"
+          },
+          {
+            "url": "REDACTED",
+            "name": "worldcat"
+          },
+          {
+            "url": "REDACTED",
+            "name": "bnf"
+          },
+          {
+            "url": "REDACTED",
+            "name": "mobygames"
+          },
+          {
+            "url": "REDACTED",
+            "name": "musik-sammler"
+          },
+          {
+            "url": "REDACTED",
+            "name": "google"
+          },
+          {
+            "url": "REDACTED",
+            "name": "go"
+          },
+          {
+            "url": "REDACTED",
+            "name": "d-nb"
+          },
+          {
+            "url": "REDACTED",
+            "name": "loc"
+          },
+          {
+            "url": "REDACTED",
+            "name": "facebook"
+          },
+          {
+            "url": "REDACTED",
+            "name": "instagram"
+          },
+          {
+            "url": "REDACTED",
+            "name": "anison"
+          },
+          {
+            "url": "REDACTED",
+            "name": "utaitedb"
+          },
+          {
+            "url": "REDACTED",
+            "name": "wikia"
+          },
+          {
+            "url": "REDACTED",
+            "name": "animenewsnetwork"
+          },
+          {
+            "url": "REDACTED",
+            "name": "spirit-of-metal"
+          },
+          {
+            "url": "REDACTED",
+            "name": "livefans"
+          },
+          {
+            "url": "REDACTED",
+            "name": "genius"
+          },
+          {
+            "url": "REDACTED",
+            "name": "setlist"
+          },
+          {
+            "url": "REDACTED",
+            "name": "songkick"
+          },
+          {
+            "url": "REDACTED",
+            "name": "co"
+          },
+          {
+            "url": "REDACTED",
+            "name": "openlibrary"
+          },
+          {
+            "url": "REDACTED",
+            "name": "bandsintown"
+          },
+          {
+            "url": "REDACTED",
+            "name": "imvdb"
+          },
+          {
+            "url": "REDACTED",
+            "name": "whosampled"
+          },
+          {
+            "url": "REDACTED",
+            "name": "maniadb"
+          },
+          {
+            "url": "REDACTED",
+            "name": "muzikum"
+          },
+          {
+            "url": "REDACTED",
+            "name": "deezer"
+          },
+          {
+            "url": "REDACTED",
+            "name": "apple"
+          },
+          {
+            "url": "REDACTED",
+            "name": "tidal"
+          },
+          {
+            "url": "REDACTED",
+            "name": "apple"
+          },
+          {
+            "url": "REDACTED",
+            "name": "apple"
+          },
+          {
+            "url": "REDACTED",
+            "name": "rateyourmusic"
+          },
+          {
+            "url": "REDACTED",
+            "name": "theaudiodb"
+          },
+          {
+            "url": "REDACTED",
+            "name": "theaudiodb"
+          },
+          {
+            "url": "REDACTED",
+            "name": "spotify"
+          },
+          {
+            "url": "REDACTED",
+            "name": "spotify"
+          }
+        ],
+        "nextAlbum": null,
+        "lastAlbum": null,
+        "images": [
+          {
+            "url": "REDACTED",
+            "coverType": "clearlogo",
+            "extension": ".png"
+          },
+          {
+            "url": "REDACTED",
+            "coverType": "banner",
+            "extension": ".jpg"
+          },
+          {
+            "url": "REDACTED",
+            "coverType": "poster",
+            "extension": ".jpg"
+          },
+          {
+            "url": "REDACTED",
+            "coverType": "fanart",
+            "extension": ".jpg"
+          }
+        ],
+        "path": "/media/music/jason/\u690d\u677e\u4f38\u592b",
+        "qualityProfileId": 1,
+        "metadataProfileId": 1,
+        "monitored": true,
+        "monitorNewItems": "none",
+        "genres": [
+          "Electronic",
+          "Symphonic Rock",
+          "Orchestral",
+          "Modern Classical",
+          "Rock",
+          "Japanese Classical",
+          "Chiptune",
+          "Cinematic Classical",
+          "Metal",
+          "New Age",
+          "Progressive Rock"
+        ],
+        "cleanName": "\u690d\u677e\u4f38\u592b",
+        "sortName": "\u690d\u677e\u4f38\u592b",
+        "tags": [
+          4
+        ],
+        "added": "2026-01-12T02:38:46Z",
+        "ratings": {
+          "votes": 8,
+          "value": 9.5
+        },
+        "id": 66
+      },
+      "images": [
+        {
+          "url": "REDACTED",
+          "coverType": "cover",
+          "extension": ".jpg",
+          "remoteUrl": "https://images.lidarr.audio/cache/https://coverartarchive.org/release/da436a69-b146-3ac1-88fc-4675551d42c8/13362565724-1200.jpg"
+        },
+        {
+          "url": "REDACTED",
+          "coverType": "disc",
+          "extension": ".jpg",
+          "remoteUrl": "https://images.lidarr.audio/cache/https://coverartarchive.org/release/ef5ffc95-c077-44b4-8e5d-9c6efa2c2288/31797494072-1200.jpg"
+        }
+      ],
+      "links": [
+        {
+          "url": "REDACTED",
+          "name": "imdb"
+        },
+        {
+          "url": "REDACTED",
+          "name": "discogs"
+        }
+      ],
+      "lastSearchTime": "2026-04-21T19:00:52Z",
+      "statistics": {
+        "trackFileCount": 0,
+        "trackCount": 15,
+        "totalTrackCount": 15,
+        "sizeOnDisk": 0,
+        "percentOfTracks": 0
+      },
+      "id": 1694
+    },
+    {
+      "title": "Piano Collections: Final Fantasy IX",
+      "disambiguation": "",
+      "overview": "",
+      "artistId": 66,
+      "foreignAlbumId": "c3cc08c9-a534-3cac-98a3-5859d9438556",
+      "monitored": true,
+      "anyReleaseOk": true,
+      "profileId": 1,
+      "duration": 3231000,
+      "albumType": "Album",
+      "secondaryTypes": [],
+      "mediumCount": 1,
+      "ratings": {
+        "votes": 1,
+        "value": 8.0
+      },
+      "releaseDate": "2001-01-24T00:00:00Z",
+      "releases": [
+        {
+          "id": 6725,
+          "albumId": 1656,
+          "foreignReleaseId": "0a092e48-e76b-3d1d-b002-e18c7737144c",
+          "title": "Piano Collections: Final Fantasy IX",
+          "status": "Official",
+          "duration": 3231000,
+          "trackCount": 14,
+          "media": [
+            {
+              "mediumNumber": 1,
+              "mediumName": "",
+              "mediumFormat": "CD"
+            }
+          ],
+          "mediumCount": 1,
+          "disambiguation": "",
+          "country": [
+            "Japan"
+          ],
+          "label": "REDACTED",
+          "format": "CD",
+          "monitored": true
+        },
+        {
+          "id": 6726,
+          "albumId": 1656,
+          "foreignReleaseId": "8b87da4b-80b8-42d1-871b-f91a4c1b2fb6",
+          "title": "Piano Collections: Final Fantasy IX",
+          "status": "Bootleg",
+          "duration": 3231000,
+          "trackCount": 14,
+          "media": [
+            {
+              "mediumNumber": 1,
+              "mediumName": "",
+              "mediumFormat": "CD"
+            }
+          ],
+          "mediumCount": 1,
+          "disambiguation": "",
+          "country": [
+            "Taiwan"
+          ],
+          "label": "REDACTED",
+          "format": "CD",
+          "monitored": false
+        },
+        {
+          "id": 6727,
+          "albumId": 1656,
+          "foreignReleaseId": "f4499eef-6ee5-4839-8f98-1cfcd49540e2",
+          "title": "Piano Collections: Final Fantasy IX",
+          "status": "Bootleg",
+          "duration": 3231000,
+          "trackCount": 14,
+          "media": [
+            {
+              "mediumNumber": 1,
+              "mediumName": "",
+              "mediumFormat": "CD"
+            }
+          ],
+          "mediumCount": 1,
+          "disambiguation": "",
+          "country": [
+            "Taiwan"
+          ],
+          "label": "REDACTED",
+          "format": "CD",
+          "monitored": false
+        },
+        {
+          "id": 6728,
+          "albumId": 1656,
+          "foreignReleaseId": "5e0a478a-354e-4693-adbc-ffd63c9645d3",
+          "title": "Piano Collections: Final Fantasy IX",
+          "status": "Pseudo-Release",
+          "duration": 3230823,
+          "trackCount": 14,
+          "media": [
+            {
+              "mediumNumber": 1,
+              "mediumName": "",
+              "mediumFormat": "CD"
+            }
+          ],
+          "mediumCount": 1,
+          "disambiguation": "",
+          "country": [
+            "Japan"
+          ],
+          "label": "REDACTED",
+          "format": "CD",
+          "monitored": false
+        },
+        {
+          "id": 6729,
+          "albumId": 1656,
+          "foreignReleaseId": "ddac8d7e-0eab-32b0-b2e4-97f18bec187f",
+          "title": "Piano Collections: Final Fantasy IX",
+          "status": "Pseudo-Release",
+          "duration": 3230823,
+          "trackCount": 14,
+          "media": [
+            {
+              "mediumNumber": 1,
+              "mediumName": "",
+              "mediumFormat": "CD"
+            }
+          ],
+          "mediumCount": 1,
+          "disambiguation": "",
+          "country": [
+            "Japan"
+          ],
+          "label": "REDACTED",
+          "format": "CD",
+          "monitored": false
+        },
+        {
+          "id": 6730,
+          "albumId": 1656,
+          "foreignReleaseId": "53fa9da6-536b-4227-b7aa-2ba35ea83358",
+          "title": "Piano Collections: Final Fantasy IX",
+          "status": "Official",
+          "duration": 3231000,
+          "trackCount": 14,
+          "media": [
+            {
+              "mediumNumber": 1,
+              "mediumName": "",
+              "mediumFormat": "CD"
+            }
+          ],
+          "mediumCount": 1,
+          "disambiguation": "",
+          "country": [
+            "Japan"
+          ],
+          "label": "REDACTED",
+          "format": "CD",
+          "monitored": false
+        },
+        {
+          "id": 6731,
+          "albumId": 1656,
+          "foreignReleaseId": "f0f5ab61-3ea2-474a-b1d4-270dbd3c9a6a",
+          "title": "Piano Collections FINAL FANTASY IX",
+          "status": "Official",
+          "duration": 3230825,
+          "trackCount": 14,
+          "media": [
+            {
+              "mediumNumber": 1,
+              "mediumName": "",
+              "mediumFormat": "Digital Media"
+            }
+          ],
+          "mediumCount": 1,
+          "disambiguation": "",
+          "country": [
+            "United States"
+          ],
+          "label": "REDACTED",
+          "format": "Digital Media",
+          "monitored": false
+        },
+        {
+          "id": 6732,
+          "albumId": 1656,
+          "foreignReleaseId": "dcf84d58-2232-46cd-82fe-47073a2a4c49",
+          "title": "Piano Collections: Final Fantasy IX",
+          "status": "Bootleg",
+          "duration": 3231000,
+          "trackCount": 14,
+          "media": [
+            {
+              "mediumNumber": 1,
+              "mediumName": "",
+              "mediumFormat": "CD"
+            }
+          ],
+          "mediumCount": 1,
+          "disambiguation": "",
+          "country": [
+            "Taiwan"
+          ],
+          "label": "REDACTED",
+          "format": "CD",
+          "monitored": false
+        }
+      ],
+      "genres": [
+        "Classical",
+        "Instrumental",
+        "Modern Classical"
+      ],
+      "media": [
+        {
+          "mediumNumber": 1,
+          "mediumName": "",
+          "mediumFormat": "CD"
+        }
+      ],
+      "artist": {
+        "status": "continuing",
+        "ended": false,
+        "artistName": "\u690d\u677e\u4f38\u592b",
+        "foreignArtistId": "92bb085a-2924-4479-b627-181a1835d2f5",
+        "tadbId": 0,
+        "discogsId": 0,
+        "overview": "Nobuo Uematsu is a Japanese composer and keyboardist best known for his contributions to the Final Fantasy video game series by Square Enix. A self-taught musician, he began playing the piano at the age of twelve, with English singer-songwriter Elton John as one of his biggest influences in pursuing a musical career.",
+        "artistType": "Person",
+        "disambiguation": "video game, film & anime composer known for Final Fantasy",
+        "links": [
+          {
+            "url": "REDACTED",
+            "name": "discogs"
+          },
+          {
+            "url": "REDACTED",
+            "name": "square-enix"
+          },
+          {
+            "url": "REDACTED",
+            "name": "co"
+          },
+          {
+            "url": "REDACTED",
+            "name": "imdb"
+          },
+          {
+            "url": "REDACTED",
+            "name": "ocremix"
+          },
+          {
+            "url": "REDACTED",
+            "name": "co"
+          },
+          {
+            "url": "REDACTED",
+            "name": "generasia"
+          },
+          {
+            "url": "REDACTED",
+            "name": "generasia"
+          },
+          {
+            "url": "REDACTED",
+            "name": "vgmdb"
+          },
+          {
+            "url": "REDACTED",
+            "name": "last"
+          },
+          {
+            "url": "REDACTED",
+            "name": "viaf"
+          },
+          {
+            "url": "REDACTED",
+            "name": "allmusic"
+          },
+          {
+            "url": "REDACTED",
+            "name": "wikidata"
+          },
+          {
+            "url": "REDACTED",
+            "name": "twitter"
+          },
+          {
+            "url": "REDACTED",
+            "name": "twitter"
+          },
+          {
+            "url": "REDACTED",
+            "name": "apple"
+          },
+          {
+            "url": "REDACTED",
+            "name": "wikimedia"
+          },
+          {
+            "url": "REDACTED",
+            "name": "soundtrackcollector"
+          },
+          {
+            "url": "REDACTED",
+            "name": "spotify"
+          },
+          {
+            "url": "REDACTED",
+            "name": "bbc"
+          },
+          {
+            "url": "REDACTED",
+            "name": "videogam"
+          },
+          {
+            "url": "REDACTED",
+            "name": "worldcat"
+          },
+          {
+            "url": "REDACTED",
+            "name": "bnf"
+          },
+          {
+            "url": "REDACTED",
+            "name": "mobygames"
+          },
+          {
+            "url": "REDACTED",
+            "name": "musik-sammler"
+          },
+          {
+            "url": "REDACTED",
+            "name": "google"
+          },
+          {
+            "url": "REDACTED",
+            "name": "go"
+          },
+          {
+            "url": "REDACTED",
+            "name": "d-nb"
+          },
+          {
+            "url": "REDACTED",
+            "name": "loc"
+          },
+          {
+            "url": "REDACTED",
+            "name": "facebook"
+          },
+          {
+            "url": "REDACTED",
+            "name": "instagram"
+          },
+          {
+            "url": "REDACTED",
+            "name": "anison"
+          },
+          {
+            "url": "REDACTED",
+            "name": "utaitedb"
+          },
+          {
+            "url": "REDACTED",
+            "name": "wikia"
+          },
+          {
+            "url": "REDACTED",
+            "name": "animenewsnetwork"
+          },
+          {
+            "url": "REDACTED",
+            "name": "spirit-of-metal"
+          },
+          {
+            "url": "REDACTED",
+            "name": "livefans"
+          },
+          {
+            "url": "REDACTED",
+            "name": "genius"
+          },
+          {
+            "url": "REDACTED",
+            "name": "setlist"
+          },
+          {
+            "url": "REDACTED",
+            "name": "songkick"
+          },
+          {
+            "url": "REDACTED",
+            "name": "co"
+          },
+          {
+            "url": "REDACTED",
+            "name": "openlibrary"
+          },
+          {
+            "url": "REDACTED",
+            "name": "bandsintown"
+          },
+          {
+            "url": "REDACTED",
+            "name": "imvdb"
+          },
+          {
+            "url": "REDACTED",
+            "name": "whosampled"
+          },
+          {
+            "url": "REDACTED",
+            "name": "maniadb"
+          },
+          {
+            "url": "REDACTED",
+            "name": "muzikum"
+          },
+          {
+            "url": "REDACTED",
+            "name": "deezer"
+          },
+          {
+            "url": "REDACTED",
+            "name": "apple"
+          },
+          {
+            "url": "REDACTED",
+            "name": "tidal"
+          },
+          {
+            "url": "REDACTED",
+            "name": "apple"
+          },
+          {
+            "url": "REDACTED",
+            "name": "apple"
+          },
+          {
+            "url": "REDACTED",
+            "name": "rateyourmusic"
+          },
+          {
+            "url": "REDACTED",
+            "name": "theaudiodb"
+          },
+          {
+            "url": "REDACTED",
+            "name": "theaudiodb"
+          },
+          {
+            "url": "REDACTED",
+            "name": "spotify"
+          },
+          {
+            "url": "REDACTED",
+            "name": "spotify"
+          }
+        ],
+        "nextAlbum": null,
+        "lastAlbum": null,
+        "images": [
+          {
+            "url": "REDACTED",
+            "coverType": "clearlogo",
+            "extension": ".png"
+          },
+          {
+            "url": "REDACTED",
+            "coverType": "banner",
+            "extension": ".jpg"
+          },
+          {
+            "url": "REDACTED",
+            "coverType": "poster",
+            "extension": ".jpg"
+          },
+          {
+            "url": "REDACTED",
+            "coverType": "fanart",
+            "extension": ".jpg"
+          }
+        ],
+        "path": "/media/music/jason/\u690d\u677e\u4f38\u592b",
+        "qualityProfileId": 1,
+        "metadataProfileId": 1,
+        "monitored": true,
+        "monitorNewItems": "none",
+        "genres": [
+          "Electronic",
+          "Symphonic Rock",
+          "Orchestral",
+          "Modern Classical",
+          "Rock",
+          "Japanese Classical",
+          "Chiptune",
+          "Cinematic Classical",
+          "Metal",
+          "New Age",
+          "Progressive Rock"
+        ],
+        "cleanName": "\u690d\u677e\u4f38\u592b",
+        "sortName": "\u690d\u677e\u4f38\u592b",
+        "tags": [
+          4
+        ],
+        "added": "2026-01-12T02:38:46Z",
+        "ratings": {
+          "votes": 8,
+          "value": 9.5
+        },
+        "id": 66
+      },
+      "images": [
+        {
+          "url": "REDACTED",
+          "coverType": "cover",
+          "extension": ".jpg",
+          "remoteUrl": "https://images.lidarr.audio/cache/https://coverartarchive.org/release/0a092e48-e76b-3d1d-b002-e18c7737144c/39473344739-1200.jpg"
+        },
+        {
+          "url": "REDACTED",
+          "coverType": "disc",
+          "extension": ".jpg",
+          "remoteUrl": "https://images.lidarr.audio/cache/https://coverartarchive.org/release/53fa9da6-536b-4227-b7aa-2ba35ea83358/25370154227-1200.jpg"
+        }
+      ],
+      "links": [
+        {
+          "url": "REDACTED",
+          "name": "discogs"
+        },
+        {
+          "url": "REDACTED",
+          "name": "wikipedia"
+        },
+        {
+          "url": "REDACTED",
+          "name": "rateyourmusic"
+        }
+      ],
+      "lastSearchTime": "2026-04-20T23:57:04Z",
+      "statistics": {
+        "trackFileCount": 0,
+        "trackCount": 14,
+        "totalTrackCount": 14,
+        "sizeOnDisk": 0,
+        "percentOfTracks": 0
+      },
+      "id": 1656
+    },
+    {
+      "title": "Piano Collections: Final Fantasy VIII",
+      "disambiguation": "",
+      "overview": "",
+      "artistId": 66,
+      "foreignAlbumId": "a1da4373-faaf-31d0-99f0-3c92b8f5a988",
+      "monitored": true,
+      "anyReleaseOk": true,
+      "profileId": 1,
+      "duration": 2888929,
+      "albumType": "Album",
+      "secondaryTypes": [],
+      "mediumCount": 1,
+      "ratings": {
+        "votes": 2,
+        "value": 9.0
+      },
+      "releaseDate": "2000-01-21T00:00:00Z",
+      "releases": [
+        {
+          "id": 6718,
+          "albumId": 1655,
+          "foreignReleaseId": "729681d6-13e4-383e-a181-78aa4f7f923c",
+          "title": "Piano Collections: Final Fantasy VIII",
+          "status": "Official",
+          "duration": 2888929,
+          "trackCount": 13,
+          "media": [
+            {
+              "mediumNumber": 1,
+              "mediumName": "",
+              "mediumFormat": "CD"
+            }
+          ],
+          "mediumCount": 1,
+          "disambiguation": "",
+          "country": [
+            "Japan"
+          ],
+          "label": "REDACTED",
+          "format": "CD",
+          "monitored": true
+        },
+        {
+          "id": 6719,
+          "albumId": 1655,
+          "foreignReleaseId": "b8e20df1-513a-4a91-930d-73a9aa3e59f7",
+          "title": "Piano Collections: Final Fantasy VIII",
+          "status": "Bootleg",
+          "duration": 2888929,
+          "trackCount": 13,
+          "media": [
+            {
+              "mediumNumber": 1,
+              "mediumName": "",
+              "mediumFormat": "CD"
+            }
+          ],
+          "mediumCount": 1,
+          "disambiguation": "",
+          "country": [
+            "Taiwan"
+          ],
+          "label": "REDACTED",
+          "format": "CD",
+          "monitored": false
+        },
+        {
+          "id": 6720,
+          "albumId": 1655,
+          "foreignReleaseId": "e0b6702d-b50e-4133-905b-53b8f6c13fbd",
+          "title": "Piano Collections: Final Fantasy VIII",
+          "status": "Bootleg",
+          "duration": 2888929,
+          "trackCount": 13,
+          "media": [
+            {
+              "mediumNumber": 1,
+              "mediumName": "",
+              "mediumFormat": "CD"
+            }
+          ],
+          "mediumCount": 1,
+          "disambiguation": "",
+          "country": [
+            "Taiwan"
+          ],
+          "label": "REDACTED",
+          "format": "CD",
+          "monitored": false
+        },
+        {
+          "id": 6721,
+          "albumId": 1655,
+          "foreignReleaseId": "ac754a0a-c0f6-4a32-97df-3c80fe1fb122",
+          "title": "Piano Collections: Final Fantasy VIII",
+          "status": "Bootleg",
+          "duration": 2888929,
+          "trackCount": 13,
+          "media": [
+            {
+              "mediumNumber": 1,
+              "mediumName": "",
+              "mediumFormat": "CD"
+            }
+          ],
+          "mediumCount": 1,
+          "disambiguation": "",
+          "country": [
+            "Taiwan"
+          ],
+          "label": "REDACTED",
+          "format": "CD",
+          "monitored": false
+        },
+        {
+          "id": 6722,
+          "albumId": 1655,
+          "foreignReleaseId": "b21037a6-f695-4806-b6b5-7ee702742e3c",
+          "title": "Piano Collections: Final Fantasy VIII",
+          "status": "Bootleg",
+          "duration": 2888929,
+          "trackCount": 13,
+          "media": [
+            {
+              "mediumNumber": 1,
+              "mediumName": "",
+              "mediumFormat": "CD"
+            }
+          ],
+          "mediumCount": 1,
+          "disambiguation": "",
+          "country": [
+            "Taiwan"
+          ],
+          "label": "REDACTED",
+          "format": "CD",
+          "monitored": false
+        },
+        {
+          "id": 6723,
+          "albumId": 1655,
+          "foreignReleaseId": "13534dfd-b0bb-4547-8f79-0b08b4ee4160",
+          "title": "Piano Collections: Final Fantasy VIII",
+          "status": "Official",
+          "duration": 2888929,
+          "trackCount": 13,
+          "media": [
+            {
+              "mediumNumber": 1,
+              "mediumName": "",
+              "mediumFormat": "CD"
+            }
+          ],
+          "mediumCount": 1,
+          "disambiguation": "",
+          "country": [
+            "Japan"
+          ],
+          "label": "REDACTED",
+          "format": "CD",
+          "monitored": false
+        },
+        {
+          "id": 6724,
+          "albumId": 1655,
+          "foreignReleaseId": "05cbeba7-e6ee-4da2-a50a-25dafb524b46",
+          "title": "Piano Collections FINAL FANTASY VIII",
+          "status": "Official",
+          "duration": 2888932,
+          "trackCount": 13,
+          "media": [
+            {
+              "mediumNumber": 1,
+              "mediumName": "",
+              "mediumFormat": "Digital Media"
+            }
+          ],
+          "mediumCount": 1,
+          "disambiguation": "",
+          "country": [
+            "[Worldwide]"
+          ],
+          "label": "REDACTED",
+          "format": "Digital Media",
+          "monitored": false
+        }
+      ],
+      "genres": [
+        "Classical"
+      ],
+      "media": [
+        {
+          "mediumNumber": 1,
+          "mediumName": "",
+          "mediumFormat": "CD"
+        }
+      ],
+      "artist": {
+        "status": "continuing",
+        "ended": false,
+        "artistName": "\u690d\u677e\u4f38\u592b",
+        "foreignArtistId": "92bb085a-2924-4479-b627-181a1835d2f5",
+        "tadbId": 0,
+        "discogsId": 0,
+        "overview": "Nobuo Uematsu is a Japanese composer and keyboardist best known for his contributions to the Final Fantasy video game series by Square Enix. A self-taught musician, he began playing the piano at the age of twelve, with English singer-songwriter Elton John as one of his biggest influences in pursuing a musical career.",
+        "artistType": "Person",
+        "disambiguation": "video game, film & anime composer known for Final Fantasy",
+        "links": [
+          {
+            "url": "REDACTED",
+            "name": "discogs"
+          },
+          {
+            "url": "REDACTED",
+            "name": "square-enix"
+          },
+          {
+            "url": "REDACTED",
+            "name": "co"
+          },
+          {
+            "url": "REDACTED",
+            "name": "imdb"
+          },
+          {
+            "url": "REDACTED",
+            "name": "ocremix"
+          },
+          {
+            "url": "REDACTED",
+            "name": "co"
+          },
+          {
+            "url": "REDACTED",
+            "name": "generasia"
+          },
+          {
+            "url": "REDACTED",
+            "name": "generasia"
+          },
+          {
+            "url": "REDACTED",
+            "name": "vgmdb"
+          },
+          {
+            "url": "REDACTED",
+            "name": "last"
+          },
+          {
+            "url": "REDACTED",
+            "name": "viaf"
+          },
+          {
+            "url": "REDACTED",
+            "name": "allmusic"
+          },
+          {
+            "url": "REDACTED",
+            "name": "wikidata"
+          },
+          {
+            "url": "REDACTED",
+            "name": "twitter"
+          },
+          {
+            "url": "REDACTED",
+            "name": "twitter"
+          },
+          {
+            "url": "REDACTED",
+            "name": "apple"
+          },
+          {
+            "url": "REDACTED",
+            "name": "wikimedia"
+          },
+          {
+            "url": "REDACTED",
+            "name": "soundtrackcollector"
+          },
+          {
+            "url": "REDACTED",
+            "name": "spotify"
+          },
+          {
+            "url": "REDACTED",
+            "name": "bbc"
+          },
+          {
+            "url": "REDACTED",
+            "name": "videogam"
+          },
+          {
+            "url": "REDACTED",
+            "name": "worldcat"
+          },
+          {
+            "url": "REDACTED",
+            "name": "bnf"
+          },
+          {
+            "url": "REDACTED",
+            "name": "mobygames"
+          },
+          {
+            "url": "REDACTED",
+            "name": "musik-sammler"
+          },
+          {
+            "url": "REDACTED",
+            "name": "google"
+          },
+          {
+            "url": "REDACTED",
+            "name": "go"
+          },
+          {
+            "url": "REDACTED",
+            "name": "d-nb"
+          },
+          {
+            "url": "REDACTED",
+            "name": "loc"
+          },
+          {
+            "url": "REDACTED",
+            "name": "facebook"
+          },
+          {
+            "url": "REDACTED",
+            "name": "instagram"
+          },
+          {
+            "url": "REDACTED",
+            "name": "anison"
+          },
+          {
+            "url": "REDACTED",
+            "name": "utaitedb"
+          },
+          {
+            "url": "REDACTED",
+            "name": "wikia"
+          },
+          {
+            "url": "REDACTED",
+            "name": "animenewsnetwork"
+          },
+          {
+            "url": "REDACTED",
+            "name": "spirit-of-metal"
+          },
+          {
+            "url": "REDACTED",
+            "name": "livefans"
+          },
+          {
+            "url": "REDACTED",
+            "name": "genius"
+          },
+          {
+            "url": "REDACTED",
+            "name": "setlist"
+          },
+          {
+            "url": "REDACTED",
+            "name": "songkick"
+          },
+          {
+            "url": "REDACTED",
+            "name": "co"
+          },
+          {
+            "url": "REDACTED",
+            "name": "openlibrary"
+          },
+          {
+            "url": "REDACTED",
+            "name": "bandsintown"
+          },
+          {
+            "url": "REDACTED",
+            "name": "imvdb"
+          },
+          {
+            "url": "REDACTED",
+            "name": "whosampled"
+          },
+          {
+            "url": "REDACTED",
+            "name": "maniadb"
+          },
+          {
+            "url": "REDACTED",
+            "name": "muzikum"
+          },
+          {
+            "url": "REDACTED",
+            "name": "deezer"
+          },
+          {
+            "url": "REDACTED",
+            "name": "apple"
+          },
+          {
+            "url": "REDACTED",
+            "name": "tidal"
+          },
+          {
+            "url": "REDACTED",
+            "name": "apple"
+          },
+          {
+            "url": "REDACTED",
+            "name": "apple"
+          },
+          {
+            "url": "REDACTED",
+            "name": "rateyourmusic"
+          },
+          {
+            "url": "REDACTED",
+            "name": "theaudiodb"
+          },
+          {
+            "url": "REDACTED",
+            "name": "theaudiodb"
+          },
+          {
+            "url": "REDACTED",
+            "name": "spotify"
+          },
+          {
+            "url": "REDACTED",
+            "name": "spotify"
+          }
+        ],
+        "nextAlbum": null,
+        "lastAlbum": null,
+        "images": [
+          {
+            "url": "REDACTED",
+            "coverType": "clearlogo",
+            "extension": ".png"
+          },
+          {
+            "url": "REDACTED",
+            "coverType": "banner",
+            "extension": ".jpg"
+          },
+          {
+            "url": "REDACTED",
+            "coverType": "poster",
+            "extension": ".jpg"
+          },
+          {
+            "url": "REDACTED",
+            "coverType": "fanart",
+            "extension": ".jpg"
+          }
+        ],
+        "path": "/media/music/jason/\u690d\u677e\u4f38\u592b",
+        "qualityProfileId": 1,
+        "metadataProfileId": 1,
+        "monitored": true,
+        "monitorNewItems": "none",
+        "genres": [
+          "Electronic",
+          "Symphonic Rock",
+          "Orchestral",
+          "Modern Classical",
+          "Rock",
+          "Japanese Classical",
+          "Chiptune",
+          "Cinematic Classical",
+          "Metal",
+          "New Age",
+          "Progressive Rock"
+        ],
+        "cleanName": "\u690d\u677e\u4f38\u592b",
+        "sortName": "\u690d\u677e\u4f38\u592b",
+        "tags": [
+          4
+        ],
+        "added": "2026-01-12T02:38:46Z",
+        "ratings": {
+          "votes": 8,
+          "value": 9.5
+        },
+        "id": 66
+      },
+      "images": [
+        {
+          "url": "REDACTED",
+          "coverType": "cover",
+          "extension": ".jpg",
+          "remoteUrl": "https://images.lidarr.audio/cache/https://coverartarchive.org/release/729681d6-13e4-383e-a181-78aa4f7f923c/38713234916-1200.jpg"
+        },
+        {
+          "url": "REDACTED",
+          "coverType": "disc",
+          "extension": ".jpg",
+          "remoteUrl": "https://images.lidarr.audio/cache/https://coverartarchive.org/release/13534dfd-b0bb-4547-8f79-0b08b4ee4160/25370213415-1200.jpg"
+        }
+      ],
+      "links": [
+        {
+          "url": "REDACTED",
+          "name": "discogs"
+        }
+      ],
+      "lastSearchTime": "2026-04-21T19:01:11Z",
+      "statistics": {
+        "trackFileCount": 0,
+        "trackCount": 13,
+        "totalTrackCount": 13,
+        "sizeOnDisk": 0,
+        "percentOfTracks": 0
+      },
+      "id": 1655
+    },
+    {
+      "title": "Piano Collections: Final Fantasy V",
+      "disambiguation": "",
+      "overview": "",
+      "artistId": 66,
+      "foreignAlbumId": "c29af4f0-eb64-3a6d-b216-1e4136580dba",
+      "monitored": true,
+      "anyReleaseOk": true,
+      "profileId": 1,
+      "duration": 2795488,
+      "albumType": "Album",
+      "secondaryTypes": [],
+      "mediumCount": 1,
+      "ratings": {
+        "votes": 1,
+        "value": 8.0
+      },
+      "releaseDate": "1993-06-21T00:00:00Z",
+      "releases": [
+        {
+          "id": 6784,
+          "albumId": 1667,
+          "foreignReleaseId": "c715b58f-77e2-3831-bb01-e61f5d2235e7",
+          "title": "Piano Collections: Final Fantasy V",
+          "status": "Official",
+          "duration": 2795488,
+          "trackCount": 13,
+          "media": [
+            {
+              "mediumNumber": 1,
+              "mediumName": "",
+              "mediumFormat": "CD"
+            }
+          ],
+          "mediumCount": 1,
+          "disambiguation": "",
+          "country": [
+            "Japan"
+          ],
+          "label": "REDACTED",
+          "format": "CD",
+          "monitored": true
+        },
+        {
+          "id": 6785,
+          "albumId": 1667,
+          "foreignReleaseId": "cd12c241-1b9d-325a-a7b2-91c55f64c1d9",
+          "title": "Piano Collections: Final Fantasy V",
+          "status": "Official",
+          "duration": 2795488,
+          "trackCount": 13,
+          "media": [
+            {
+              "mediumNumber": 1,
+              "mediumName": "",
+              "mediumFormat": "CD"
+            }
+          ],
+          "mediumCount": 1,
+          "disambiguation": "",
+          "country": [
+            "Japan"
+          ],
+          "label": "REDACTED",
+          "format": "CD",
+          "monitored": false
+        },
+        {
+          "id": 6786,
+          "albumId": 1667,
+          "foreignReleaseId": "99e56c4e-768c-499e-941c-e1b8dcb1450f",
+          "title": "Piano Collections \"FINAL FANTASY V\"",
+          "status": "Official",
+          "duration": 2794000,
+          "trackCount": 13,
+          "media": [
+            {
+              "mediumNumber": 1,
+              "mediumName": "",
+              "mediumFormat": "CD"
+            }
+          ],
+          "mediumCount": 1,
+          "disambiguation": "",
+          "country": [
+            "Japan"
+          ],
+          "label": "REDACTED",
+          "format": "CD",
+          "monitored": false
+        },
+        {
+          "id": 6787,
+          "albumId": 1667,
+          "foreignReleaseId": "51318a72-a6d3-43a2-b03a-163a832d7dd2",
+          "title": "Piano Collections: Final Fantasy V",
+          "status": "Bootleg",
+          "duration": 2794000,
+          "trackCount": 13,
+          "media": [
+            {
+              "mediumNumber": 1,
+              "mediumName": "",
+              "mediumFormat": "CD"
+            }
+          ],
+          "mediumCount": 1,
+          "disambiguation": "",
+          "country": [
+            "Taiwan"
+          ],
+          "label": "REDACTED",
+          "format": "CD",
+          "monitored": false
+        },
+        {
+          "id": 6788,
+          "albumId": 1667,
+          "foreignReleaseId": "25806f76-045d-4511-8da0-bff850e946af",
+          "title": "Piano Collections: Final Fantasy V",
+          "status": "Official",
+          "duration": 2795488,
+          "trackCount": 13,
+          "media": [
+            {
+              "mediumNumber": 1,
+              "mediumName": "",
+              "mediumFormat": "CD"
+            }
+          ],
+          "mediumCount": 1,
+          "disambiguation": "",
+          "country": [
+            "Japan"
+          ],
+          "label": "REDACTED",
+          "format": "CD",
+          "monitored": false
+        },
+        {
+          "id": 6789,
+          "albumId": 1667,
+          "foreignReleaseId": "e74bd9da-ca44-4a0c-bc99-ed04dcd1a621",
+          "title": "Piano Collections: Final Fantasy V",
+          "status": "Bootleg",
+          "duration": 2795488,
+          "trackCount": 13,
+          "media": [
+            {
+              "mediumNumber": 1,
+              "mediumName": "",
+              "mediumFormat": "CD"
+            }
+          ],
+          "mediumCount": 1,
+          "disambiguation": "",
+          "country": [
+            "Taiwan"
+          ],
+          "label": "REDACTED",
+          "format": "CD",
+          "monitored": false
+        },
+        {
+          "id": 6790,
+          "albumId": 1667,
+          "foreignReleaseId": "0ef036a1-5ca3-47f5-ae6a-88cd6c297f7a",
+          "title": "Piano Collections FINAL FANTASY V",
+          "status": "Official",
+          "duration": 2791000,
+          "trackCount": 13,
+          "media": [
+            {
+              "mediumNumber": 1,
+              "mediumName": "",
+              "mediumFormat": "Digital Media"
+            }
+          ],
+          "mediumCount": 1,
+          "disambiguation": "",
+          "country": [],
+          "label": "REDACTED",
+          "format": "Digital Media",
+          "monitored": false
+        }
+      ],
+      "genres": [
+        "Classical"
+      ],
+      "media": [
+        {
+          "mediumNumber": 1,
+          "mediumName": "",
+          "mediumFormat": "CD"
+        }
+      ],
+      "artist": {
+        "status": "continuing",
+        "ended": false,
+        "artistName": "\u690d\u677e\u4f38\u592b",
+        "foreignArtistId": "92bb085a-2924-4479-b627-181a1835d2f5",
+        "tadbId": 0,
+        "discogsId": 0,
+        "overview": "Nobuo Uematsu is a Japanese composer and keyboardist best known for his contributions to the Final Fantasy video game series by Square Enix. A self-taught musician, he began playing the piano at the age of twelve, with English singer-songwriter Elton John as one of his biggest influences in pursuing a musical career.",
+        "artistType": "Person",
+        "disambiguation": "video game, film & anime composer known for Final Fantasy",
+        "links": [
+          {
+            "url": "REDACTED",
+            "name": "discogs"
+          },
+          {
+            "url": "REDACTED",
+            "name": "square-enix"
+          },
+          {
+            "url": "REDACTED",
+            "name": "co"
+          },
+          {
+            "url": "REDACTED",
+            "name": "imdb"
+          },
+          {
+            "url": "REDACTED",
+            "name": "ocremix"
+          },
+          {
+            "url": "REDACTED",
+            "name": "co"
+          },
+          {
+            "url": "REDACTED",
+            "name": "generasia"
+          },
+          {
+            "url": "REDACTED",
+            "name": "generasia"
+          },
+          {
+            "url": "REDACTED",
+            "name": "vgmdb"
+          },
+          {
+            "url": "REDACTED",
+            "name": "last"
+          },
+          {
+            "url": "REDACTED",
+            "name": "viaf"
+          },
+          {
+            "url": "REDACTED",
+            "name": "allmusic"
+          },
+          {
+            "url": "REDACTED",
+            "name": "wikidata"
+          },
+          {
+            "url": "REDACTED",
+            "name": "twitter"
+          },
+          {
+            "url": "REDACTED",
+            "name": "twitter"
+          },
+          {
+            "url": "REDACTED",
+            "name": "apple"
+          },
+          {
+            "url": "REDACTED",
+            "name": "wikimedia"
+          },
+          {
+            "url": "REDACTED",
+            "name": "soundtrackcollector"
+          },
+          {
+            "url": "REDACTED",
+            "name": "spotify"
+          },
+          {
+            "url": "REDACTED",
+            "name": "bbc"
+          },
+          {
+            "url": "REDACTED",
+            "name": "videogam"
+          },
+          {
+            "url": "REDACTED",
+            "name": "worldcat"
+          },
+          {
+            "url": "REDACTED",
+            "name": "bnf"
+          },
+          {
+            "url": "REDACTED",
+            "name": "mobygames"
+          },
+          {
+            "url": "REDACTED",
+            "name": "musik-sammler"
+          },
+          {
+            "url": "REDACTED",
+            "name": "google"
+          },
+          {
+            "url": "REDACTED",
+            "name": "go"
+          },
+          {
+            "url": "REDACTED",
+            "name": "d-nb"
+          },
+          {
+            "url": "REDACTED",
+            "name": "loc"
+          },
+          {
+            "url": "REDACTED",
+            "name": "facebook"
+          },
+          {
+            "url": "REDACTED",
+            "name": "instagram"
+          },
+          {
+            "url": "REDACTED",
+            "name": "anison"
+          },
+          {
+            "url": "REDACTED",
+            "name": "utaitedb"
+          },
+          {
+            "url": "REDACTED",
+            "name": "wikia"
+          },
+          {
+            "url": "REDACTED",
+            "name": "animenewsnetwork"
+          },
+          {
+            "url": "REDACTED",
+            "name": "spirit-of-metal"
+          },
+          {
+            "url": "REDACTED",
+            "name": "livefans"
+          },
+          {
+            "url": "REDACTED",
+            "name": "genius"
+          },
+          {
+            "url": "REDACTED",
+            "name": "setlist"
+          },
+          {
+            "url": "REDACTED",
+            "name": "songkick"
+          },
+          {
+            "url": "REDACTED",
+            "name": "co"
+          },
+          {
+            "url": "REDACTED",
+            "name": "openlibrary"
+          },
+          {
+            "url": "REDACTED",
+            "name": "bandsintown"
+          },
+          {
+            "url": "REDACTED",
+            "name": "imvdb"
+          },
+          {
+            "url": "REDACTED",
+            "name": "whosampled"
+          },
+          {
+            "url": "REDACTED",
+            "name": "maniadb"
+          },
+          {
+            "url": "REDACTED",
+            "name": "muzikum"
+          },
+          {
+            "url": "REDACTED",
+            "name": "deezer"
+          },
+          {
+            "url": "REDACTED",
+            "name": "apple"
+          },
+          {
+            "url": "REDACTED",
+            "name": "tidal"
+          },
+          {
+            "url": "REDACTED",
+            "name": "apple"
+          },
+          {
+            "url": "REDACTED",
+            "name": "apple"
+          },
+          {
+            "url": "REDACTED",
+            "name": "rateyourmusic"
+          },
+          {
+            "url": "REDACTED",
+            "name": "theaudiodb"
+          },
+          {
+            "url": "REDACTED",
+            "name": "theaudiodb"
+          },
+          {
+            "url": "REDACTED",
+            "name": "spotify"
+          },
+          {
+            "url": "REDACTED",
+            "name": "spotify"
+          }
+        ],
+        "nextAlbum": null,
+        "lastAlbum": null,
+        "images": [
+          {
+            "url": "REDACTED",
+            "coverType": "clearlogo",
+            "extension": ".png"
+          },
+          {
+            "url": "REDACTED",
+            "coverType": "banner",
+            "extension": ".jpg"
+          },
+          {
+            "url": "REDACTED",
+            "coverType": "poster",
+            "extension": ".jpg"
+          },
+          {
+            "url": "REDACTED",
+            "coverType": "fanart",
+            "extension": ".jpg"
+          }
+        ],
+        "path": "/media/music/jason/\u690d\u677e\u4f38\u592b",
+        "qualityProfileId": 1,
+        "metadataProfileId": 1,
+        "monitored": true,
+        "monitorNewItems": "none",
+        "genres": [
+          "Electronic",
+          "Symphonic Rock",
+          "Orchestral",
+          "Modern Classical",
+          "Rock",
+          "Japanese Classical",
+          "Chiptune",
+          "Cinematic Classical",
+          "Metal",
+          "New Age",
+          "Progressive Rock"
+        ],
+        "cleanName": "\u690d\u677e\u4f38\u592b",
+        "sortName": "\u690d\u677e\u4f38\u592b",
+        "tags": [
+          4
+        ],
+        "added": "2026-01-12T02:38:46Z",
+        "ratings": {
+          "votes": 8,
+          "value": 9.5
+        },
+        "id": 66
+      },
+      "images": [
+        {
+          "url": "REDACTED",
+          "coverType": "cover",
+          "extension": ".jpg",
+          "remoteUrl": "https://images.lidarr.audio/cache/https://coverartarchive.org/release/0ef036a1-5ca3-47f5-ae6a-88cd6c297f7a/37173702830-1200.jpg"
+        },
+        {
+          "url": "REDACTED",
+          "coverType": "disc",
+          "extension": ".jpg",
+          "remoteUrl": "https://images.lidarr.audio/cache/https://coverartarchive.org/release/25806f76-045d-4511-8da0-bff850e946af/13161868320-1200.jpg"
+        }
+      ],
+      "links": [
+        {
+          "url": "REDACTED",
+          "name": "discogs"
+        },
+        {
+          "url": "REDACTED",
+          "name": "rpgfan"
+        }
+      ],
+      "lastSearchTime": "2026-04-21T19:01:21Z",
+      "statistics": {
+        "trackFileCount": 0,
+        "trackCount": 13,
+        "totalTrackCount": 13,
+        "sizeOnDisk": 0,
+        "percentOfTracks": 0
+      },
+      "id": 1667
+    },
+    {
+      "title": "Piano Collections: Final Fantasy IV",
+      "disambiguation": "",
+      "overview": "",
+      "artistId": 66,
+      "foreignAlbumId": "8209b1c1-585f-34f0-bf2a-6c25f8e3711d",
+      "monitored": true,
+      "anyReleaseOk": true,
+      "profileId": 1,
+      "duration": 3444662,
+      "albumType": "Album",
+      "secondaryTypes": [],
+      "mediumCount": 1,
+      "ratings": {
+        "votes": 1,
+        "value": 6.0
+      },
+      "releaseDate": "1992-04-21T00:00:00Z",
+      "releases": [
+        {
+          "id": 6742,
+          "albumId": 1658,
+          "foreignReleaseId": "d2624292-0e94-3441-bcd9-eb63589473a9",
+          "title": "Piano Collections: Final Fantasy IV",
+          "status": "Official",
+          "duration": 3444662,
+          "trackCount": 14,
+          "media": [
+            {
+              "mediumNumber": 1,
+              "mediumName": "",
+              "mediumFormat": "CD"
+            }
+          ],
+          "mediumCount": 1,
+          "disambiguation": "",
+          "country": [
+            "Japan"
+          ],
+          "label": "REDACTED",
+          "format": "CD",
+          "monitored": true
+        },
+        {
+          "id": 6743,
+          "albumId": 1658,
+          "foreignReleaseId": "920d6333-364b-488c-b973-b30b11049b7a",
+          "title": "Piano Collections: Final Fantasy IV",
+          "status": "Bootleg",
+          "duration": 3444662,
+          "trackCount": 14,
+          "media": [
+            {
+              "mediumNumber": 1,
+              "mediumName": "",
+              "mediumFormat": "CD"
+            }
+          ],
+          "mediumCount": 1,
+          "disambiguation": "",
+          "country": [
+            "Taiwan"
+          ],
+          "label": "REDACTED",
+          "format": "CD",
+          "monitored": false
+        },
+        {
+          "id": 6744,
+          "albumId": 1658,
+          "foreignReleaseId": "636e958b-54bc-36e5-adc7-54f51ea4602e",
+          "title": "Piano Collections: Final Fantasy IV",
+          "status": "Official",
+          "duration": 3444662,
+          "trackCount": 14,
+          "media": [
+            {
+              "mediumNumber": 1,
+              "mediumName": "",
+              "mediumFormat": "CD"
+            }
+          ],
+          "mediumCount": 1,
+          "disambiguation": "",
+          "country": [
+            "Japan"
+          ],
+          "label": "REDACTED",
+          "format": "CD",
+          "monitored": false
+        },
+        {
+          "id": 6745,
+          "albumId": 1658,
+          "foreignReleaseId": "d1b7c8a4-a5f4-4f64-978f-1beb642c186c",
+          "title": "Piano Collections: Final Fantasy IV",
+          "status": "Official",
+          "duration": 3445000,
+          "trackCount": 14,
+          "media": [
+            {
+              "mediumNumber": 1,
+              "mediumName": "",
+              "mediumFormat": "CD"
+            }
+          ],
+          "mediumCount": 1,
+          "disambiguation": "",
+          "country": [
+            "Japan"
+          ],
+          "label": "REDACTED",
+          "format": "CD",
+          "monitored": false
+        },
+        {
+          "id": 6746,
+          "albumId": 1658,
+          "foreignReleaseId": "6fd7123b-207c-4d3f-8b1e-829d2740fc12",
+          "title": "Piano Collections FINAL FANTASY IV",
+          "status": "Official",
+          "duration": 3438000,
+          "trackCount": 14,
+          "media": [
+            {
+              "mediumNumber": 1,
+              "mediumName": "",
+              "mediumFormat": "Digital Media"
+            }
+          ],
+          "mediumCount": 1,
+          "disambiguation": "",
+          "country": [],
+          "label": "REDACTED",
+          "format": "Digital Media",
+          "monitored": false
+        }
+      ],
+      "genres": [
+        "Classical"
+      ],
+      "media": [
+        {
+          "mediumNumber": 1,
+          "mediumName": "",
+          "mediumFormat": "CD"
+        }
+      ],
+      "artist": {
+        "status": "continuing",
+        "ended": false,
+        "artistName": "\u690d\u677e\u4f38\u592b",
+        "foreignArtistId": "92bb085a-2924-4479-b627-181a1835d2f5",
+        "tadbId": 0,
+        "discogsId": 0,
+        "overview": "Nobuo Uematsu is a Japanese composer and keyboardist best known for his contributions to the Final Fantasy video game series by Square Enix. A self-taught musician, he began playing the piano at the age of twelve, with English singer-songwriter Elton John as one of his biggest influences in pursuing a musical career.",
+        "artistType": "Person",
+        "disambiguation": "video game, film & anime composer known for Final Fantasy",
+        "links": [
+          {
+            "url": "REDACTED",
+            "name": "discogs"
+          },
+          {
+            "url": "REDACTED",
+            "name": "square-enix"
+          },
+          {
+            "url": "REDACTED",
+            "name": "co"
+          },
+          {
+            "url": "REDACTED",
+            "name": "imdb"
+          },
+          {
+            "url": "REDACTED",
+            "name": "ocremix"
+          },
+          {
+            "url": "REDACTED",
+            "name": "co"
+          },
+          {
+            "url": "REDACTED",
+            "name": "generasia"
+          },
+          {
+            "url": "REDACTED",
+            "name": "generasia"
+          },
+          {
+            "url": "REDACTED",
+            "name": "vgmdb"
+          },
+          {
+            "url": "REDACTED",
+            "name": "last"
+          },
+          {
+            "url": "REDACTED",
+            "name": "viaf"
+          },
+          {
+            "url": "REDACTED",
+            "name": "allmusic"
+          },
+          {
+            "url": "REDACTED",
+            "name": "wikidata"
+          },
+          {
+            "url": "REDACTED",
+            "name": "twitter"
+          },
+          {
+            "url": "REDACTED",
+            "name": "twitter"
+          },
+          {
+            "url": "REDACTED",
+            "name": "apple"
+          },
+          {
+            "url": "REDACTED",
+            "name": "wikimedia"
+          },
+          {
+            "url": "REDACTED",
+            "name": "soundtrackcollector"
+          },
+          {
+            "url": "REDACTED",
+            "name": "spotify"
+          },
+          {
+            "url": "REDACTED",
+            "name": "bbc"
+          },
+          {
+            "url": "REDACTED",
+            "name": "videogam"
+          },
+          {
+            "url": "REDACTED",
+            "name": "worldcat"
+          },
+          {
+            "url": "REDACTED",
+            "name": "bnf"
+          },
+          {
+            "url": "REDACTED",
+            "name": "mobygames"
+          },
+          {
+            "url": "REDACTED",
+            "name": "musik-sammler"
+          },
+          {
+            "url": "REDACTED",
+            "name": "google"
+          },
+          {
+            "url": "REDACTED",
+            "name": "go"
+          },
+          {
+            "url": "REDACTED",
+            "name": "d-nb"
+          },
+          {
+            "url": "REDACTED",
+            "name": "loc"
+          },
+          {
+            "url": "REDACTED",
+            "name": "facebook"
+          },
+          {
+            "url": "REDACTED",
+            "name": "instagram"
+          },
+          {
+            "url": "REDACTED",
+            "name": "anison"
+          },
+          {
+            "url": "REDACTED",
+            "name": "utaitedb"
+          },
+          {
+            "url": "REDACTED",
+            "name": "wikia"
+          },
+          {
+            "url": "REDACTED",
+            "name": "animenewsnetwork"
+          },
+          {
+            "url": "REDACTED",
+            "name": "spirit-of-metal"
+          },
+          {
+            "url": "REDACTED",
+            "name": "livefans"
+          },
+          {
+            "url": "REDACTED",
+            "name": "genius"
+          },
+          {
+            "url": "REDACTED",
+            "name": "setlist"
+          },
+          {
+            "url": "REDACTED",
+            "name": "songkick"
+          },
+          {
+            "url": "REDACTED",
+            "name": "co"
+          },
+          {
+            "url": "REDACTED",
+            "name": "openlibrary"
+          },
+          {
+            "url": "REDACTED",
+            "name": "bandsintown"
+          },
+          {
+            "url": "REDACTED",
+            "name": "imvdb"
+          },
+          {
+            "url": "REDACTED",
+            "name": "whosampled"
+          },
+          {
+            "url": "REDACTED",
+            "name": "maniadb"
+          },
+          {
+            "url": "REDACTED",
+            "name": "muzikum"
+          },
+          {
+            "url": "REDACTED",
+            "name": "deezer"
+          },
+          {
+            "url": "REDACTED",
+            "name": "apple"
+          },
+          {
+            "url": "REDACTED",
+            "name": "tidal"
+          },
+          {
+            "url": "REDACTED",
+            "name": "apple"
+          },
+          {
+            "url": "REDACTED",
+            "name": "apple"
+          },
+          {
+            "url": "REDACTED",
+            "name": "rateyourmusic"
+          },
+          {
+            "url": "REDACTED",
+            "name": "theaudiodb"
+          },
+          {
+            "url": "REDACTED",
+            "name": "theaudiodb"
+          },
+          {
+            "url": "REDACTED",
+            "name": "spotify"
+          },
+          {
+            "url": "REDACTED",
+            "name": "spotify"
+          }
+        ],
+        "nextAlbum": null,
+        "lastAlbum": null,
+        "images": [
+          {
+            "url": "REDACTED",
+            "coverType": "clearlogo",
+            "extension": ".png"
+          },
+          {
+            "url": "REDACTED",
+            "coverType": "banner",
+            "extension": ".jpg"
+          },
+          {
+            "url": "REDACTED",
+            "coverType": "poster",
+            "extension": ".jpg"
+          },
+          {
+            "url": "REDACTED",
+            "coverType": "fanart",
+            "extension": ".jpg"
+          }
+        ],
+        "path": "/media/music/jason/\u690d\u677e\u4f38\u592b",
+        "qualityProfileId": 1,
+        "metadataProfileId": 1,
+        "monitored": true,
+        "monitorNewItems": "none",
+        "genres": [
+          "Electronic",
+          "Symphonic Rock",
+          "Orchestral",
+          "Modern Classical",
+          "Rock",
+          "Japanese Classical",
+          "Chiptune",
+          "Cinematic Classical",
+          "Metal",
+          "New Age",
+          "Progressive Rock"
+        ],
+        "cleanName": "\u690d\u677e\u4f38\u592b",
+        "sortName": "\u690d\u677e\u4f38\u592b",
+        "tags": [
+          4
+        ],
+        "added": "2026-01-12T02:38:46Z",
+        "ratings": {
+          "votes": 8,
+          "value": 9.5
+        },
+        "id": 66
+      },
+      "images": [
+        {
+          "url": "REDACTED",
+          "coverType": "cover",
+          "extension": ".jpg",
+          "remoteUrl": "https://images.lidarr.audio/cache/https://coverartarchive.org/release/d2624292-0e94-3441-bcd9-eb63589473a9/9652326014-1200.jpg"
+        },
+        {
+          "url": "REDACTED",
+          "coverType": "disc",
+          "extension": ".jpg",
+          "remoteUrl": "https://images.lidarr.audio/cache/https://coverartarchive.org/release/d1b7c8a4-a5f4-4f64-978f-1beb642c186c/11485124222-1200.jpg"
+        }
+      ],
+      "links": [],
+      "lastSearchTime": "2026-04-21T19:01:31Z",
+      "statistics": {
+        "trackFileCount": 0,
+        "trackCount": 14,
+        "totalTrackCount": 14,
+        "sizeOnDisk": 0,
+        "percentOfTracks": 0
+      },
+      "id": 1658
+    }
+  ]
+}

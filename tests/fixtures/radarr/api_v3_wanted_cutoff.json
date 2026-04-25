@@ -1,0 +1,894 @@
+{
+  "page": 1,
+  "pageSize": 10,
+  "sortKey": "movieMetadata.sortTitle",
+  "sortDirection": "descending",
+  "totalRecords": 53,
+  "records": [
+    {
+      "title": "Young Einstein",
+      "originalTitle": "Young Einstein",
+      "originalLanguage": {
+        "id": 1,
+        "name": "English"
+      },
+      "alternateTitles": [],
+      "secondaryYearSourceId": 0,
+      "sortTitle": "young einstein",
+      "sizeOnDisk": 1660847507,
+      "status": "released",
+      "overview": "Albert Einstein is the son of a Tasmanian apple farmer, who discovers the secret of splitting the beer atom to put the bubbles back into beer. When Albert travels to Sydney to patent his invention he meets beatuiful French scientist Marie Curie, as well as several unscrupulous types who try to take advantage of the naive genius and his invention.",
+      "inCinemas": "1988-12-15T00:00:00Z",
+      "releaseDate": "1989-03-15T00:00:00Z",
+      "images": [
+        {
+          "coverType": "poster",
+          "url": "REDACTED",
+          "remoteUrl": "https://image.tmdb.org/t/p/original/6D4yLH2gMBt8S64f8Arrt39cFFb.jpg"
+        },
+        {
+          "coverType": "fanart",
+          "url": "REDACTED",
+          "remoteUrl": "https://image.tmdb.org/t/p/original/ke8MuTHVveodT0YQxV1TcTh4BXd.jpg"
+        }
+      ],
+      "website": "",
+      "year": 1988,
+      "youTubeTrailerId": "dEL_BT_Z6Yg",
+      "studio": "Warner Bros. Pictures",
+      "path": "/media/movies/Young Einstein (1988)",
+      "qualityProfileId": 11,
+      "hasFile": true,
+      "movieFileId": 4065,
+      "monitored": true,
+      "minimumAvailability": "released",
+      "isAvailable": true,
+      "folderName": "/media/movies/Young Einstein (1988)",
+      "runtime": 91,
+      "cleanTitle": "youngeinstein",
+      "imdbId": "tt0096486",
+      "tmdbId": 10001,
+      "titleSlug": "10001",
+      "certification": "PG",
+      "genres": [
+        "Comedy",
+        "Science Fiction"
+      ],
+      "keywords": [
+        "1900s",
+        "atomic bomb",
+        "early 1900s",
+        "marie curie",
+        "nobel prize",
+        "rock 'n' roll",
+        "tasmania",
+        "tasmanian"
+      ],
+      "tags": [
+        1
+      ],
+      "added": "2026-04-02T00:15:18Z",
+      "ratings": {
+        "imdb": {
+          "votes": 9633,
+          "value": 5.3,
+          "type": "user"
+        },
+        "tmdb": {
+          "votes": 168,
+          "value": 5.241,
+          "type": "user"
+        },
+        "rottenTomatoes": {
+          "votes": 0,
+          "value": 36,
+          "type": "user"
+        },
+        "trakt": {
+          "votes": 354,
+          "value": 5.99153,
+          "type": "user"
+        }
+      },
+      "popularity": 0.8007,
+      "lastSearchTime": "2026-04-21T07:39:20Z",
+      "statistics": {
+        "movieFileCount": 1,
+        "sizeOnDisk": 1660847507,
+        "releaseGroups": [
+          "HANDJOB"
+        ]
+      },
+      "id": 2189
+    },
+    {
+      "title": "Winnie the Pooh: Un-Valentine's Day",
+      "originalTitle": "Winnie the Pooh: Un-Valentine's Day",
+      "originalLanguage": {
+        "id": 1,
+        "name": "English"
+      },
+      "alternateTitles": [],
+      "secondaryYearSourceId": 0,
+      "sortTitle": "winnie the pooh unvalentines day",
+      "sizeOnDisk": 426011974,
+      "status": "released",
+      "overview": "It's the time of year when Pooh and his pals like to show how much they care. But Rabbit insists they cancel Valentine's Day because of the flood of cards that littered the Hundred Acre Wood last year! Reluctantly, everyone agrees, until someone anonymously sends Pooh a pot of honey.  Contains stories from two episodes of the series The New Adventures of Winnie the Pooh - 'Un-Valentine\u2019s Day' and 'Three Little Piglets'",
+      "physicalRelease": "1995-01-13T00:00:00Z",
+      "releaseDate": "1995-01-13T00:00:00Z",
+      "images": [
+        {
+          "coverType": "poster",
+          "url": "REDACTED",
+          "remoteUrl": "https://image.tmdb.org/t/p/original/lCI9rJi5UBWEgmgspapg2zL37yF.jpg"
+        }
+      ],
+      "website": "",
+      "year": 1995,
+      "youTubeTrailerId": "",
+      "studio": "",
+      "path": "/media/movies/Winnie the Pooh - Un-Valentine's Day (1995)",
+      "qualityProfileId": 11,
+      "hasFile": true,
+      "movieFileId": 3116,
+      "monitored": true,
+      "minimumAvailability": "released",
+      "isAvailable": true,
+      "folderName": "/media/movies/Winnie the Pooh - Un-Valentine's Day (1995)",
+      "runtime": 30,
+      "cleanTitle": "winniepoohunvalentinesday",
+      "imdbId": "tt0220172",
+      "tmdbId": 264417,
+      "titleSlug": "264417",
+      "certification": "PG",
+      "genres": [
+        "Animation",
+        "Family"
+      ],
+      "keywords": [
+        "valentine's day",
+        "valentines",
+        "winnie the pooh"
+      ],
+      "tags": [
+        3
+      ],
+      "added": "2025-03-05T02:16:03Z",
+      "ratings": {
+        "imdb": {
+          "votes": 139,
+          "value": 6.9,
+          "type": "user"
+        },
+        "tmdb": {
+          "votes": 20,
+          "value": 6.9,
+          "type": "user"
+        },
+        "trakt": {
+          "votes": 17,
+          "value": 6.17647,
+          "type": "user"
+        }
+      },
+      "popularity": 0.3572,
+      "lastSearchTime": "2026-04-21T07:38:57Z",
+      "statistics": {
+        "movieFileCount": 1,
+        "sizeOnDisk": 426011974,
+        "releaseGroups": [
+          "HQP2P"
+        ]
+      },
+      "id": 961
+    },
+    {
+      "title": "Winnie the Pooh: Seasons of Giving",
+      "originalTitle": "Winnie the Pooh: Seasons of Giving",
+      "originalLanguage": {
+        "id": 1,
+        "name": "English"
+      },
+      "alternateTitles": [],
+      "secondaryYearSourceId": 0,
+      "sortTitle": "winnie the pooh seasons of giving",
+      "sizeOnDisk": 1256886940,
+      "status": "released",
+      "overview": "A collection of Winnie the Pooh's memorable holiday adventures, as Winnie, Piglet, and Tigger set out to find the right ingredients for Winter, Rabbit learns how to manage a complicated Thanksgiving dinner, and everyone gets a special visit from a new friend. Featuring a number of delightful songs for singing along, this video is sure to become a favorite holiday classic.",
+      "inCinemas": "1999-11-08T00:00:00Z",
+      "releaseDate": "2000-02-06T00:00:00Z",
+      "images": [
+        {
+          "coverType": "poster",
+          "url": "REDACTED",
+          "remoteUrl": "https://image.tmdb.org/t/p/original/x3XpdngNOIHSdGEwqav6PLyWjMz.jpg"
+        },
+        {
+          "coverType": "fanart",
+          "url": "REDACTED",
+          "remoteUrl": "https://image.tmdb.org/t/p/original/2zpQBibD3FVcpxOkbJ6JUoWgCQ0.jpg"
+        }
+      ],
+      "website": "https://winniethepooh.disney.com/",
+      "year": 1999,
+      "youTubeTrailerId": "z9CvZau1tdI",
+      "studio": "Walt Disney Studios Home Entertainment",
+      "path": "/media/movies/Winnie the Pooh - Seasons of Giving (1999)",
+      "qualityProfileId": 11,
+      "hasFile": true,
+      "movieFileId": 1195,
+      "monitored": true,
+      "minimumAvailability": "released",
+      "isAvailable": true,
+      "folderName": "/media/movies/Winnie the Pooh - Seasons of Giving (1999)",
+      "runtime": 70,
+      "cleanTitle": "winniepoohseasonsgiving",
+      "imdbId": "tt0240219",
+      "tmdbId": 261339,
+      "titleSlug": "261339",
+      "certification": "G",
+      "genres": [
+        "Animation",
+        "Family"
+      ],
+      "keywords": [
+        "cartoon",
+        "cartoon donkey",
+        "cartoon pig",
+        "cartoon rabbit",
+        "christmas",
+        "kangaroo",
+        "piglet",
+        "thanksgiving",
+        "tiger",
+        "woman director"
+      ],
+      "tags": [
+        3
+      ],
+      "added": "2025-03-05T02:15:56Z",
+      "ratings": {
+        "imdb": {
+          "votes": 1854,
+          "value": 6.7,
+          "type": "user"
+        },
+        "tmdb": {
+          "votes": 92,
+          "value": 6.8,
+          "type": "user"
+        },
+        "trakt": {
+          "votes": 153,
+          "value": 6.37909,
+          "type": "user"
+        }
+      },
+      "popularity": 0.9359,
+      "lastSearchTime": "2026-04-21T07:37:57Z",
+      "statistics": {
+        "movieFileCount": 1,
+        "sizeOnDisk": 1256886940,
+        "releaseGroups": [
+          "HANDJOB"
+        ]
+      },
+      "id": 959
+    },
+    {
+      "title": "The Wind in the Willows",
+      "originalTitle": "The Wind in the Willows",
+      "originalLanguage": {
+        "id": 1,
+        "name": "English"
+      },
+      "alternateTitles": [],
+      "secondaryYearSourceId": 0,
+      "sortTitle": "wind in the willows",
+      "sizeOnDisk": 1593967107,
+      "status": "released",
+      "overview": "This animated fairy tale for kids tells the classic story of a dapper, automobile loving fellow named Mr. Toad, whose passion becomes a problem when he's framed for stealing cars by a band of rogue weasels.",
+      "inCinemas": "1949-05-10T00:00:00Z",
+      "digitalRelease": "1955-02-02T00:00:00Z",
+      "releaseDate": "1955-02-02T00:00:00Z",
+      "images": [
+        {
+          "coverType": "poster",
+          "url": "REDACTED",
+          "remoteUrl": "https://image.tmdb.org/t/p/original/zMRokrWAWccuqgDCNvQoKJEPHlS.jpg"
+        },
+        {
+          "coverType": "fanart",
+          "url": "REDACTED",
+          "remoteUrl": "https://image.tmdb.org/t/p/original/60PR160XjA0gqNYsPeHlka5RoHg.jpg"
+        }
+      ],
+      "website": "",
+      "year": 1949,
+      "youTubeTrailerId": "",
+      "studio": "Walt Disney Productions",
+      "path": "/media/movies/The Wind in the Willows (1949)",
+      "qualityProfileId": 11,
+      "hasFile": true,
+      "movieFileId": 3120,
+      "monitored": true,
+      "minimumAvailability": "released",
+      "isAvailable": true,
+      "folderName": "/media/movies/The Wind in the Willows (1949)",
+      "runtime": 34,
+      "cleanTitle": "thewindinwillows",
+      "imdbId": "tt0042044",
+      "tmdbId": 125244,
+      "titleSlug": "125244",
+      "genres": [
+        "Animation",
+        "Family",
+        "Comedy"
+      ],
+      "keywords": [
+        "addiction",
+        "based on children's book",
+        "framed for a crime",
+        "short film",
+        "toad"
+      ],
+      "tags": [
+        6
+      ],
+      "added": "2025-09-08T21:31:50Z",
+      "ratings": {
+        "imdb": {
+          "votes": 2354,
+          "value": 7.2,
+          "type": "user"
+        },
+        "tmdb": {
+          "votes": 66,
+          "value": 6.7,
+          "type": "user"
+        },
+        "trakt": {
+          "votes": 53,
+          "value": 6.5283,
+          "type": "user"
+        }
+      },
+      "popularity": 0.6687,
+      "lastSearchTime": "2026-04-21T06:15:05Z",
+      "statistics": {
+        "movieFileCount": 1,
+        "sizeOnDisk": 1593967107,
+        "releaseGroups": []
+      },
+      "id": 1366
+    },
+    {
+      "title": "The Wind in the Willows",
+      "originalTitle": "The Wind in the Willows",
+      "originalLanguage": {
+        "id": 1,
+        "name": "English"
+      },
+      "alternateTitles": [],
+      "secondaryYearSourceId": 0,
+      "sortTitle": "wind in the willows",
+      "sizeOnDisk": 1458936576,
+      "status": "released",
+      "overview": "Jailed for his reckless driving, rambunctious Mr. Toad has to escape from prison when his beloved Toad Hall comes under threat from the wily weasels, who plan to build a dog food factory on the very meadow sold to them by Toad himself.",
+      "inCinemas": "1996-10-16T00:00:00Z",
+      "physicalRelease": "1998-10-05T00:00:00Z",
+      "releaseDate": "1998-10-05T00:00:00Z",
+      "images": [
+        {
+          "coverType": "poster",
+          "url": "REDACTED",
+          "remoteUrl": "https://image.tmdb.org/t/p/original/nsOM52BsDeHzc0yI27bah2OWems.jpg"
+        },
+        {
+          "coverType": "fanart",
+          "url": "REDACTED",
+          "remoteUrl": "https://image.tmdb.org/t/p/original/rzjexcxnYvATkfeyRE7ujpiA7Al.jpg"
+        }
+      ],
+      "website": "",
+      "year": 1996,
+      "youTubeTrailerId": "v75ncrfTK2Y",
+      "studio": "Allied Filmmakers",
+      "path": "/media/movies/The Wind in the Willows (1996)",
+      "qualityProfileId": 11,
+      "hasFile": true,
+      "movieFileId": 3027,
+      "monitored": true,
+      "minimumAvailability": "released",
+      "isAvailable": true,
+      "folderName": "/media/movies/The Wind in the Willows (1996)",
+      "runtime": 88,
+      "cleanTitle": "thewindinwillows",
+      "imdbId": "tt0118172",
+      "tmdbId": 47168,
+      "titleSlug": "47168",
+      "certification": "PG",
+      "genres": [
+        "Fantasy",
+        "Comedy",
+        "Family",
+        "Adventure"
+      ],
+      "keywords": [
+        "based on children's book",
+        "courtroom",
+        "mole",
+        "musical",
+        "prison",
+        "prison break",
+        "rabbit",
+        "rat",
+        "slapstick comedy",
+        "united kingdom",
+        "weasel"
+      ],
+      "tags": [
+        4
+      ],
+      "added": "2025-10-10T20:40:02Z",
+      "ratings": {
+        "imdb": {
+          "votes": 3635,
+          "value": 6.3,
+          "type": "user"
+        },
+        "tmdb": {
+          "votes": 58,
+          "value": 5.7,
+          "type": "user"
+        },
+        "rottenTomatoes": {
+          "votes": 0,
+          "value": 78,
+          "type": "user"
+        },
+        "trakt": {
+          "votes": 80,
+          "value": 6.75,
+          "type": "user"
+        }
+      },
+      "popularity": 1.1334,
+      "lastSearchTime": "2026-04-21T06:15:36Z",
+      "statistics": {
+        "movieFileCount": 1,
+        "sizeOnDisk": 1458936576,
+        "releaseGroups": []
+      },
+      "id": 1542
+    },
+    {
+      "title": "The Wiggles: Cold Spaghetti Western",
+      "originalTitle": "The Wiggles: Cold Spaghetti Western",
+      "originalLanguage": {
+        "id": 1,
+        "name": "English"
+      },
+      "alternateTitles": [],
+      "secondaryYearSourceId": 0,
+      "sortTitle": "wiggles cold spaghetti western",
+      "sizeOnDisk": 364427264,
+      "status": "released",
+      "overview": "Get ready to boot scoot down the Wiggly Trail in this western adventure with wiggly music. Cow pokes Greg, Anthony, Murray and Jeff are hustling to the Town Fair. Their friend, Alfonso the Master Pasta Maker, must win the Country Cook-Off to save the Great Western Cafe from going bust. But there's bad news, pardner! Alfonso lost the secret ingredient to his pasta. With help from Foodman, the Superhero of Sustenance, The Wiggles ride off into the sunset having saved the day - and the cafe!",
+      "inCinemas": "2004-03-29T00:00:00Z",
+      "releaseDate": "2004-06-27T00:00:00Z",
+      "images": [
+        {
+          "coverType": "poster",
+          "url": "REDACTED",
+          "remoteUrl": "https://image.tmdb.org/t/p/original/brLXPcGHpsHjwHsLIKVLZPgSsSH.jpg"
+        },
+        {
+          "coverType": "fanart",
+          "url": "REDACTED",
+          "remoteUrl": "https://image.tmdb.org/t/p/original/Q1TbNfSBmLlgXCyqgb7mFnKWRM.jpg"
+        }
+      ],
+      "website": "http://www.thewiggles.com/",
+      "year": 2004,
+      "youTubeTrailerId": "",
+      "studio": "The Wiggles Pty Ltd",
+      "path": "/media/movies/The Wiggles - Cold Spaghetti Western (2004)",
+      "qualityProfileId": 11,
+      "hasFile": true,
+      "movieFileId": 4023,
+      "monitored": true,
+      "minimumAvailability": "released",
+      "isAvailable": true,
+      "folderName": "/media/movies/The Wiggles - Cold Spaghetti Western (2004)",
+      "runtime": 58,
+      "cleanTitle": "thewigglescoldspaghettiwestern",
+      "imdbId": "tt0459600",
+      "tmdbId": 20098,
+      "titleSlug": "20098",
+      "certification": "G",
+      "genres": [
+        "Family",
+        "Western",
+        "Music"
+      ],
+      "keywords": [],
+      "tags": [
+        4
+      ],
+      "added": "2026-03-25T02:03:03Z",
+      "ratings": {
+        "imdb": {
+          "votes": 80,
+          "value": 7.4,
+          "type": "user"
+        },
+        "tmdb": {
+          "votes": 2,
+          "value": 5,
+          "type": "user"
+        },
+        "trakt": {
+          "votes": 6,
+          "value": 6.5,
+          "type": "user"
+        }
+      },
+      "popularity": 0.3542,
+      "lastSearchTime": "2026-04-21T06:14:03Z",
+      "statistics": {
+        "movieFileCount": 1,
+        "sizeOnDisk": 364427264,
+        "releaseGroups": [
+          "SPRiNTER"
+        ]
+      },
+      "id": 2174
+    },
+    {
+      "title": "Vulgar",
+      "originalTitle": "Vulgar",
+      "originalLanguage": {
+        "id": 1,
+        "name": "English"
+      },
+      "alternateTitles": [],
+      "secondaryYear": 2000,
+      "secondaryYearSourceId": 0,
+      "sortTitle": "vulgar",
+      "sizeOnDisk": 1458370475,
+      "status": "released",
+      "overview": "Vulgar is about a man who is a children's clown but has not been getting much luck lately. He lives in a cheap apartment which he can't even afford. Bums are constantly sleeping in his run down car and crashing on his lawn. He has a nagging mother who lives in a nursing home, and his best friend is a moocher. One day he comes up with the idea to become a bachelor clown.",
+      "inCinemas": "2002-04-26T00:00:00Z",
+      "physicalRelease": "2002-09-03T00:00:00Z",
+      "releaseDate": "2002-09-03T00:00:00Z",
+      "images": [
+        {
+          "coverType": "poster",
+          "url": "REDACTED",
+          "remoteUrl": "https://image.tmdb.org/t/p/original/aLdezroGbHDP0w0jOLwxXjgrgma.jpg"
+        },
+        {
+          "coverType": "fanart",
+          "url": "REDACTED",
+          "remoteUrl": "https://image.tmdb.org/t/p/original/133PkTc8SCcl6q9PaKtsoE1sYOK.jpg"
+        }
+      ],
+      "website": "",
+      "year": 2002,
+      "youTubeTrailerId": "YLjXcYWKnJg",
+      "studio": "Chango Productions",
+      "path": "/media/movies/Vulgar (2002)",
+      "qualityProfileId": 11,
+      "hasFile": true,
+      "movieFileId": 3685,
+      "monitored": true,
+      "minimumAvailability": "released",
+      "isAvailable": true,
+      "folderName": "/media/movies/Vulgar (2002)",
+      "runtime": 87,
+      "cleanTitle": "vulgar",
+      "imdbId": "tt0120467",
+      "tmdbId": 19085,
+      "titleSlug": "19085",
+      "certification": "R",
+      "genres": [
+        "Drama",
+        "Horror",
+        "Thriller",
+        "Crime"
+      ],
+      "keywords": [
+        "rape and revenge"
+      ],
+      "tags": [
+        4
+      ],
+      "added": "2026-02-04T16:06:02Z",
+      "ratings": {
+        "imdb": {
+          "votes": 4421,
+          "value": 5.2,
+          "type": "user"
+        },
+        "tmdb": {
+          "votes": 49,
+          "value": 5.3,
+          "type": "user"
+        },
+        "metacritic": {
+          "votes": 0,
+          "value": 5,
+          "type": "user"
+        },
+        "rottenTomatoes": {
+          "votes": 0,
+          "value": 22,
+          "type": "user"
+        },
+        "trakt": {
+          "votes": 85,
+          "value": 5.6,
+          "type": "user"
+        }
+      },
+      "popularity": 1.1969,
+      "lastSearchTime": "2026-04-21T06:13:03Z",
+      "statistics": {
+        "movieFileCount": 1,
+        "sizeOnDisk": 1458370475,
+        "releaseGroups": [
+          "N2K7"
+        ]
+      },
+      "id": 1974
+    },
+    {
+      "title": "The Twilight Zone: Rod Serling's Lost Classics",
+      "originalTitle": "The Twilight Zone: Rod Serling's Lost Classics",
+      "originalLanguage": {
+        "id": 1,
+        "name": "English"
+      },
+      "alternateTitles": [],
+      "secondaryYearSourceId": 0,
+      "sortTitle": "twilight zone rod serlings lost classics",
+      "sizeOnDisk": 839315456,
+      "status": "released",
+      "overview": "James Earl Jones hosts this film based on two stories by the late Rod Serling, who wrote the stories of the original 'The Twilight Zone' (1959) series. In \"The Theatre,\" a young woman attends a movie only to find that her life story is being revealed on the screen. In \"Where the Dead Are,\" a Boston surgeon in 1868 searches for a scientist who may have the answer to a medical mystery.",
+      "inCinemas": "1994-05-19T00:00:00Z",
+      "physicalRelease": "1995-03-11T00:00:00Z",
+      "releaseDate": "1995-03-11T00:00:00Z",
+      "images": [
+        {
+          "coverType": "poster",
+          "url": "REDACTED",
+          "remoteUrl": "https://image.tmdb.org/t/p/original/kP63L0E7Ftesqq8npKDQV4v078L.jpg"
+        },
+        {
+          "coverType": "fanart",
+          "url": "REDACTED",
+          "remoteUrl": "https://image.tmdb.org/t/p/original/v0SrcfKHc0i008clyJSbgslIKJh.jpg"
+        }
+      ],
+      "website": "",
+      "year": 1994,
+      "youTubeTrailerId": "ym0HvJSajW4",
+      "studio": "O'Hara-Horowitz Productions",
+      "path": "/media/movies/The Twilight Zone - Rod Serling's Lost Classics (1994)",
+      "qualityProfileId": 11,
+      "hasFile": true,
+      "movieFileId": 4018,
+      "monitored": true,
+      "minimumAvailability": "released",
+      "isAvailable": true,
+      "folderName": "/media/movies/The Twilight Zone - Rod Serling's Lost Classics (1994)",
+      "runtime": 89,
+      "cleanTitle": "thetwilightzonerodserlingslostclassics",
+      "imdbId": "tt0111520",
+      "tmdbId": 29803,
+      "titleSlug": "29803",
+      "certification": "NR",
+      "genres": [
+        "Fantasy",
+        "Thriller",
+        "Mystery",
+        "Horror",
+        "Science Fiction",
+        "TV Movie"
+      ],
+      "keywords": [],
+      "tags": [
+        1
+      ],
+      "added": "2026-03-16T03:05:18Z",
+      "ratings": {
+        "imdb": {
+          "votes": 1421,
+          "value": 6.3,
+          "type": "user"
+        },
+        "tmdb": {
+          "votes": 21,
+          "value": 6.6,
+          "type": "user"
+        },
+        "trakt": {
+          "votes": 40,
+          "value": 6.575,
+          "type": "user"
+        }
+      },
+      "popularity": 0.7611,
+      "lastSearchTime": "2026-04-21T06:12:04Z",
+      "statistics": {
+        "movieFileCount": 1,
+        "sizeOnDisk": 839315456,
+        "releaseGroups": [
+          "SN"
+        ]
+      },
+      "id": 2155
+    },
+    {
+      "title": "Treehouse Hostage",
+      "originalTitle": "Treehouse Hostage",
+      "originalLanguage": {
+        "id": 1,
+        "name": "English"
+      },
+      "alternateTitles": [],
+      "secondaryYearSourceId": 0,
+      "sortTitle": "treehouse hostage",
+      "sizeOnDisk": 2474694550,
+      "status": "released",
+      "overview": "Timmy Taylor and his two friends, Stevie and Buddy capture escaped convict Carl Banks (Jim Varney) and hold him hostage in their treehouse over the weekend so that Timmy can use Carl as his current event project at school on Monday. The boys then find that Carl is mixed up in a counterfeiting ring that could spell trouble for them too.",
+      "physicalRelease": "1999-09-24T00:00:00Z",
+      "releaseDate": "1999-09-24T00:00:00Z",
+      "images": [
+        {
+          "coverType": "poster",
+          "url": "REDACTED",
+          "remoteUrl": "https://image.tmdb.org/t/p/original/r4KwytadQuUzfWwIyCH6kfojjUH.jpg"
+        },
+        {
+          "coverType": "fanart",
+          "url": "REDACTED",
+          "remoteUrl": "https://image.tmdb.org/t/p/original/bxm1qdkEC7LlNAJjJyConmqKA9s.jpg"
+        }
+      ],
+      "website": "",
+      "year": 1999,
+      "youTubeTrailerId": "",
+      "studio": "PorchLight Entertainment",
+      "path": "/media/movies/Treehouse Hostage (1999)",
+      "qualityProfileId": 11,
+      "hasFile": true,
+      "movieFileId": 4168,
+      "monitored": true,
+      "minimumAvailability": "released",
+      "isAvailable": true,
+      "folderName": "/media/movies/Treehouse Hostage (1999)",
+      "runtime": 91,
+      "cleanTitle": "treehousehostage",
+      "imdbId": "tt0165994",
+      "tmdbId": 258574,
+      "titleSlug": "258574",
+      "certification": "PG",
+      "genres": [
+        "Comedy",
+        "Family"
+      ],
+      "keywords": [
+        "school",
+        "tree house"
+      ],
+      "tags": [
+        4
+      ],
+      "added": "2026-04-19T19:21:03Z",
+      "ratings": {
+        "imdb": {
+          "votes": 762,
+          "value": 5.2,
+          "type": "user"
+        },
+        "tmdb": {
+          "votes": 11,
+          "value": 4.227,
+          "type": "user"
+        },
+        "trakt": {
+          "votes": 8,
+          "value": 6.5,
+          "type": "user"
+        }
+      },
+      "popularity": 1.706,
+      "lastSearchTime": "2026-04-21T20:01:59Z",
+      "statistics": {
+        "movieFileCount": 1,
+        "sizeOnDisk": 2474694550,
+        "releaseGroups": [
+          "1999-DVDRip"
+        ]
+      },
+      "id": 2233
+    },
+    {
+      "title": "Tourettes: I Swear I Can't Help It",
+      "originalTitle": "Tourettes: I Swear I Can't Help It",
+      "originalLanguage": {
+        "id": 1,
+        "name": "English"
+      },
+      "alternateTitles": [],
+      "secondaryYearSourceId": 0,
+      "sortTitle": "tourettes i swear i cant help it",
+      "sizeOnDisk": 1188241834,
+      "status": "released",
+      "overview": "A documentary featuring several individuals with Tourettes Syndrome and how they are able to cope with the condition.",
+      "inCinemas": "2009-05-27T00:00:00Z",
+      "releaseDate": "2009-08-25T00:00:00Z",
+      "images": [
+        {
+          "coverType": "poster",
+          "url": "REDACTED",
+          "remoteUrl": "https://image.tmdb.org/t/p/original/fX0qLwMeW054txCIoK3Pa2uvUGK.jpg"
+        }
+      ],
+      "website": "",
+      "year": 2009,
+      "youTubeTrailerId": "2Jn2r4J1mSU",
+      "studio": "Prospect Wales",
+      "path": "/media/movies/Tourettes - I Swear I Can't Help It (2009)",
+      "qualityProfileId": 11,
+      "hasFile": true,
+      "movieFileId": 3924,
+      "monitored": true,
+      "minimumAvailability": "released",
+      "isAvailable": true,
+      "folderName": "/media/movies/Tourettes - I Swear I Can't Help It (2009)",
+      "runtime": 58,
+      "cleanTitle": "tourettesiswearicanthelpit",
+      "imdbId": "tt1496013",
+      "tmdbId": 173576,
+      "titleSlug": "173576",
+      "genres": [
+        "Documentary"
+      ],
+      "keywords": [],
+      "tags": [
+        4
+      ],
+      "added": "2026-02-27T18:12:04Z",
+      "ratings": {
+        "imdb": {
+          "votes": 134,
+          "value": 7.6,
+          "type": "user"
+        },
+        "tmdb": {
+          "votes": 2,
+          "value": 7,
+          "type": "user"
+        },
+        "trakt": {
+          "votes": 2,
+          "value": 8.5,
+          "type": "user"
+        }
+      },
+      "popularity": 0.1408,
+      "lastSearchTime": "2026-04-21T06:11:06Z",
+      "statistics": {
+        "movieFileCount": 1,
+        "sizeOnDisk": 1188241834,
+        "releaseGroups": [
+          "iCX"
+        ]
+      },
+      "id": 2064
+    }
+  ]
+}

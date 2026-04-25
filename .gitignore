@@ -41,3 +41,4 @@ config.yaml
 
 # Project-specific
 docs/*/
+.worktrees/
