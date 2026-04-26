@@ -158,11 +158,13 @@ global:
 
 Target number of missing items to search globally per cycle.
 
-- Set to `0` to disable missing item searches entirely
-- Set to `-1` for unlimited (search all available missing items)
-- Set to a positive integer to limit the batch size
+- Set to `0` to disable missing item searches entirely.
+- Set to `-1` for unlimited (search all available missing items).
+- Set to a positive integer to limit the total global batch size.
 
-When set to a limited value (positive integer), items are distributed across instances based on their `weight` settings. When set to unlimited (`-1`), all instances fetch all available items and weights are ignored.
+When set to a limited value (positive integer), search slots are distributed across all active instances using weighted round-robin. If an instance has fewer missing items than its allocated share, its unused slots are automatically redistributed to other instances with remaining backlogs. This ensures the full global budget is utilized every cycle.
+
+When set to unlimited (`-1`), all instances fetch all available items and items are returned in weighted round-robin order.
 
 Rangarr will fetch multiple pages if necessary to reach the target after filtering.
 
@@ -179,11 +181,13 @@ global:
 
 Target number of upgrade items to search globally per cycle.
 
-- Set to `0` to disable upgrade searches entirely
-- Set to `-1` for unlimited (search all available upgrades)
-- Set to a positive integer to limit the batch size
+- Set to `0` to disable upgrade searches entirely.
+- Set to `-1` for unlimited (search all available upgrades).
+- Set to a positive integer to limit the total global batch size.
 
-When set to a limited value (positive integer), items are distributed across instances based on their `weight` settings. When set to unlimited (`-1`), all instances fetch all available items and weights are ignored.
+When set to a limited value (positive integer), search slots are distributed across all active instances using weighted round-robin. If an instance has fewer upgrade items than its allocated share, its unused slots are automatically redistributed to other instances with remaining backlogs. This ensures the full global budget is utilized every cycle.
+
+When set to unlimited (`-1`), all instances fetch all available items and items are returned in weighted round-robin order.
 
 Upgrade candidates come from two sources each cycle:
 
@@ -206,6 +210,22 @@ global:
 **Type:** Integer | **Default:** `30` | **Minimum:** `1`
 
 Seconds to wait between individual search commands. Prevents overwhelming *arr instances with simultaneous requests.
+
+#### `interleave_instances`
+
+**Type:** Boolean | **Default:** `false`
+
+Controls the execution order of the search queue.
+
+- `false` (default): Executes all allocated items for one instance before moving to the next.
+- `true`: Alternates between instances in round-robin order for the duration of the cycle.
+
+Interleaving is recommended for spreading search pressure evenly across multiple *arr instances and shared indexers. Global weighted slot allocation applies in both modes.
+
+```yaml
+global:
+  interleave_instances: true  # Spread load across instances
+```
 
 #### `retry_interval_days`
 

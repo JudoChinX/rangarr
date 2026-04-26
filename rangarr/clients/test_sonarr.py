@@ -134,7 +134,7 @@ _season_pack_unaired_filter_cases = {
         'upgrade_records': [],
         'supplemental_records': [],
         'season_air_status': {(30, 3): None},
-        'expected_ids': [30],
+        'expected_ids': [(30, 3)],
     },
     'supplemental_path_falls_back_to_individual_for_airing_season': {
         'missing_batch_size': 0,
@@ -199,7 +199,7 @@ def test_season_pack_falls_back_to_individual_for_airing_seasons(
             upgrade_batch_size=upgrade_batch_size,
         )
 
-    result_ids = [item_id for item_id, _, _ in results]
+    result_ids = [item[0] for item in results]
     assert result_ids == expected_ids
 
 
@@ -231,9 +231,9 @@ def test_sonarr_season_pack_supplemental_appended_to_items() -> None:
     ):
         results = client.get_media_to_search(missing_batch_size=0, upgrade_batch_size=10)
 
-    result_ids = [item_id for item_id, _, _ in results]
-    assert 10 in result_ids
-    assert 20 in result_ids
+    result_ids = [item[0] for item in results]
+    assert (10, 1) in result_ids
+    assert (20, 2) in result_ids
 
 
 def test_sonarr_season_pack_supplemental_deduplicates_seen_seasons() -> None:
@@ -249,8 +249,8 @@ def test_sonarr_season_pack_supplemental_deduplicates_seen_seasons() -> None:
     ):
         results = client.get_media_to_search(missing_batch_size=0, upgrade_batch_size=10)
 
-    result_ids = [item_id for item_id, _, _ in results]
-    assert result_ids.count(10) == 1
+    result_ids = [item[0] for item in results]
+    assert result_ids.count((10, 1)) == 1
 
 
 def test_sonarr_season_pack_supplemental_respects_upgrade_batch_size() -> None:
