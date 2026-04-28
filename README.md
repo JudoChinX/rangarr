@@ -28,8 +28,12 @@
 - **Smart Staggering:** Prevents "thundering herd" issues by spacing out search requests.
 - **Proportional Interleaving:** Balanced searching between missing items and upgrades.
 - **Weighted Distribution:** Prioritize specific instances (e.g., prioritize Movies over Music).
+- **Season Pack Support:** Group Sonarr searches by season, with automatic fallback to individual episode searches for seasons that are still airing.
 - **Retry Logic:** Intelligent skip windows for recently searched items, plus automatic startup connection retries (3 attempts, 10-second delay) to handle Docker Compose race conditions.
 - **Custom Format Score Awareness:** Finds Radarr and Sonarr items below their custom format score target — candidates *arr's Cutoff Unmet endpoint silently omits.
+- **Tag Filtering:** Restrict searches to items with specific *arr tags, or exclude tagged items entirely.
+- **Active Hours:** Restrict searches to a configured time window (e.g., overnight only) to avoid peak indexer load.
+- **Flexible Configuration:** Configure via `config.yaml` with `${ENV_VAR}` expansion for secrets, or skip the file entirely and use environment variables only.
 - **No External Connections:** Only communicates with the *arr instances you configure. No telemetry, no phone-home, no external services.
 
 ## Why Rangarr?

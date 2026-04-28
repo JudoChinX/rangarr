@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.3] - 2026-04-28
+
+### Fixed
+
+- Sorting and interleaving of Sonarr season pack searches are now handled correctly. Season pack items and individual episode items are sorted according to `search_order` and properly interleaved before being dispatched. (#52)
+
 ## [0.6.2] - 2026-04-25
 
 ### Fixed
