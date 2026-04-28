@@ -99,7 +99,8 @@ def _expand_env_vars(obj: Any) -> Any:
     elif isinstance(obj, list):
         result = [_expand_env_vars(item) for item in obj]
     elif isinstance(obj, str):
-        result = re.sub(r'\$\{([^}]+)\}', _expand_env_var, obj)
+        expanded = re.sub(r'\$\{([^}]+)\}', _expand_env_var, obj)
+        result = _parse_env_value(expanded) if expanded != obj else expanded
     else:
         result = obj
     return result

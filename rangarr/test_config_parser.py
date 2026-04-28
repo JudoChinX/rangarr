@@ -24,6 +24,63 @@ _load_config_cases = {
     },
 }
 
+_load_config_expand_env_var_type_cases = {
+    'numeric_converts_to_int': {
+        'env_vars': {'RUN_INTERVAL': '3600'},
+        'yaml_content': (
+            'global:\n'
+            '  interval: ${RUN_INTERVAL}\n'
+            'instances:\n'
+            '  my-radarr:\n'
+            '    type: radarr\n'
+            '    url: http://radarr:7878\n'
+            '    api_key: test-key\n'
+            '    enabled: true\n'
+        ),
+        'expected_result': {'global_settings': {'run_interval_minutes': 60}},
+    },
+    'boolean_true_converts_to_bool': {
+        'env_vars': {'DRY_RUN': 'true'},
+        'yaml_content': (
+            'global:\n'
+            '  dry_run: ${DRY_RUN}\n'
+            'instances:\n'
+            '  my-radarr:\n'
+            '    type: radarr\n'
+            '    url: http://radarr:7878\n'
+            '    api_key: test-key\n'
+            '    enabled: true\n'
+        ),
+        'expected_result': {'global_settings': {'dry_run': True}},
+    },
+    'boolean_false_converts_to_bool': {
+        'env_vars': {'DRY_RUN': 'false'},
+        'yaml_content': (
+            'global:\n'
+            '  dry_run: ${DRY_RUN}\n'
+            'instances:\n'
+            '  my-radarr:\n'
+            '    type: radarr\n'
+            '    url: http://radarr:7878\n'
+            '    api_key: test-key\n'
+            '    enabled: true\n'
+        ),
+        'expected_result': {'global_settings': {'dry_run': False}},
+    },
+    'partial_substitution_stays_string': {
+        'env_vars': {'APP_PORT': '7878'},
+        'yaml_content': (
+            'instances:\n'
+            '  my-radarr:\n'
+            '    type: radarr\n'
+            '    url: http://radarr:${APP_PORT}\n'
+            '    api_key: test-key\n'
+            '    enabled: true\n'
+        ),
+        'expected_result': {'instances': {'radarr': [{'url': 'http://radarr:7878'}]}},
+    },
+}
+
 _parse_config_cases = {
     'not_a_dict_string': {
         'config_data': 'not a dict\nanother string',
@@ -812,3 +869,22 @@ def test_load_config_leaves_plain_string_values_unchanged() -> None:
     instance = result['instances']['radarr'][0]
     assert instance['url'] == 'http://localhost:7878'
     assert instance['api_key'] == 'somekey'
+
+
+@pytest.mark.parametrize(
+    'env_vars, yaml_content, expected_result',
+    [
+        (case['env_vars'], case['yaml_content'], case['expected_result'])
+        for case in _load_config_expand_env_var_type_cases.values()
+    ],
+    ids=list(_load_config_expand_env_var_type_cases.keys()),
+)
+def test_load_config_expand_env_var_type(
+    tmp_path: Any, monkeypatch: Any, env_vars: Any, yaml_content: Any, expected_result: Any
+) -> None:
+    """Test load_config correctly type-converts ${VAR} expansions in YAML to their Python equivalent."""
+    for var, val in env_vars.items():
+        monkeypatch.setenv(var, val)
+    config_file = tmp_path / 'config.yaml'
+    config_file.write_text(yaml_content)
+    assert_config_result(load_config(str(config_file)), expected_result)
