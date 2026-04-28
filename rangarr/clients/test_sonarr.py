@@ -1,8 +1,11 @@
 """Tests specific to the SonarrClient implementation."""
 
+import logging
+from unittest.mock import MagicMock
 from unittest.mock import patch
 
 import pytest
+import requests
 
 from rangarr.clients.arr import SonarrClient
 from tests.builders import ClientBuilder
@@ -10,6 +13,37 @@ from tests.builders import SonarrEpisodeFileRecordBuilder
 from tests.builders import SonarrRecordBuilder
 from tests.builders import SonarrSeriesRecordBuilder
 from tests.builders import mock_fetch_list_factory
+
+
+def test_collect_season_pack_records_returns_individual_for_airing_season() -> None:
+    """Test _collect_season_pack_records returns episode MediaItems when the season is still airing."""
+    client = ClientBuilder().sonarr().with_settings(season_packs=True, retry_interval_days=0).build()
+    records = [
+        SonarrRecordBuilder().with_id(99).with_series('Show A').with_series_id(10).with_episode(1, 1).aired().build(),
+    ]
+    seen_seasons: set[tuple[int, int]] = set()
+    season_air_status = {(10, 1): '2030-01-01T00:00:00Z'}
+
+    result = client._collect_season_pack_records(  # pylint: disable=protected-access
+        records, 10, 'missing', seen_seasons, True, season_air_status
+    )
+
+    assert result == [(99, 'missing', 'Show A - S01E01 - Test Episode')]
+
+
+def test_collect_season_pack_records_returns_season_item() -> None:
+    """Test _collect_season_pack_records returns a ``season:`` string ID MediaItem for completed seasons."""
+    client = ClientBuilder().sonarr().with_settings(season_packs=True, retry_interval_days=0).build()
+    records = [
+        SonarrRecordBuilder().with_id(1).with_series('Show A').with_series_id(10).with_episode(1, 1).aired().build(),
+    ]
+    seen_seasons: set[tuple[int, int]] = set()
+
+    result = client._collect_season_pack_records(  # pylint: disable=protected-access
+        records, 10, 'missing', seen_seasons, True, {}
+    )
+
+    assert result == [('season:10:1', 'missing', 'Show A - Season 01')]
 
 
 def test_fetch_season_air_status_builds_lookup() -> None:
@@ -134,7 +168,7 @@ _season_pack_unaired_filter_cases = {
         'upgrade_records': [],
         'supplemental_records': [],
         'season_air_status': {(30, 3): None},
-        'expected_ids': [30],
+        'expected_ids': ['season:30:3'],
     },
     'supplemental_path_falls_back_to_individual_for_airing_season': {
         'missing_batch_size': 0,
@@ -215,6 +249,34 @@ def test_sonarr_client_season_packs_defaults_to_false() -> None:
     assert client.season_packs is False
 
 
+def test_sonarr_season_pack_cross_pass_deduplication_preserves_reason() -> None:
+    """Test that a season in both missing and upgrade endpoints appears once with reason='missing'."""
+    client = ClientBuilder().sonarr().with_settings(season_packs=True, retry_interval_days=0).build()
+    shared_record = (
+        SonarrRecordBuilder().with_id(1).with_series('Show A').with_series_id(10).with_episode(1, 1).aired().build()
+    )
+    upgrade_only_record = (
+        SonarrRecordBuilder().with_id(2).with_series('Show B').with_series_id(20).with_episode(1, 1).aired().build()
+    )
+
+    def mock_fetch_unlimited(endpoint: str) -> list[dict]:
+        if 'missing' in endpoint:
+            return [shared_record]
+        return [shared_record, upgrade_only_record]
+
+    with (
+        patch.object(client, '_fetch_unlimited', side_effect=mock_fetch_unlimited),
+        patch.object(client, '_fetch_season_air_status', return_value={}),
+        patch.object(client, '_get_custom_format_score_unmet_records', return_value=[]),
+    ):
+        results = client.get_media_to_search(missing_batch_size=10, upgrade_batch_size=10)
+
+    assert [(item_id, reason) for item_id, reason, _ in results] == [
+        ('season:10:1', 'missing'),
+        ('season:20:1', 'upgrade'),
+    ]
+
+
 def test_sonarr_season_pack_supplemental_appended_to_items() -> None:
     """Test supplemental season pairs are added to _season_pack_items in season_packs mode."""
     client = ClientBuilder().sonarr().with_settings(season_packs=True, retry_interval_days=0).build()
@@ -232,8 +294,8 @@ def test_sonarr_season_pack_supplemental_appended_to_items() -> None:
         results = client.get_media_to_search(missing_batch_size=0, upgrade_batch_size=10)
 
     result_ids = [item_id for item_id, _, _ in results]
-    assert 10 in result_ids
-    assert 20 in result_ids
+    assert 'season:10:1' in result_ids
+    assert 'season:20:2' in result_ids
 
 
 def test_sonarr_season_pack_supplemental_deduplicates_seen_seasons() -> None:
@@ -250,7 +312,41 @@ def test_sonarr_season_pack_supplemental_deduplicates_seen_seasons() -> None:
         results = client.get_media_to_search(missing_batch_size=0, upgrade_batch_size=10)
 
     result_ids = [item_id for item_id, _, _ in results]
-    assert result_ids.count(10) == 1
+    assert result_ids.count('season:10:1') == 1
+
+
+def test_sonarr_season_pack_supplemental_interleaves_with_missing() -> None:
+    """Test that supplemental upgrade records are interleaved proportionally with missing items."""
+    client = ClientBuilder().sonarr().with_settings(season_packs=True, retry_interval_days=0).build()
+    missing_records = [
+        SonarrRecordBuilder().with_id(1).with_series('Show A').with_series_id(10).with_episode(1, 1).aired().build(),
+        SonarrRecordBuilder().with_id(2).with_series('Show B').with_series_id(20).with_episode(1, 1).aired().build(),
+    ]
+    upgrade_records = [
+        SonarrRecordBuilder().with_id(3).with_series('Show C').with_series_id(30).with_episode(1, 1).aired().build(),
+    ]
+    supplemental_records = [
+        SonarrRecordBuilder().with_id(4).with_series('Show D').with_series_id(40).with_episode(1, 1).aired().build(),
+    ]
+
+    def mock_fetch_unlimited(endpoint: str) -> list[dict]:
+        if 'missing' in endpoint:
+            return missing_records
+        return upgrade_records
+
+    with (
+        patch.object(client, '_fetch_unlimited', side_effect=mock_fetch_unlimited),
+        patch.object(client, '_fetch_season_air_status', return_value={}),
+        patch.object(client, '_get_custom_format_score_unmet_records', return_value=supplemental_records),
+    ):
+        results = client.get_media_to_search(missing_batch_size=10, upgrade_batch_size=10)
+
+    assert [(item_id, reason) for item_id, reason, _ in results] == [
+        ('season:10:1', 'missing'),
+        ('season:30:1', 'upgrade'),
+        ('season:20:1', 'missing'),
+        ('season:40:1', 'upgrade'),
+    ]
 
 
 def test_sonarr_season_pack_supplemental_respects_upgrade_batch_size() -> None:
@@ -423,3 +519,57 @@ def test_sonarr_supplemental_skips_unmonitored_series() -> None:
         result = client._get_custom_format_upgrade_records(profile_cutoffs)  # pylint: disable=protected-access
 
     assert [rec['id'] for rec in result] == []
+
+
+def test_sonarr_trigger_single_episode_delegates_to_base() -> None:
+    """Test _trigger_single dispatches EpisodeSearch for integer IDs via super()."""
+    client = ClientBuilder().sonarr().with_settings(stagger_interval_seconds=0).build()
+    mock_resp = MagicMock()
+    mock_resp.raise_for_status.return_value = None
+    client.session.post = MagicMock(return_value=mock_resp)
+
+    client._trigger_single(100, 'missing', 'Show B - S02E01 - Title', 1, 1)  # pylint: disable=protected-access
+
+    client.session.post.assert_called_once()
+    assert client.session.post.call_args.args[0] == 'http://test/api/v3/command'
+    assert client.session.post.call_args.kwargs['json'] == {'name': 'EpisodeSearch', 'episodeIds': [100]}
+
+
+def test_sonarr_trigger_single_season_pack_dry_run(caplog: pytest.LogCaptureFixture) -> None:
+    """Test _trigger_single logs DRY RUN and makes no POST when dry_run is True."""
+    client = ClientBuilder().sonarr().with_settings(dry_run=True, stagger_interval_seconds=0).build()
+    client.session.post = MagicMock()
+
+    with caplog.at_level(logging.INFO):
+        client._trigger_single('season:10:1', 'missing', 'Show A - Season 01', 1, 1)  # pylint: disable=protected-access
+
+    client.session.post.assert_not_called()
+    assert 'DRY RUN' in caplog.text
+
+
+def test_sonarr_trigger_single_season_pack_handles_request_exception(caplog: pytest.LogCaptureFixture) -> None:
+    """Test _trigger_single logs a SeasonSearch error and does not raise on RequestException."""
+    client = ClientBuilder().sonarr().with_settings(stagger_interval_seconds=0).build()
+    client.session.post = MagicMock(side_effect=requests.RequestException('timeout'))
+
+    with caplog.at_level(logging.ERROR):
+        client._trigger_single('season:10:1', 'missing', 'Show A - Season 01', 1, 1)  # pylint: disable=protected-access
+
+    assert 'Failed to trigger SeasonSearch' in caplog.text
+
+
+def test_sonarr_trigger_single_season_pack_posts_season_search() -> None:
+    """Test _trigger_single dispatches SeasonSearch with correct seriesId and seasonNumber."""
+    client = ClientBuilder().sonarr().with_settings(stagger_interval_seconds=0).build()
+    mock_resp = MagicMock()
+    mock_resp.raise_for_status.return_value = None
+    client.session.post = MagicMock(return_value=mock_resp)
+
+    client._trigger_single('season:10:1', 'missing', 'Show A - Season 01', 1, 1)  # pylint: disable=protected-access
+
+    client.session.post.assert_called_once()
+    assert client.session.post.call_args.kwargs['json'] == {
+        'name': 'SeasonSearch',
+        'seriesId': 10,
+        'seasonNumber': 1,
+    }
