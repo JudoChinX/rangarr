@@ -57,8 +57,7 @@ def test_search_cycle_dispatches_searches(
         _run_search_cycle(active_clients, system_config)
 
     assert '--- Starting search cycle ---' in caplog.text
-    assert '[RealRadarr] Triggering search' in caplog.text
-    assert '[RealSonarr] Triggering search' in caplog.text
+    assert 'Total search batch: 3 item(s)' in caplog.text
 
-    radarr_client.trigger_search.assert_called_once()
+    assert radarr_client.trigger_search.call_count == 2
     sonarr_client.trigger_search.assert_called_once()

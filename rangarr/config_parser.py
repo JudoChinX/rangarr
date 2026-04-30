@@ -36,6 +36,10 @@ SETTINGS_SCHEMA = {
         'default': False,
         'type': bool,
     },
+    'interleave_instances': {
+        'default': False,
+        'type': bool,
+    },
     'search_order': {
         'default': 'last_searched_ascending',
         'type': str,

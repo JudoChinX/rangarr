@@ -70,9 +70,10 @@ config.yaml → config_parser.py → main.py → ArrClient instances → *arr AP
 
 **Key Functions:**
 - `run()`: Loads configuration and starts the infinite orchestration loop.
-- `_run_search_cycle()`: Executes one search cycle across all enabled instances.
+- `_run_search_cycle()`: Executes one search cycle across all enabled instances using a 3-stage pipeline (Collect, Allocate, Execute).
 - `build_arr_clients()`: Instantiates all *arr clients from configuration.
-- `_calculate_batch()`: Distributes global batch sizes based on instance weights.
+- `_allocate_slots()`: Centralized allocator that distributes global search slots across instances using weighted round-robin.
+- `_build_final_queue()`: Constructs the ordered execution list, optionally interleaving items between instances.
 
 **No Network Activity:** Only calls client methods; does not make HTTP requests directly.
 
@@ -100,8 +101,9 @@ config.yaml → config_parser.py → main.py → ArrClient instances → *arr AP
 - `LidarrClient`: Lidarr-specific implementation (uses `/api/v1/` endpoints).
 
 **Key Methods:**
-- `get_media_to_search()`: Fetches, sorts, and interleaves missing/upgrade items from wanted endpoints up to the configured batch sizes.
+- `get_media_to_search()`: Fetches, sorts, and filters missing/upgrade items from wanted endpoints. Returns the full backlog for global allocation.
 - `_get_target_media()`: Fetches all records via `_fetch_unlimited()`, sorts them client-side, and applies retry-window and availability filtering.
+- `_interleave_items()`: Proportionally interleaves missing and upgrade items within a single instance's results.
 - `_get_custom_format_score_unmet_records()`: Orchestrates the supplemental upgrade pass — fetches quality profiles, then delegates to `_get_custom_format_upgrade_records()`.
 - `_get_custom_format_upgrade_records()`: Per-client override that finds items where `customFormatScore` is below the profile's `cutoffFormatScore`. Monitored status is enforced for all records (movies, series, and episodes) before scoring. No-op in base class and `LidarrClient`.
 - `_fetch_movie_file_scores()`: Radarr — fetches custom format scores for a list of movie file IDs, batched at 100 IDs per request.
@@ -358,7 +360,7 @@ The small codebase size makes comprehensive security auditing feasible.
 Don't trust documentation — verify the claims:
 
 1. **Run the tests:** `pytest` — See that security-relevant code is tested.
-2. **Read the code:** Start with `rangarr/main.py` — ~288 lines.
+2. **Read the code:** Start with `rangarr/main.py` — a manageable entry point.
 3. **Check the API calls:** Enable `LOG_LEVEL=DEBUG` — Every HTTP request is logged.
 4. **Review dependencies:** `cat requirements.txt` — Two libraries, both standard.
 

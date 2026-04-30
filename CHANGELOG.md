@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **Global search slot allocation:** Rangarr now uses a centralized weighted round-robin "dealer" to distribute search slots across all active instances rather than processing each instance independently. The search cycle runs as a three-stage pipeline:
+  1. **Collect** — every instance reports its full candidate list (missing and upgrade items separately).
+  2. **Allocate** — a global slot budget is dealt out across all instances using weighted round-robin, automatically redistributing any slots freed up by instances with empty backlogs.
+  3. **Execute** — the final queue runs all of one instance's allocated items before moving to the next, with the configured stagger between each search. Set `interleave_instances: true` to interleave items across all instances in round-robin order instead.
+
+  Previously, each instance was processed sequentially to completion before the next began. The new behavior means search pressure is spread evenly across all instances and their shared indexers throughout the cycle rather than concentrated in bursts per instance.
+
+- **Unlimited mode now distributes across instances.** When `missing_batch_size` or `upgrade_batch_size` is `-1`, items from all instances are returned in weighted round-robin order rather than instance-by-instance. The total number of items searched is unchanged.
+
 ## [0.6.3] - 2026-04-28
 
 ### Fixed

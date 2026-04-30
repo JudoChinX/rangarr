@@ -25,8 +25,10 @@
 ## Key Features
 
 - **Multi-Instance Support:** Manage Radarr, Sonarr, and Lidarr from a single service.
+- **Global Slot Allocation:** Efficiently distributes search slots across all instances, ensuring no search capacity is wasted.
+- **Instance Interleaving:** Spreads search pressure evenly across multiple *arr instances and shared indexers throughout the cycle.
 - **Smart Staggering:** Prevents "thundering herd" issues by spacing out search requests.
-- **Proportional Interleaving:** Balanced searching between missing items and upgrades.
+- **Proportional Interleaving:** Balanced searching between missing items and upgrades within each instance.
 - **Weighted Distribution:** Prioritize specific instances (e.g., prioritize Movies over Music).
 - **Season Pack Support:** Group Sonarr searches by season, with automatic fallback to individual episode searches for seasons that are still airing.
 - **Retry Logic:** Intelligent skip windows for recently searched items, plus automatic startup connection retries (3 attempts, 10-second delay) to handle Docker Compose race conditions.
@@ -82,6 +84,7 @@ global:
   stagger_interval_seconds: 30 # Wait 30s between searches
   missing_batch_size: 20      # Search 20 missing items per cycle (0=disabled, -1=unlimited)
   upgrade_batch_size: 10      # Search 10 upgrade-eligible items per cycle (0=disabled, -1=unlimited)
+  interleave_instances: true  # Alternate between instances during search
   search_order: last_searched_ascending  # Prioritize items not searched recently
 
 instances:

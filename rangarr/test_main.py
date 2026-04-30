@@ -11,9 +11,6 @@ from unittest.mock import patch
 import pytest
 
 from rangarr.config_parser import get_setting_default
-from rangarr.main import _calculate_batch
-from rangarr.main import _calculate_eta
-from rangarr.main import _format_batch_info
 from rangarr.main import build_arr_clients
 from rangarr.main import verify_arr_clients
 
@@ -216,149 +213,6 @@ def test_build_arr_clients_instance_settings_override_global() -> None:
     assert len(clients) == 1
     assert clients[0].season_packs is True
     assert global_settings['season_packs'] is False
-
-
-_calculate_eta_cases = {
-    'no_stagger_returns_empty_string': {
-        'item_count': 5,
-        'stagger_seconds': 0,
-        'expected': '',
-    },
-    'with_stagger_returns_formatted_eta': {
-        'item_count': 3,
-        'stagger_seconds': 10,
-        'expected': ' (1 every 10 seconds, ETA: 0:00:30)',
-    },
-}
-
-
-@pytest.mark.parametrize(
-    'item_count, stagger_seconds, expected',
-    [(case['item_count'], case['stagger_seconds'], case['expected']) for case in _calculate_eta_cases.values()],
-    ids=list(_calculate_eta_cases.keys()),
-)
-def test_calculate_eta(item_count: int, stagger_seconds: int, expected: str) -> None:
-    """Test _calculate_eta returns empty string with no stagger and formatted ETA otherwise."""
-    assert _calculate_eta(item_count, stagger_seconds) == expected
-
-
-_format_batch_info_cases = {
-    'counts_missing_and_upgrade': {
-        'client_name': 'Test',
-        'ids': [(1, 'missing', 'Item A'), (2, 'upgrade', 'Item B'), (3, 'missing', 'Item C')],
-        'stagger_seconds': 0,
-        'expected_missing': 2,
-        'expected_upgrade': 1,
-        'expected_total': 3,
-    },
-    'empty_ids_returns_zero_counts': {
-        'client_name': 'Test',
-        'ids': [],
-        'stagger_seconds': 0,
-        'expected_missing': 0,
-        'expected_upgrade': 0,
-        'expected_total': 0,
-    },
-}
-
-
-@pytest.mark.parametrize(
-    'client_name, ids, stagger_seconds, expected_missing, expected_upgrade, expected_total',
-    [
-        (
-            case['client_name'],
-            case['ids'],
-            case['stagger_seconds'],
-            case['expected_missing'],
-            case['expected_upgrade'],
-            case['expected_total'],
-        )
-        for case in _format_batch_info_cases.values()
-    ],
-    ids=list(_format_batch_info_cases.keys()),
-)
-def test_format_batch_info(
-    client_name: str,
-    ids: list[tuple[int, str, str]],
-    stagger_seconds: int,
-    expected_missing: int,
-    expected_upgrade: int,
-    expected_total: int,
-) -> None:
-    """Test _format_batch_info includes correct item counts in the output string."""
-    result = _format_batch_info(client_name, ids, stagger_seconds)
-    assert f'{expected_total} item(s)' in result
-    assert f'{expected_missing} missing' in result
-    assert f'{expected_upgrade} upgrade' in result
-
-
-_calculate_batch_cases = {
-    'full_share': {
-        'global_batch': 20,
-        'weight_share': 1.0,
-        'expected': 20,
-    },
-    'half_share': {
-        'global_batch': 20,
-        'weight_share': 0.5,
-        'expected': 10,
-    },
-    'rounds_to_nearest_int_down': {
-        'global_batch': 20,
-        'weight_share': 0.33,
-        'expected': 7,
-    },
-    'rounds_to_nearest_int_up': {
-        'global_batch': 20,
-        'weight_share': 0.67,
-        'expected': 13,
-    },
-    'zero_global_batch': {
-        'global_batch': 0,
-        'weight_share': 1.0,
-        'expected': 0,
-    },
-    'disabled_with_half_share': {
-        'global_batch': 0,
-        'weight_share': 0.5,
-        'expected': 0,
-    },
-    'unlimited': {
-        'global_batch': -1,
-        'weight_share': 0.5,
-        'expected': -1,
-    },
-    'unlimited_ignores_zero_weight': {
-        'global_batch': -1,
-        'weight_share': 0.0,
-        'expected': -1,
-    },
-    'unlimited_ignores_full_weight': {
-        'global_batch': -1,
-        'weight_share': 1.0,
-        'expected': -1,
-    },
-    'zero_weight_share': {
-        'global_batch': 20,
-        'weight_share': 0.0,
-        'expected': 1,
-    },
-    'minimum_is_one': {
-        'global_batch': 10,
-        'weight_share': 0.01,
-        'expected': 1,
-    },
-}
-
-
-@pytest.mark.parametrize(
-    'global_batch, weight_share, expected',
-    [(case['global_batch'], case['weight_share'], case['expected']) for case in _calculate_batch_cases.values()],
-    ids=list(_calculate_batch_cases.keys()),
-)
-def test_calculate_batch(global_batch: int, weight_share: float, expected: int) -> None:
-    """Test _calculate_batch distributes appropriately and bounds to minimum 1 when global > 0."""
-    assert _calculate_batch(global_batch, weight_share) == expected
 
 
 @pytest.mark.parametrize(
@@ -652,40 +506,42 @@ def test_run_no_active_hours_always_executes() -> None:
 
 
 def test_run_search_cycle_both_disabled(mock_client: Mock, caplog: pytest.LogCaptureFixture) -> None:
-    """Test that search cycle skips instance when both batch types disabled."""
+    """Test that search cycle reports no media when both batch types are disabled."""
     from rangarr.main import _run_search_cycle
 
     settings = {
+        'interleave_instances': False,
         'missing_batch_size': 0,
-        'upgrade_batch_size': 0,
         'stagger_interval_seconds': 30,
+        'upgrade_batch_size': 0,
     }
 
     with caplog.at_level(logging.INFO):
         _run_search_cycle([mock_client], settings)
 
-    assert 'Missing and upgrade items disabled, skipping' in caplog.text
-    mock_client.get_media_to_search.assert_not_called()
+    assert 'No media to search this cycle across all instances.' in caplog.text
+    mock_client.get_media_to_search.assert_called_once_with(0, 0)
     mock_client.trigger_search.assert_not_called()
 
 
-def test_run_search_cycle_missing_disabled(mock_client: Mock, caplog: pytest.LogCaptureFixture) -> None:
-    """Test that search cycle logs when missing is disabled."""
+def test_run_search_cycle_missing_disabled(mock_client: Mock) -> None:
+    """Test that search cycle still processes upgrade items when missing is disabled."""
     from rangarr.main import _run_search_cycle
 
-    mock_client.get_media_to_search = Mock(return_value=[(1, 'upgrade', 'Movie 1')])
+    upgrade_item = (1, 'upgrade', 'Movie 1')
+    mock_client.get_media_to_search = Mock(return_value=[upgrade_item])
 
     settings = {
+        'interleave_instances': False,
         'missing_batch_size': 0,
-        'upgrade_batch_size': 10,
         'stagger_interval_seconds': 30,
+        'upgrade_batch_size': 10,
     }
 
-    with caplog.at_level(logging.INFO):
-        _run_search_cycle([mock_client], settings)
+    _run_search_cycle([mock_client], settings)
 
-    assert 'Missing items disabled for this cycle' in caplog.text
     mock_client.get_media_to_search.assert_called_once_with(0, 10)
+    mock_client.trigger_search.assert_called_once_with([upgrade_item])
 
 
 def test_run_search_cycle_unlimited(mock_client: Mock) -> None:
@@ -700,9 +556,10 @@ def test_run_search_cycle_unlimited(mock_client: Mock) -> None:
     )
 
     settings = {
+        'interleave_instances': False,
         'missing_batch_size': -1,
+        'stagger_interval_seconds': 0,
         'upgrade_batch_size': 10,
-        'stagger_interval_seconds': 30,
     }
 
     _run_search_cycle([mock_client], settings)
@@ -714,50 +571,71 @@ _log_rangarr_start_cases = {
     'disabled': {
         'missing_batch_size': 0,
         'upgrade_batch_size': 20,
+        'interleave_instances': False,
         'expected_missing': 'Missing Batch: Disabled',
         'expected_upgrade': 'Upgrade Batch: 20',
+        'expected_interleave': 'Interleave Instances: No',
     },
     'unlimited': {
         'missing_batch_size': -1,
         'upgrade_batch_size': -1,
+        'interleave_instances': False,
         'expected_missing': 'Missing Batch: Unlimited',
         'expected_upgrade': 'Upgrade Batch: Unlimited',
+        'expected_interleave': 'Interleave Instances: No',
     },
     'limited': {
         'missing_batch_size': 20,
         'upgrade_batch_size': 10,
+        'interleave_instances': False,
         'expected_missing': 'Missing Batch: 20',
         'expected_upgrade': 'Upgrade Batch: 10',
+        'expected_interleave': 'Interleave Instances: No',
     },
     'active_hours_set': {
         'missing_batch_size': 20,
         'upgrade_batch_size': 10,
         'active_hours': '22:00-06:00',
+        'interleave_instances': False,
         'expected_missing': 'Missing Batch: 20',
         'expected_upgrade': 'Upgrade Batch: 10',
         'expected_active_hours': 'Active Hours: 22:00-06:00',
+        'expected_interleave': 'Interleave Instances: No',
     },
     'active_hours_all': {
         'missing_batch_size': 20,
         'upgrade_batch_size': 10,
         'active_hours': '',
+        'interleave_instances': False,
         'expected_missing': 'Missing Batch: 20',
         'expected_upgrade': 'Upgrade Batch: 10',
         'expected_active_hours': 'Active Hours: All hours',
+        'expected_interleave': 'Interleave Instances: No',
+    },
+    'interleave_enabled': {
+        'missing_batch_size': 20,
+        'upgrade_batch_size': 10,
+        'interleave_instances': True,
+        'expected_missing': 'Missing Batch: 20',
+        'expected_upgrade': 'Upgrade Batch: 10',
+        'expected_interleave': 'Interleave Instances: Yes',
     },
 }
 
 
 @pytest.mark.parametrize(
-    'missing_batch_size, upgrade_batch_size, active_hours, expected_missing, expected_upgrade, expected_active_hours',
+    'missing_batch_size, upgrade_batch_size, active_hours, interleave_instances, '
+    'expected_missing, expected_upgrade, expected_active_hours, expected_interleave',
     [
         (
             case['missing_batch_size'],
             case['upgrade_batch_size'],
             case.get('active_hours', ''),
+            case['interleave_instances'],
             case['expected_missing'],
             case['expected_upgrade'],
             case.get('expected_active_hours', 'Active Hours: All hours'),
+            case['expected_interleave'],
         )
         for case in _log_rangarr_start_cases.values()
     ],
@@ -769,9 +647,11 @@ def test_log_rangarr_start(
     missing_batch_size: int,
     upgrade_batch_size: int,
     active_hours: str,
+    interleave_instances: bool,
     expected_missing: str,
     expected_upgrade: str,
     expected_active_hours: str,
+    expected_interleave: str,
 ) -> None:
     """Test startup log displays correct batch size labels and active hours."""
     from rangarr.main import _log_rangarr_start
@@ -785,6 +665,7 @@ def test_log_rangarr_start(
         'search_order': 'last_searched_ascending',
         'dry_run': False,
         'active_hours': active_hours,
+        'interleave_instances': interleave_instances,
     }
 
     with caplog.at_level(logging.INFO):
@@ -793,6 +674,7 @@ def test_log_rangarr_start(
     assert expected_missing in caplog.text
     assert expected_upgrade in caplog.text
     assert expected_active_hours in caplog.text
+    assert expected_interleave in caplog.text
 
 
 _verify_arr_clients_cases = {

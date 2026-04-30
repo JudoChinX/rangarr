@@ -753,6 +753,14 @@ def test_fetch_quality_profile_cutoffs(
     assert result == expected
 
 
+def test_fetch_unlimited_returns_empty_on_request_exception() -> None:
+    """Test _fetch_unlimited returns [] and logs an error when a RequestException is raised."""
+    client = ClientBuilder().radarr().build()
+    client.session.get = MagicMock(side_effect=requests.RequestException('timeout'))
+    result = client._fetch_unlimited('/api/v3/wanted/missing')  # pylint: disable=protected-access
+    assert result == []
+
+
 _get_target_media_cases = {
     'disabled': {
         'search_order': 'last_searched_ascending',

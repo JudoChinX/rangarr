@@ -565,6 +565,55 @@ _parse_config_cases = {
             },
         },
     },
+    'interleave_instances_defaults_to_false': {
+        'config_data': {
+            'instances': {
+                'test-radarr': {
+                    'type': 'radarr',
+                    'url': 'http://localhost:7878',
+                    'api_key': 'testkey',
+                    'enabled': True,
+                }
+            },
+        },
+        'expected_result': {
+            'global_settings': {
+                'interleave_instances': False,
+            },
+        },
+    },
+    'interleave_instances_accepts_true': {
+        'config_data': {
+            'instances': {
+                'test-radarr': {
+                    'type': 'radarr',
+                    'url': 'http://localhost:7878',
+                    'api_key': 'testkey',
+                    'enabled': True,
+                }
+            },
+            'global': {'interleave_instances': True},
+        },
+        'expected_result': {
+            'global_settings': {
+                'interleave_instances': True,
+            },
+        },
+    },
+    'interleave_instances_rejects_non_bool': {
+        'config_data': {
+            'instances': {
+                'test-radarr': {
+                    'type': 'radarr',
+                    'url': 'http://localhost:7878',
+                    'api_key': 'testkey',
+                    'enabled': True,
+                }
+            },
+            'global': {'interleave_instances': 'yes'},
+        },
+        'expected_error': "'global.interleave_instances' must be of type bool.",
+    },
     'season_packs_defaults_to_false': {
         'config_data': {
             'instances': {
@@ -852,6 +901,27 @@ def test_load_config_raises_on_missing_env_var(tmp_path: Any, monkeypatch: Any) 
     )
     with pytest.raises(ValueError, match='RADARR_API_KEY'):
         load_config(str(config_file))
+
+
+def test_load_config_expands_list_values(tmp_path: Any, monkeypatch: Any) -> None:
+    """Test load_config expands ${VAR} placeholders inside YAML list values."""
+    monkeypatch.setenv('TAG_A', 'alpha')
+    monkeypatch.setenv('TAG_B', 'beta')
+    config_file = tmp_path / 'config.yaml'
+    config_file.write_text(
+        'instances:\n'
+        '  my-radarr:\n'
+        '    type: radarr\n'
+        '    url: http://localhost:7878\n'
+        '    api_key: testkey\n'
+        '    enabled: true\n'
+        'global:\n'
+        '  include_tags:\n'
+        '    - ${TAG_A}\n'
+        '    - ${TAG_B}\n'
+    )
+    result = load_config(str(config_file))
+    assert result['global_settings']['include_tags'] == ['alpha', 'beta']
 
 
 def test_load_config_expands_multiple_placeholders_in_single_value(monkeypatch: Any) -> None:

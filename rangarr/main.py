@@ -59,35 +59,79 @@ _SEARCH_ORDER_LABELS: dict[str, str] = {
     'release_date_descending': 'Release Date (Descending)',
 }
 
+type MediaItem = tuple[int | str, str, str]
+
+
+def _allocate_slots(
+    limit: int,
+    client_backlogs: dict[Any, list[MediaItem]],
+) -> list[tuple[Any, MediaItem]]:
+    """Allocate global search slots using weighted round-robin distribution."""
+    winners: list[tuple[Any, MediaItem]] = []
+    pools = {client: list(items) for client, items in client_backlogs.items() if items}
+
+    if limit == 0 or not pools:
+        return []
+
+    sorted_clients = sorted(
+        pools.keys(),
+        key=lambda clt: (-getattr(clt, 'weight', 1.0), getattr(clt, 'name', '')),
+    )
+
+    while pools and (limit == -1 or len(winners) < limit):
+        for client in list(sorted_clients):
+            if client not in pools:
+                continue
+            weight = getattr(client, 'weight', 1.0)
+            # Fractional weights affect sort order but not turn count; truncate to int.
+            turns = max(1, int(weight))
+            for _ in range(turns):
+                if limit != -1 and len(winners) >= limit:
+                    break
+                if pools[client]:
+                    winners.append((client, pools[client].pop(0)))
+                if not pools[client]:
+                    del pools[client]
+                    break
+            if limit != -1 and len(winners) >= limit:
+                break
+    return winners
+
 
 def _batch_display_str(batch: int) -> str:
     """Convert a batch size integer to its display string."""
     return {0: 'Disabled', -1: 'Unlimited'}.get(batch, str(batch))
 
 
-def _calculate_batch(global_batch: int, weight_share: float) -> int:
-    """Calculate batch size from global setting and instance weight share."""
-    if global_batch in (0, -1):
-        return global_batch
-    return max(1, int(round(global_batch * weight_share)))
-
-
-def _calculate_eta(item_count: int, stagger_seconds: int) -> str:
-    """Calculate and format estimated time for batch processing."""
-    result = ''
-    if stagger_seconds > 0:
-        eta = datetime.timedelta(seconds=item_count * stagger_seconds)
-        result = f' (1 every {stagger_seconds} seconds, ETA: {eta})'
-    return result
-
-
-def _format_batch_info(client_name: str, ids: list[tuple[int, str, str]], stagger_seconds: int) -> str:
-    """Format batch processing info message with counts and ETA."""
-    missing_count = sum(1 for _, reason, _ in ids if reason == 'missing')
-    upgrade_count = sum(1 for _, reason, _ in ids if reason == 'upgrade')
-    eta_str = _calculate_eta(len(ids), stagger_seconds)
-    result = f'[{client_name}] Triggering search for {len(ids)} item(s){eta_str}: {missing_count} missing, {upgrade_count} upgrade.'
-    return result
+def _build_final_queue(
+    allocated_missing: list[tuple[Any, MediaItem]],
+    allocated_upgrade: list[tuple[Any, MediaItem]],
+    interleave: bool,
+) -> list[tuple[Any, MediaItem]]:
+    """Build the ordered execution queue from allocated missing and upgrade slots."""
+    final_queue: list[tuple[Any, MediaItem]] = []
+    if interleave:
+        for idx in range(max(len(allocated_missing), len(allocated_upgrade))):
+            if idx < len(allocated_missing):
+                final_queue.append(allocated_missing[idx])
+            if idx < len(allocated_upgrade):
+                final_queue.append(allocated_upgrade[idx])
+    else:
+        seen: set[Any] = set()
+        clients_order: list[Any] = []
+        for client, _ in allocated_missing + allocated_upgrade:
+            if client not in seen:
+                clients_order.append(client)
+                seen.add(client)
+        for client in clients_order:
+            cli_missing = [(clt, item) for clt, item in allocated_missing if clt is client]
+            cli_upgrade = [(clt, item) for clt, item in allocated_upgrade if clt is client]
+            for idx in range(max(len(cli_missing), len(cli_upgrade))):
+                if idx < len(cli_missing):
+                    final_queue.append(cli_missing[idx])
+                if idx < len(cli_upgrade):
+                    final_queue.append(cli_upgrade[idx])
+    return final_queue
 
 
 def _get_setting(settings: dict, key: str) -> Any:
@@ -128,7 +172,7 @@ def _load_config_from_paths(config_paths: list[str]) -> dict | None:
     return config
 
 
-def _log_rangarr_start(active_clients: list[Any], settings: dict) -> None:
+def _log_rangarr_start(active_clients: list[ArrClient], settings: dict) -> None:
     """Log startup information for Rangarr."""
     global_missing = _get_setting(settings, 'missing_batch_size')
     global_upgrade = _get_setting(settings, 'upgrade_batch_size')
@@ -136,6 +180,7 @@ def _log_rangarr_start(active_clients: list[Any], settings: dict) -> None:
     stagger_seconds = _get_setting(settings, 'stagger_interval_seconds')
     dry_run = _get_setting(settings, 'dry_run')
     active_hours = _get_setting(settings, 'active_hours')
+    interleave = _get_setting(settings, 'interleave_instances')
 
     missing_str = _batch_display_str(global_missing)
     upgrade_str = _batch_display_str(global_upgrade)
@@ -144,6 +189,7 @@ def _log_rangarr_start(active_clients: list[Any], settings: dict) -> None:
     search_order_str = _SEARCH_ORDER_LABELS.get(raw_order, raw_order.capitalize())
     dry_run_str = ' (DRY RUN ENABLED)' if dry_run else ''
     active_hours_str = active_hours if active_hours else 'All hours'
+    interleave_str = 'Yes' if interleave else 'No'
 
     logger.info(
         f'Rangarr started{dry_run_str} | '
@@ -154,42 +200,50 @@ def _log_rangarr_start(active_clients: list[Any], settings: dict) -> None:
         f'Search Stagger: {stagger_seconds} Seconds | '
         f'Search Order: {search_order_str} | '
         f'Retry Interval: {retry_str} | '
-        f'Active Hours: {active_hours_str}'
+        f'Active Hours: {active_hours_str} | '
+        f'Interleave Instances: {interleave_str}'
     )
 
 
-def _run_search_cycle(active_clients: list[Any], settings: dict) -> None:
-    """Run a single search cycle across all active clients."""
+def _run_search_cycle(active_clients: list[ArrClient], settings: dict) -> None:
+    """Run a single search cycle across all active clients using global allocation."""
     logger.info('--- Starting search cycle ---')
 
     global_missing = _get_setting(settings, 'missing_batch_size')
     global_upgrade = _get_setting(settings, 'upgrade_batch_size')
     stagger_seconds = _get_setting(settings, 'stagger_interval_seconds')
+    interleave = _get_setting(settings, 'interleave_instances')
 
-    total_weight = sum(client.weight for client in active_clients)
+    missing_pools: dict[ArrClient, list[MediaItem]] = {}
+    upgrade_pools: dict[ArrClient, list[MediaItem]] = {}
 
     for client in active_clients:
-        weight_share = client.weight / total_weight if total_weight > 0 else 0
+        candidates = client.get_media_to_search(global_missing, global_upgrade)
 
-        client_missing = _calculate_batch(global_missing, weight_share)
-        client_upgrade = _calculate_batch(global_upgrade, weight_share)
+        m_items = [item for item in candidates if item[1] == 'missing']
+        u_items = [item for item in candidates if item[1] == 'upgrade']
 
-        if client_missing == 0 and client_upgrade == 0:
-            logger.info(f'[{client.name}] Missing and upgrade items disabled, skipping.')
-            continue
+        if m_items:
+            missing_pools[client] = m_items
+        if u_items:
+            upgrade_pools[client] = u_items
 
-        if client_missing == 0:
-            logger.info(f'[{client.name}] Missing items disabled for this cycle.')
-        if client_upgrade == 0:
-            logger.info(f'[{client.name}] Upgrade items disabled for this cycle.')
+    allocated_missing = _allocate_slots(global_missing, missing_pools)
+    allocated_upgrade = _allocate_slots(global_upgrade, upgrade_pools)
+    final_queue = _build_final_queue(allocated_missing, allocated_upgrade, interleave)
 
-        ids = client.get_media_to_search(client_missing, client_upgrade)
-        if not ids:
-            logger.info(f'[{client.name}] No media to search this cycle.')
-            continue
+    if not final_queue:
+        logger.info('No media to search this cycle across all instances.')
+        return
 
-        logger.info(_format_batch_info(client.name, ids, stagger_seconds))
-        client.trigger_search(ids)
+    logger.info(f'Total search batch: {len(final_queue)} item(s)')
+
+    for index, (client, item) in enumerate(final_queue, start=1):
+        client.trigger_search([item])
+
+        if stagger_seconds > 0 and index < len(final_queue):
+            logger.debug(f'Staggering next search by {stagger_seconds}s.')
+            time.sleep(stagger_seconds)
 
 
 def _seconds_until_window_open(start: datetime.time, now: datetime.time, today: datetime.date | None = None) -> int:

@@ -75,6 +75,19 @@ def test_fetch_season_air_status_builds_lookup() -> None:
     }
 
 
+def test_fetch_season_air_status_skips_records_with_none_id_or_missing_season() -> None:
+    """Test _fetch_season_air_status skips series with no id and seasons with no seasonNumber."""
+    client = ClientBuilder().sonarr().build()
+    series_list = [
+        {'seasons': [{'seasonNumber': 1}]},
+        {'id': 2, 'seasons': [{'statistics': {'nextAiring': '2030-01-01T00:00:00Z'}}]},
+        {'id': 3, 'seasons': [{'seasonNumber': 1, 'statistics': {'nextAiring': '2030-06-01T00:00:00Z'}}]},
+    ]
+    with patch.object(client, '_fetch_list', return_value=series_list):
+        result = client._fetch_season_air_status()  # pylint: disable=protected-access
+    assert result == {(3, 1): '2030-06-01T00:00:00Z'}
+
+
 _is_season_still_airing_cases = {
     'returns_true_when_next_airing_is_future': {
         'season_air_status': {(1, 1): '2030-01-01T00:00:00Z'},
