@@ -22,7 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
   Previously, each instance was processed sequentially to completion before the next began. The new behavior means search pressure is spread evenly across all instances and their shared indexers throughout the cycle rather than concentrated in bursts per instance.
 
-- **Unlimited mode now distributes across instances.** When `missing_batch_size` or `upgrade_batch_size` is `-1`, items from all instances are returned in weighted round-robin order rather than instance-by-instance. The total number of items searched is unchanged.
+- **Unlimited mode now uses global collection.** When `missing_batch_size` or `upgrade_batch_size` is `-1`, Rangarr collects the full backlog from all instances at the start of the cycle before beginning any searches. This ensures search capacity is calculated globally even when uncapped. The final execution order still follows the `interleave_instances` setting (defaulting to instance-by-instance).
 
 ## [0.6.3] - 2026-04-28
 
