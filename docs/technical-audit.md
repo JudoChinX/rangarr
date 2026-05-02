@@ -45,7 +45,7 @@ To be absolutely clear, Rangarr does not and will never:
 
 ## Architecture Overview
 
-Rangarr is a ~1,402-line Python service with three core modules:
+Rangarr is a ~1,461-line Python service with three core modules:
 
 ```
 rangarr/
@@ -192,7 +192,7 @@ Rangarr operates entirely within your local network (or wherever you host your *
 
 ### 1. Security Through Simplicity
 
-**Decision:** ~1,402 lines of core Python code, zero external dependencies beyond requests and PyYAML.
+**Decision:** ~1,461 lines of core Python code, zero external dependencies beyond requests and PyYAML.
 
 **Why:** Small codebases are auditable. Every line of code is a potential attack surface. By keeping the codebase minimal, security reviewers can read and understand the entire project in under an hour.
 
@@ -219,7 +219,7 @@ Rangarr operates entirely within your local network (or wherever you host your *
 
 ### 4. Test Coverage as Documentation
 
-**Decision:** 287 tests covering all code paths, including error conditions.
+**Decision:** 300 tests covering all code paths, including error conditions.
 
 **Why:** Tests serve three purposes:
 1. Prevent regressions.
@@ -346,10 +346,10 @@ Both are widely-used, well-maintained libraries with public security disclosure 
 
 ## File Sizes
 
-- `main.py`: ~329 lines
-- `config_parser.py`: ~361 lines
+- `main.py`: ~383 lines
+- `config_parser.py`: ~366 lines
 - `clients/arr.py`: ~712 lines
-- **Total:** ~1,402 lines of Python (excluding tests/comments)
+- **Total:** ~1,461 lines of Python (excluding tests/comments)
 
 The small codebase size makes comprehensive security auditing feasible.
 

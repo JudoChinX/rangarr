@@ -484,6 +484,7 @@ The following global settings are supported, each prefixed with `RANGARR_GLOBAL_
 | `RANGARR_GLOBAL_RETRY_INTERVAL_DAYS` | `30` | Days before a previously searched item is eligible again. `0` disables. |
 | `RANGARR_GLOBAL_SEARCH_ORDER` | `last_searched_ascending` | One of: `alphabetical_ascending`, `alphabetical_descending`, `last_added_ascending`, `last_added_descending`, `last_searched_ascending`, `last_searched_descending`, `random`, `release_date_ascending`, `release_date_descending`. |
 | `RANGARR_GLOBAL_DRY_RUN` | `false` | Log searches without triggering them. |
+| `RANGARR_GLOBAL_INTERLEAVE_INSTANCES` | `false` | `false` = run all items for one instance before moving to the next. `true` = alternate across instances in round-robin order. |
 | `RANGARR_GLOBAL_SEASON_PACKS` | `false` | Group Sonarr searches by season, sending one `SeasonSearch` per affected `(series, season)` pair. Sonarr only; ignored by other instance types. |
 | `RANGARR_GLOBAL_INCLUDE_TAGS` | `(none)` | Comma-separated tag names. Only search items that have any of these tags. |
 | `RANGARR_GLOBAL_EXCLUDE_TAGS` | `(none)` | Comma-separated tag names. Skip items that have any of these tags. |

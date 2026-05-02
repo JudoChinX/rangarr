@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.7.0] - 2026-05-02
 
+### Fixed
+
+- Expanded environment variable values that evaluate to integers, floats, or booleans are now automatically type-converted. Previously, `${VAR}` references that expanded to numeric or boolean strings (e.g. `"30"`, `"true"`) were left as strings and failed config validation. (#53)
+
 ### Changed
 
 - **Global search slot allocation:** Rangarr now uses a centralized weighted round-robin "dealer" to distribute search slots across all active instances rather than processing each instance independently. The search cycle runs as a three-stage pipeline:
