@@ -803,6 +803,49 @@ _parse_config_cases = {
         },
         'expected_error': "'global.exclude_tags' entries must not be empty strings.",
     },
+    'retry_interval_days_overrides_default_to_none': {
+        'config_data': {
+            'instances': {
+                'test-inst': {
+                    'type': 'radarr',
+                    'host': 'http://test',
+                    'api_key': 'testkey',
+                    'enabled': True,
+                }
+            },
+        },
+        'expected_result': {
+            'global_settings': {'retry_interval_days_missing': None, 'retry_interval_days_upgrade': None}
+        },
+    },
+    'retry_interval_days_missing_accepts_int': {
+        'config_data': {
+            'instances': {
+                'test-inst': {
+                    'type': 'radarr',
+                    'host': 'http://test',
+                    'api_key': 'testkey',
+                    'enabled': True,
+                }
+            },
+            'global': {'retry_interval_days_missing': 7, 'retry_interval_days_upgrade': 14},
+        },
+        'expected_result': {'global_settings': {'retry_interval_days_missing': 7, 'retry_interval_days_upgrade': 14}},
+    },
+    'retry_interval_days_missing_rejects_non_int': {
+        'config_data': {
+            'instances': {
+                'test-inst': {
+                    'type': 'radarr',
+                    'host': 'http://test',
+                    'api_key': 'testkey',
+                    'enabled': True,
+                }
+            },
+            'global': {'retry_interval_days_missing': 'weekly'},
+        },
+        'expected_error': "'global.retry_interval_days_missing' must be of type int",
+    },
 }
 
 
@@ -958,3 +1001,11 @@ def test_load_config_expand_env_var_type(
     config_file = tmp_path / 'config.yaml'
     config_file.write_text(yaml_content)
     assert_config_result(load_config(str(config_file)), expected_result)
+
+
+def test_retry_overrides_in_schema() -> None:
+    """Test retry override keys exist in SETTINGS_SCHEMA with None defaults."""
+    assert 'retry_interval_days_missing' in SETTINGS_SCHEMA
+    assert 'retry_interval_days_upgrade' in SETTINGS_SCHEMA
+    assert SETTINGS_SCHEMA['retry_interval_days_missing']['default'] is None
+    assert SETTINGS_SCHEMA['retry_interval_days_upgrade']['default'] is None

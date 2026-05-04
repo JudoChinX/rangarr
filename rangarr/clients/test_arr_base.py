@@ -1,5 +1,6 @@
 """Tests shared across all ArrClient implementations (Radarr, Sonarr, Lidarr)."""
 
+import datetime
 import logging
 from typing import Any
 from unittest.mock import MagicMock
@@ -19,6 +20,7 @@ from tests.builders import SonarrRecordBuilder
 from tests.builders import mock_fetch_unlimited_factory
 from tests.builders import mock_http_response
 from tests.builders import mock_session_get_factory
+from tests.conftest import FIXED_NOW
 
 _CLIENT_MAP: dict[str, type[RadarrClient] | type[SonarrClient] | type[LidarrClient]] = {
     'radarr': RadarrClient,
@@ -319,6 +321,30 @@ _processing_pipeline_cases = {
             },
         ],
         'upgrade_records': [],
+        'missing_batch_size': 10,
+        'upgrade_batch_size': 10,
+        'expected_ids': [],
+        'expected_title': None,
+    },
+    'missing_override_disables_retry_for_missing': {
+        'client_class': 'radarr',
+        'settings': {'retry_interval_days': 30, 'retry_interval_days_missing': 0},
+        'missing_records': [
+            RadarrRecordBuilder().with_id(1).with_title('Recent Movie').available().searched_recently().build(),
+        ],
+        'upgrade_records': [],
+        'missing_batch_size': 10,
+        'upgrade_batch_size': 10,
+        'expected_ids': [1],
+        'expected_title': None,
+    },
+    'upgrade_override_extends_retry_for_upgrade': {
+        'client_class': 'radarr',
+        'settings': {'retry_interval_days': 30, 'retry_interval_days_upgrade': 60},
+        'missing_records': [],
+        'upgrade_records': [
+            RadarrRecordBuilder().with_id(2).with_title('Old Upgrade').available().searched_long_ago().build(),
+        ],
         'missing_batch_size': 10,
         'upgrade_batch_size': 10,
         'expected_ids': [],
@@ -819,3 +845,46 @@ def test_get_target_media_modes(
         mock_fetch.assert_called_once()
     else:
         mock_fetch.assert_not_called()
+
+
+_is_within_retry_window_override_cases = {
+    'missing_override_selects_tighter_interval': {
+        'settings': {'retry_interval_days': 30, 'retry_interval_days_missing': 7, 'retry_interval_days_upgrade': 14},
+        'last_search_time': (FIXED_NOW - datetime.timedelta(days=10)).strftime('%Y-%m-%dT%H:%M:%SZ'),
+        'reason': 'missing',
+        'expected': False,
+    },
+    'upgrade_override_selects_broader_interval': {
+        'settings': {'retry_interval_days': 30, 'retry_interval_days_missing': 7, 'retry_interval_days_upgrade': 14},
+        'last_search_time': (FIXED_NOW - datetime.timedelta(days=10)).strftime('%Y-%m-%dT%H:%M:%SZ'),
+        'reason': 'upgrade',
+        'expected': True,
+    },
+    'override_none_falls_back_to_base': {
+        'settings': {'retry_interval_days': 30, 'retry_interval_days_missing': None},
+        'last_search_time': (FIXED_NOW - datetime.timedelta(days=1)).strftime('%Y-%m-%dT%H:%M:%SZ'),
+        'reason': 'missing',
+        'expected': True,
+    },
+}
+
+
+@pytest.mark.parametrize(
+    'settings, last_search_time, reason, expected',
+    [
+        (case['settings'], case['last_search_time'], case['reason'], case['expected'])
+        for case in _is_within_retry_window_override_cases.values()
+    ],
+    ids=list(_is_within_retry_window_override_cases.keys()),
+)
+def test_is_within_retry_window_override(
+    settings: dict,
+    last_search_time: str,
+    reason: str,
+    expected: bool,
+) -> None:
+    """Test _is_within_retry_window selects the correct interval based on reason."""
+    client = RadarrClient(name='test', url='http://test', api_key='testkey', settings=settings)
+    record = {'id': 1, 'lastSearchTime': last_search_time}
+    result = client._is_within_retry_window(record, reason)  # pylint: disable=protected-access
+    assert result == expected

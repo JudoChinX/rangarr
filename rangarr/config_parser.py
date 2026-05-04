@@ -28,6 +28,14 @@ SETTINGS_SCHEMA = {
         'default': 30,
         'type': int,
     },
+    'retry_interval_days_missing': {
+        'default': None,
+        'type': int,
+    },
+    'retry_interval_days_upgrade': {
+        'default': None,
+        'type': int,
+    },
     'run_interval_minutes': {
         'default': 60,
         'type': int,
@@ -157,6 +165,8 @@ def _validate_global_settings(settings: dict, schema: dict) -> None:
     for setting, definition in schema.items():
         default = definition['default']
         settings.setdefault(setting, list(default) if isinstance(default, list) else default)
+        if definition['default'] is None and settings[setting] is None:
+            continue
         _validate_setting(
             setting,
             settings[setting],

@@ -44,6 +44,7 @@ max-args = 10
 max-positional-arguments = 10
 max-attributes = 15
 max-locals = 20
+max-module-lines = 1200
 max-parents = 8
 
 [tool.mypy]

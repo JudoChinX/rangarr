@@ -9,6 +9,8 @@ services:
       # To use environment variables instead of config.yaml, uncomment these:
       # RANGARR_CONFIG_SOURCE: env
       # RANGARR_GLOBAL_INTERVAL: 3600
+      # RANGARR_GLOBAL_RETRY_INTERVAL_DAYS_MISSING: 7    # Override retry window for missing searches only
+      # RANGARR_GLOBAL_RETRY_INTERVAL_DAYS_UPGRADE: 60   # Override retry window for upgrade searches only
       # RANGARR_INSTANCE_0_NAME: Radarr
       # RANGARR_INSTANCE_0_TYPE: radarr
       # RANGARR_INSTANCE_0_URL: http://radarr:7878

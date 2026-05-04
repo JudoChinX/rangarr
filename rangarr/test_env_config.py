@@ -228,6 +228,26 @@ _load_config_from_env_cases = {
             'global_settings': {'include_tags': ['alpha', 'beta']},
         },
     },
+    'retry_interval_days_missing_parsed_as_int': {
+        'env': {
+            **_BASE_INSTANCE,
+            'RANGARR_INSTANCE_0_ENABLED': 'true',
+            'RANGARR_GLOBAL_RETRY_INTERVAL_DAYS_MISSING': '14',
+        },
+        'expected_result': {
+            'global_settings': {'retry_interval_days_missing': 14},
+        },
+    },
+    'retry_interval_days_upgrade_parsed_as_int': {
+        'env': {
+            **_BASE_INSTANCE,
+            'RANGARR_INSTANCE_0_ENABLED': 'true',
+            'RANGARR_GLOBAL_RETRY_INTERVAL_DAYS_UPGRADE': '60',
+        },
+        'expected_result': {
+            'global_settings': {'retry_interval_days_upgrade': 60},
+        },
+    },
 }
 
 

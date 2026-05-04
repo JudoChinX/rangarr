@@ -231,6 +231,30 @@ global:
   retry_interval_days: 14  # Only re-search items after 14 days
 ```
 
+#### `retry_interval_days_missing`
+
+**Type:** Integer | **Default:** `null` (inherits `retry_interval_days`)
+
+Override `retry_interval_days` for **missing** item searches only. When set, missing items use this interval instead of the base value. Set to `0` to disable the retry window for missing searches (re-search every cycle).
+
+```yaml
+global:
+  retry_interval_days: 30         # Base interval for all searches
+  retry_interval_days_missing: 7  # Re-search missing items after only 7 days
+```
+
+#### `retry_interval_days_upgrade`
+
+**Type:** Integer | **Default:** `null` (inherits `retry_interval_days`)
+
+Override `retry_interval_days` for **upgrade** searches only. When set, upgrade-eligible items use this interval instead of the base value. Set to `0` to disable the retry window for upgrade searches (re-search every cycle).
+
+```yaml
+global:
+  retry_interval_days: 30          # Base interval for all searches
+  retry_interval_days_upgrade: 60  # Re-search upgrade candidates only after 60 days
+```
+
 #### `search_order`
 
 **Type:** String | **Default:** `last_searched_ascending`
@@ -482,6 +506,8 @@ The following global settings are supported, each prefixed with `RANGARR_GLOBAL_
 | `RANGARR_GLOBAL_UPGRADE_BATCH_SIZE` | `10` | Upgrade-eligible items to search per cycle. `0` disables, `-1` is unlimited. |
 | `RANGARR_GLOBAL_STAGGER_INTERVAL_SECONDS` | `30` | Delay between individual search triggers. |
 | `RANGARR_GLOBAL_RETRY_INTERVAL_DAYS` | `30` | Days before a previously searched item is eligible again. `0` disables. |
+| `RANGARR_GLOBAL_RETRY_INTERVAL_DAYS_MISSING` | `(none)` | Override `retry_interval_days` for missing searches only. |
+| `RANGARR_GLOBAL_RETRY_INTERVAL_DAYS_UPGRADE` | `(none)` | Override `retry_interval_days` for upgrade searches only. |
 | `RANGARR_GLOBAL_SEARCH_ORDER` | `last_searched_ascending` | One of: `alphabetical_ascending`, `alphabetical_descending`, `last_added_ascending`, `last_added_descending`, `last_searched_ascending`, `last_searched_descending`, `random`, `release_date_ascending`, `release_date_descending`. |
 | `RANGARR_GLOBAL_DRY_RUN` | `false` | Log searches without triggering them. |
 | `RANGARR_GLOBAL_INTERLEAVE_INSTANCES` | `false` | `false` = run all items for one instance before moving to the next. `true` = alternate across instances in round-robin order. |

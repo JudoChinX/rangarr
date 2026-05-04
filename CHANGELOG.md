@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `retry_interval_days_missing` and `retry_interval_days_upgrade` settings allow independent retry windows for missing and upgrade searches. When set, each overrides the base `retry_interval_days` for its respective search type, enabling tighter retry pressure for missing content and looser cadence for upgrade polling (or vice versa). Both default to `null`, which falls back to `retry_interval_days`.
+
 ## [0.7.0] - 2026-05-02
 
 ### Fixed

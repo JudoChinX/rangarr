@@ -677,6 +677,90 @@ def test_log_rangarr_start(
     assert expected_interleave in caplog.text
 
 
+_log_rangarr_start_retry_cases = {
+    'base_only': {
+        'retry_interval_days': 30,
+        'retry_interval_days_missing': None,
+        'retry_interval_days_upgrade': None,
+        'expected_retry': 'Retry Interval: 30 Days',
+    },
+    'base_disabled': {
+        'retry_interval_days': 0,
+        'retry_interval_days_missing': None,
+        'retry_interval_days_upgrade': None,
+        'expected_retry': 'Retry Interval: Disabled',
+    },
+    'missing_override_only': {
+        'retry_interval_days': 30,
+        'retry_interval_days_missing': 7,
+        'retry_interval_days_upgrade': None,
+        'expected_retry': 'Retry Interval: Global: 30 Days, Missing: 7 Days, Upgrade: 30 Days',
+    },
+    'upgrade_override_only': {
+        'retry_interval_days': 30,
+        'retry_interval_days_missing': None,
+        'retry_interval_days_upgrade': 60,
+        'expected_retry': 'Retry Interval: Global: 30 Days, Missing: 30 Days, Upgrade: 60 Days',
+    },
+    'both_overrides': {
+        'retry_interval_days': 30,
+        'retry_interval_days_missing': 7,
+        'retry_interval_days_upgrade': 14,
+        'expected_retry': 'Retry Interval: Global: 30 Days, Missing: 7 Days, Upgrade: 14 Days',
+    },
+    'base_disabled_with_missing_override': {
+        'retry_interval_days': 0,
+        'retry_interval_days_missing': 7,
+        'retry_interval_days_upgrade': None,
+        'expected_retry': 'Retry Interval: Global: Disabled, Missing: 7 Days, Upgrade: Disabled',
+    },
+}
+
+
+@pytest.mark.parametrize(
+    'retry_interval_days, retry_interval_days_missing, retry_interval_days_upgrade, expected_retry',
+    [
+        (
+            case['retry_interval_days'],
+            case['retry_interval_days_missing'],
+            case['retry_interval_days_upgrade'],
+            case['expected_retry'],
+        )
+        for case in _log_rangarr_start_retry_cases.values()
+    ],
+    ids=list(_log_rangarr_start_retry_cases.keys()),
+)
+def test_log_rangarr_start_retry_interval(
+    mock_client: Mock,
+    caplog: pytest.LogCaptureFixture,
+    retry_interval_days: int,
+    retry_interval_days_missing: int | None,
+    retry_interval_days_upgrade: int | None,
+    expected_retry: str,
+) -> None:
+    """Test startup log displays correct retry interval string with optional overrides."""
+    from rangarr.main import _log_rangarr_start
+
+    settings = {
+        'missing_batch_size': 20,
+        'upgrade_batch_size': 10,
+        'retry_interval_days': retry_interval_days,
+        'retry_interval_days_missing': retry_interval_days_missing,
+        'retry_interval_days_upgrade': retry_interval_days_upgrade,
+        'run_interval_minutes': 60,
+        'stagger_interval_seconds': 30,
+        'search_order': 'last_searched_ascending',
+        'dry_run': False,
+        'active_hours': '',
+        'interleave_instances': False,
+    }
+
+    with caplog.at_level(logging.INFO):
+        _log_rangarr_start([mock_client], settings)
+
+    assert expected_retry in caplog.text
+
+
 _verify_arr_clients_cases = {
     'all_succeed_first_attempt': {
         'connection_results': [[True], [True]],

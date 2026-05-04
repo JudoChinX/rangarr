@@ -45,9 +45,11 @@ class ArrClient(ABC):
         self.url = url.rstrip('/')
         self.settings = settings
         self.weight = weight
+        self.retry_interval_days = self.settings.get('retry_interval_days', 30)
+        self.retry_interval_days_missing = self.settings.get('retry_interval_days_missing')
+        self.retry_interval_days_upgrade = self.settings.get('retry_interval_days_upgrade')
         self.stagger_seconds = self.settings.get('stagger_interval_seconds', 30)
         self.search_order = self.settings.get('search_order', 'last_searched_ascending')
-        self.retry_interval_days = self.settings.get('retry_interval_days', 30)
         if not self.url.lower().startswith('https://'):
             logger.warning(
                 f"Client '{name}' is using a non-HTTPS URL ({self.url}). API keys will be transmitted in plaintext."
@@ -206,14 +208,6 @@ class ArrClient(ABC):
     def _is_available(self, record: dict) -> bool:
         """Determine if a media item is actually released and available."""
 
-    def _is_tag_filtered_out(self, record: dict) -> bool:
-        """Return True if the record should be excluded by tag filtering rules."""
-        record_tag_ids = set(self._get_record_tags(record))
-        return bool(
-            (self._exclude_tag_ids and record_tag_ids & self._exclude_tag_ids)
-            or (self._include_tag_ids and not record_tag_ids & self._include_tag_ids)
-        )
-
     def _is_date_past(self, date_str: str | None) -> bool:
         """Return True if the given ISO date string is in the past."""
         result = False
@@ -222,13 +216,26 @@ class ArrClient(ABC):
             result = date_str <= now
         return result
 
-    def _is_within_retry_window(self, record: dict) -> bool:
+    def _is_tag_filtered_out(self, record: dict) -> bool:
+        """Return True if the record should be excluded by tag filtering rules."""
+        record_tag_ids = set(self._get_record_tags(record))
+        return bool(
+            (self._exclude_tag_ids and record_tag_ids & self._exclude_tag_ids)
+            or (self._include_tag_ids and not record_tag_ids & self._include_tag_ids)
+        )
+
+    def _is_within_retry_window(self, record: dict, reason: str) -> bool:
         """Return True if the item was last searched within the retry window."""
         last_search = record.get('lastSearchTime')
         result = False
-        if self.retry_interval_days > 0 and last_search:
-            last_search_dt = datetime.datetime.fromisoformat(last_search.replace('Z', '+00:00'))
-            cutoff_time = datetime.datetime.now(datetime.UTC) - datetime.timedelta(days=self.retry_interval_days)
+        interval = self.retry_interval_days
+        if reason == 'missing' and self.retry_interval_days_missing is not None:
+            interval = self.retry_interval_days_missing
+        elif reason == 'upgrade' and self.retry_interval_days_upgrade is not None:
+            interval = self.retry_interval_days_upgrade
+        if interval > 0 and last_search:
+            last_search_dt = datetime.datetime.fromisoformat(last_search)
+            cutoff_time = datetime.datetime.now(datetime.UTC) - datetime.timedelta(days=interval)
             result = last_search_dt > cutoff_time
         return result
 
@@ -250,7 +257,7 @@ class ArrClient(ABC):
             elif check_availability and not self._is_available(record):
                 title = self._get_record_title(record)
                 logger.debug(f'[{self.name}] Skipping {reason} item (not yet available): {title}')
-            elif self._is_within_retry_window(record):
+            elif self._is_within_retry_window(record, reason):
                 title = self._get_record_title(record)
                 last_search = record.get('lastSearchTime', 'Unknown')
                 logger.debug(
@@ -528,7 +535,7 @@ class SonarrClient(ArrClient):
                 continue
             if check_availability and not self._is_available(record):
                 continue
-            if self._is_within_retry_window(record):
+            if self._is_within_retry_window(record, reason):
                 continue
             series_id = self._get_series_id(record)
             season_number = self._get_season_number(record)

@@ -177,14 +177,28 @@ def _log_rangarr_start(active_clients: list[ArrClient], settings: dict) -> None:
     global_missing = _get_setting(settings, 'missing_batch_size')
     global_upgrade = _get_setting(settings, 'upgrade_batch_size')
     retry_days = _get_setting(settings, 'retry_interval_days')
+    retry_missing = _get_setting(settings, 'retry_interval_days_missing')
+    retry_upgrade = _get_setting(settings, 'retry_interval_days_upgrade')
     stagger_seconds = _get_setting(settings, 'stagger_interval_seconds')
     dry_run = _get_setting(settings, 'dry_run')
     active_hours = _get_setting(settings, 'active_hours')
     interleave = _get_setting(settings, 'interleave_instances')
 
-    missing_str = _batch_display_str(global_missing)
-    upgrade_str = _batch_display_str(global_upgrade)
-    retry_str = 'Disabled' if retry_days == 0 else f'{retry_days} Days'
+    global_retry_str = 'Disabled' if retry_days == 0 else f'{retry_days} Days'
+    missing_retry_str = (
+        ('Disabled' if retry_missing == 0 else f'{retry_missing} Days')
+        if retry_missing is not None
+        else global_retry_str
+    )
+    upgrade_retry_str = (
+        ('Disabled' if retry_upgrade == 0 else f'{retry_upgrade} Days')
+        if retry_upgrade is not None
+        else global_retry_str
+    )
+    if retry_missing is not None or retry_upgrade is not None:
+        retry_str = f'Global: {global_retry_str}, Missing: {missing_retry_str}, Upgrade: {upgrade_retry_str}'
+    else:
+        retry_str = global_retry_str
     raw_order = _get_setting(settings, 'search_order')
     search_order_str = _SEARCH_ORDER_LABELS.get(raw_order, raw_order.capitalize())
     dry_run_str = ' (DRY RUN ENABLED)' if dry_run else ''
@@ -195,8 +209,8 @@ def _log_rangarr_start(active_clients: list[ArrClient], settings: dict) -> None:
         f'Rangarr started{dry_run_str} | '
         f'Instances: {len(active_clients)} active | '
         f'Run Interval: {_get_setting(settings, "run_interval_minutes")} Minutes | '
-        f'Missing Batch: {missing_str} | '
-        f'Upgrade Batch: {upgrade_str} | '
+        f'Missing Batch: {_batch_display_str(global_missing)} | '
+        f'Upgrade Batch: {_batch_display_str(global_upgrade)} | '
         f'Search Stagger: {stagger_seconds} Seconds | '
         f'Search Order: {search_order_str} | '
         f'Retry Interval: {retry_str} | '
