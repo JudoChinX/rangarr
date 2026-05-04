@@ -7,6 +7,7 @@ delays, and repeating at scheduled intervals.
 
 import datetime
 import logging
+import math
 import os
 import sys
 import time
@@ -267,7 +268,7 @@ def _seconds_until_window_open(start: datetime.time, now: datetime.time, today: 
     now_dt = datetime.datetime.combine(date, now)
     if start_dt <= now_dt:
         start_dt += datetime.timedelta(days=1)
-    return int((start_dt - now_dt).total_seconds())
+    return math.ceil((start_dt - now_dt).total_seconds())
 
 
 def build_arr_clients(

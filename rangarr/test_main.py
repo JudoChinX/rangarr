@@ -398,6 +398,11 @@ _seconds_until_window_open_cases = {
         'now': datetime.time(23, 0),
         'expected_seconds': 82800,
     },
+    'sub_second_before_window_rounds_up_to_one': {
+        'start': datetime.time(6, 0, 0),
+        'now': datetime.time(5, 59, 59, 999999),
+        'expected_seconds': 1,
+    },
 }
 
 
