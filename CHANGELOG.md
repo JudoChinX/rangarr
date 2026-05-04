@@ -7,9 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.1] - 2026-05-04
+
 ### Added
 
 - `retry_interval_days_missing` and `retry_interval_days_upgrade` settings allow independent retry windows for missing and upgrade searches. When set, each overrides the base `retry_interval_days` for its respective search type, enabling tighter retry pressure for missing content and looser cadence for upgrade polling (or vice versa). Both default to `null`, which falls back to `retry_interval_days`.
+
+### Fixed
+
+- Active hours window logging no longer spams the log when the remaining sleep duration is a sub-second fraction. The seconds-until-open calculation now uses ceiling division instead of truncation, ensuring at least one second is always slept. (#61)
 
 ## [0.7.0] - 2026-05-02
 
