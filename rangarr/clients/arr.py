@@ -13,6 +13,7 @@ import requests
 logger = logging.getLogger(__name__)
 
 type MediaItem = tuple[int | str, str, str]
+type SeasonPackThreshold = bool | int | float
 
 
 class ArrClient(ABC):
@@ -527,7 +528,7 @@ class SonarrClient(ArrClient):
         weight: float = 1.0,
     ) -> None:
         super().__init__(name, url, api_key, settings, weight)
-        self.season_packs: bool = self.settings.get('season_packs', False)
+        self.season_packs: SeasonPackThreshold = self.settings.get('season_packs', False)
 
     def _collect_season_pack_records(
         self,
@@ -536,9 +537,10 @@ class SonarrClient(ArrClient):
         reason: str,
         seen_seasons: set[tuple[int, int]],
         check_availability: bool,
-        season_air_status: dict[tuple[int, int], str | None],
+        season_metadata: dict[tuple[int, int], dict],
+        season_record_counts: dict[tuple[int, int], int],
     ) -> list[MediaItem]:
-        """Build a list of season-pack or individual-episode MediaItems from the given episode records."""
+        """Build season-pack or individual-episode MediaItems, falling back for airing or threshold-failing seasons."""
         items: list[MediaItem] = []
         for record in records:
             if 0 < batch_size <= len(items):
@@ -556,7 +558,13 @@ class SonarrClient(ArrClient):
             key = (series_id, season_number)
             if key in seen_seasons:
                 continue
-            if self._is_season_still_airing(series_id, season_number, season_air_status):
+            if self._is_season_still_airing(series_id, season_number, season_metadata):
+                title = self._get_record_title(record)
+                record_id = record.get('id')
+                if record_id:
+                    items.append((record_id, reason, title))
+                continue
+            if not self._meets_season_pack_threshold(series_id, season_number, season_record_counts, season_metadata):
                 title = self._get_record_title(record)
                 record_id = record.get('id')
                 if record_id:
@@ -585,18 +593,21 @@ class SonarrClient(ArrClient):
             if episode_file.get('customFormatScore', 0) < cutoff_score
         }
 
-    def _fetch_season_air_status(self) -> dict[tuple[int, int], str | None]:
-        """Return {(series_id, season_number): nextAiring} for every season across all series."""
+    def _fetch_season_metadata(self) -> dict[tuple[int, int], dict]:
+        """Return season metadata keyed by (series_id, season_number) for all monitored seasons."""
         series_list = self._fetch_list(self.ENDPOINT_SERIES)
-        result: dict[tuple[int, int], str | None] = {}
+        result: dict[tuple[int, int], dict] = {}
         for series in series_list:
             series_id = series.get('id')
             for season in series.get('seasons', []):
                 season_number = season.get('seasonNumber')
                 if series_id is None or season_number is None:
                     continue
-                next_airing = season.get('statistics', {}).get('nextAiring')
-                result[(series_id, season_number)] = next_airing
+                stats = season.get('statistics', {})
+                result[(series_id, season_number)] = {
+                    'next_airing': stats.get('nextAiring'),
+                    'monitored_count': stats.get('episodeCount', 0),
+                }
         return result
 
     @override
@@ -661,11 +672,42 @@ class SonarrClient(ArrClient):
         self,
         series_id: int,
         season_number: int,
-        season_air_status: dict[tuple[int, int], str | None],
+        season_metadata: dict[tuple[int, int], dict],
     ) -> bool:
         """Return True if the season has upcoming episodes scheduled; False otherwise (fail open)."""
-        next_airing = season_air_status.get((series_id, season_number))
+        next_airing = season_metadata.get((series_id, season_number), {}).get('next_airing')
         return bool(next_airing and not self._is_date_past(next_airing))
+
+    def _meets_season_pack_threshold(
+        self,
+        series_id: int,
+        season_number: int,
+        season_record_counts: dict[tuple[int, int], int],
+        season_metadata: dict[tuple[int, int], dict],
+    ) -> bool:
+        """Return True if the season's episode-record count meets the configured season_packs threshold."""
+        key = (series_id, season_number)
+        rec_count = season_record_counts.get(key, 0)
+        if isinstance(self.season_packs, bool):
+            result = self.season_packs
+        elif isinstance(self.season_packs, int):
+            result = rec_count >= self.season_packs
+        else:
+            monitored = season_metadata.get(key, {}).get('monitored_count', 0)
+            result = monitored > 0 and (rec_count / monitored) >= self.season_packs
+        return result
+
+    def _tally_season_records(self, records: list[dict]) -> dict[tuple[int, int], int]:
+        """Return a count of episode records per (series_id, season_number) key."""
+        counts: dict[tuple[int, int], int] = {}
+        for record in records:
+            series_id = self._get_series_id(record)
+            season_number = self._get_season_number(record)
+            if series_id is None or season_number is None:
+                continue
+            key = (series_id, season_number)
+            counts[key] = counts.get(key, 0) + 1
+        return counts
 
     @override
     def _trigger_single(self, item_id: int | str, reason: str, title: str, index: int, total: int) -> None:
@@ -696,22 +738,24 @@ class SonarrClient(ArrClient):
             return super().get_media_to_search(missing_batch_size, upgrade_batch_size)
 
         seen_seasons: set[tuple[int, int]] = set()
-        season_air_status = self._fetch_season_air_status()
+        season_metadata = self._fetch_season_metadata()
         missing_items: list[MediaItem] = []
         upgrade_items: list[MediaItem] = []
 
         if missing_batch_size != 0:
             missing_records = self._fetch_unlimited(self.ENDPOINT_WANTED_MISSING)
             self._sort_records_client_side(missing_records)
+            missing_counts = self._tally_season_records(missing_records)
             missing_items = self._collect_season_pack_records(
-                missing_records, missing_batch_size, 'missing', seen_seasons, True, season_air_status
+                missing_records, missing_batch_size, 'missing', seen_seasons, True, season_metadata, missing_counts
             )
 
         if upgrade_batch_size != 0:
             upgrade_records = self._fetch_unlimited(self.ENDPOINT_WANTED_CUTOFF)
             self._sort_records_client_side(upgrade_records)
+            upgrade_counts = self._tally_season_records(upgrade_records)
             upgrade_items = self._collect_season_pack_records(
-                upgrade_records, upgrade_batch_size, 'upgrade', seen_seasons, False, season_air_status
+                upgrade_records, upgrade_batch_size, 'upgrade', seen_seasons, False, season_metadata, upgrade_counts
             )
 
             upgrades_so_far = len(upgrade_items)
@@ -719,8 +763,9 @@ class SonarrClient(ArrClient):
             if remaining != 0:
                 supplemental = self._get_custom_format_score_unmet_records()
                 self._sort_records_client_side(supplemental)
+                supplemental_counts = self._tally_season_records(supplemental)
                 upgrade_items += self._collect_season_pack_records(
-                    supplemental, remaining, 'upgrade', seen_seasons, False, season_air_status
+                    supplemental, remaining, 'upgrade', seen_seasons, False, season_metadata, supplemental_counts
                 )
 
         merged = self._interleave_items(missing_items, upgrade_items)

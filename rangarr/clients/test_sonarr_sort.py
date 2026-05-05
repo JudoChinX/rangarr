@@ -63,7 +63,7 @@ def test_sonarr_season_packs_interleaves_missing_and_upgrade() -> None:
 
     with (
         patch.object(client, '_fetch_unlimited', side_effect=mock_fetch_unlimited),
-        patch.object(client, '_fetch_season_air_status', return_value={}),
+        patch.object(client, '_fetch_season_metadata', return_value={}),
         patch.object(client, '_get_custom_format_score_unmet_records', return_value=[]),
     ):
         results = client.get_media_to_search(missing_batch_size=10, upgrade_batch_size=10)
@@ -101,7 +101,7 @@ def test_sonarr_season_packs_respects_random_order() -> None:
 
     with (
         patch.object(client, '_fetch_unlimited', return_value=records),
-        patch.object(client, '_fetch_season_air_status', return_value={}),
+        patch.object(client, '_fetch_season_metadata', return_value={}),
         patch.object(client, '_get_custom_format_score_unmet_records', return_value=[]),
         patch('random.shuffle') as mock_shuffle,
     ):
@@ -144,7 +144,7 @@ def test_sonarr_season_packs_respects_search_order() -> None:
 
     with (
         patch.object(client, '_fetch_unlimited', return_value=records),
-        patch.object(client, '_fetch_season_air_status', return_value={}),
+        patch.object(client, '_fetch_season_metadata', return_value={}),
         patch.object(client, '_get_custom_format_score_unmet_records', return_value=[]),
     ):
         results = client.get_media_to_search(missing_batch_size=10, upgrade_batch_size=0)

@@ -248,6 +248,26 @@ _load_config_from_env_cases = {
             'global_settings': {'retry_interval_days_upgrade': 60},
         },
     },
+    'season_packs_float_parsed_from_env': {
+        'env': {
+            **_BASE_INSTANCE,
+            'RANGARR_INSTANCE_0_ENABLED': 'true',
+            'RANGARR_GLOBAL_SEASON_PACKS': '0.5',
+        },
+        'expected_result': {
+            'global_settings': {'season_packs': 0.5},
+        },
+    },
+    'season_packs_int_parsed_from_env': {
+        'env': {
+            **_BASE_INSTANCE,
+            'RANGARR_INSTANCE_0_ENABLED': 'true',
+            'RANGARR_GLOBAL_SEASON_PACKS': '3',
+        },
+        'expected_result': {
+            'global_settings': {'season_packs': 3},
+        },
+    },
 }
 
 

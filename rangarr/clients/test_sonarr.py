@@ -22,10 +22,10 @@ def test_collect_season_pack_records_returns_individual_for_airing_season() -> N
         SonarrRecordBuilder().with_id(99).with_series('Show A').with_series_id(10).with_episode(1, 1).aired().build(),
     ]
     seen_seasons: set[tuple[int, int]] = set()
-    season_air_status = {(10, 1): '2030-01-01T00:00:00Z'}
+    season_metadata = {(10, 1): {'next_airing': '2030-01-01T00:00:00Z', 'monitored_count': 8}}
 
     result = client._collect_season_pack_records(  # pylint: disable=protected-access
-        records, 10, 'missing', seen_seasons, True, season_air_status
+        records, 10, 'missing', seen_seasons, True, season_metadata, {}
     )
 
     assert result == [(99, 'missing', 'Show A - S01E01 - Test Episode')]
@@ -40,21 +40,21 @@ def test_collect_season_pack_records_returns_season_item() -> None:
     seen_seasons: set[tuple[int, int]] = set()
 
     result = client._collect_season_pack_records(  # pylint: disable=protected-access
-        records, 10, 'missing', seen_seasons, True, {}
+        records, 10, 'missing', seen_seasons, True, {}, {}
     )
 
     assert result == [('season:10:1', 'missing', 'Show A - Season 01')]
 
 
-def test_fetch_season_air_status_builds_lookup() -> None:
-    """Test _fetch_season_air_status returns {(series_id, season_number): nextAiring} for all seasons."""
+def test_fetch_season_metadata_builds_lookup() -> None:
+    """Test _fetch_season_metadata returns {(series_id, season_number): meta_dict} for all seasons."""
     client = ClientBuilder().sonarr().build()
     series_list = [
         SonarrSeriesRecordBuilder()
         .with_id(1)
         .with_seasons([
-            {'seasonNumber': 1, 'statistics': {'nextAiring': '2030-01-01T00:00:00Z'}},
-            {'seasonNumber': 2, 'statistics': {'nextAiring': None}},
+            {'seasonNumber': 1, 'statistics': {'nextAiring': '2030-01-01T00:00:00Z', 'episodeCount': 8}},
+            {'seasonNumber': 2, 'statistics': {'nextAiring': None, 'episodeCount': 13}},
         ])
         .build(),
         SonarrSeriesRecordBuilder()
@@ -65,50 +65,53 @@ def test_fetch_season_air_status_builds_lookup() -> None:
         .build(),
     ]
     with patch.object(client, '_fetch_list', return_value=series_list) as mock_fetch:
-        result = client._fetch_season_air_status()  # pylint: disable=protected-access
+        result = client._fetch_season_metadata()  # pylint: disable=protected-access
 
     mock_fetch.assert_called_once_with(client.ENDPOINT_SERIES)
     assert result == {
-        (1, 1): '2030-01-01T00:00:00Z',
-        (1, 2): None,
-        (2, 1): None,
+        (1, 1): {'next_airing': '2030-01-01T00:00:00Z', 'monitored_count': 8},
+        (1, 2): {'next_airing': None, 'monitored_count': 13},
+        (2, 1): {'next_airing': None, 'monitored_count': 0},
     }
 
 
-def test_fetch_season_air_status_skips_records_with_none_id_or_missing_season() -> None:
-    """Test _fetch_season_air_status skips series with no id and seasons with no seasonNumber."""
+def test_fetch_season_metadata_skips_records_with_none_id_or_missing_season() -> None:
+    """Test _fetch_season_metadata skips series with no id and seasons with no seasonNumber."""
     client = ClientBuilder().sonarr().build()
     series_list = [
         {'seasons': [{'seasonNumber': 1}]},
-        {'id': 2, 'seasons': [{'statistics': {'nextAiring': '2030-01-01T00:00:00Z'}}]},
-        {'id': 3, 'seasons': [{'seasonNumber': 1, 'statistics': {'nextAiring': '2030-06-01T00:00:00Z'}}]},
+        {'id': 2, 'seasons': [{'statistics': {'nextAiring': '2030-01-01T00:00:00Z', 'episodeCount': 5}}]},
+        {
+            'id': 3,
+            'seasons': [{'seasonNumber': 1, 'statistics': {'nextAiring': '2030-06-01T00:00:00Z', 'episodeCount': 10}}],
+        },
     ]
     with patch.object(client, '_fetch_list', return_value=series_list):
-        result = client._fetch_season_air_status()  # pylint: disable=protected-access
-    assert result == {(3, 1): '2030-06-01T00:00:00Z'}
+        result = client._fetch_season_metadata()  # pylint: disable=protected-access
+    assert result == {(3, 1): {'next_airing': '2030-06-01T00:00:00Z', 'monitored_count': 10}}
 
 
 _is_season_still_airing_cases = {
     'returns_true_when_next_airing_is_future': {
-        'season_air_status': {(1, 1): '2030-01-01T00:00:00Z'},
+        'season_metadata': {(1, 1): {'next_airing': '2030-01-01T00:00:00Z', 'monitored_count': 8}},
         'series_id': 1,
         'season_number': 1,
         'expected': True,
     },
     'returns_false_when_next_airing_is_past': {
-        'season_air_status': {(1, 1): '2020-01-01T00:00:00Z'},
+        'season_metadata': {(1, 1): {'next_airing': '2020-01-01T00:00:00Z', 'monitored_count': 8}},
         'series_id': 1,
         'season_number': 1,
         'expected': False,
     },
     'returns_false_when_next_airing_is_none': {
-        'season_air_status': {(1, 1): None},
+        'season_metadata': {(1, 1): {'next_airing': None, 'monitored_count': 8}},
         'series_id': 1,
         'season_number': 1,
         'expected': False,
     },
     'returns_false_when_key_absent': {
-        'season_air_status': {},
+        'season_metadata': {},
         'series_id': 1,
         'season_number': 1,
         'expected': False,
@@ -117,17 +120,173 @@ _is_season_still_airing_cases = {
 
 
 @pytest.mark.parametrize(
-    'season_air_status, series_id, season_number, expected',
+    'season_metadata, series_id, season_number, expected',
     [
-        (case['season_air_status'], case['series_id'], case['season_number'], case['expected'])
+        (case['season_metadata'], case['series_id'], case['season_number'], case['expected'])
         for case in _is_season_still_airing_cases.values()
     ],
     ids=list(_is_season_still_airing_cases.keys()),
 )
-def test_is_season_still_airing(season_air_status: dict, series_id: int, season_number: int, expected: bool) -> None:
+def test_is_season_still_airing(season_metadata: dict, series_id: int, season_number: int, expected: bool) -> None:
     """Test _is_season_still_airing returns True only when nextAiring is a future date."""
     client = ClientBuilder().sonarr().build()
-    result = client._is_season_still_airing(series_id, season_number, season_air_status)  # pylint: disable=protected-access
+    result = client._is_season_still_airing(series_id, season_number, season_metadata)  # pylint: disable=protected-access
+    assert result == expected
+
+
+_meets_season_pack_threshold_cases = {
+    'true_always_passes': {
+        'season_packs': True,
+        'season_record_counts': {(1, 1): 1},
+        'season_metadata': {(1, 1): {'next_airing': None, 'monitored_count': 10}},
+        'series_id': 1,
+        'season_number': 1,
+        'expected': True,
+    },
+    'int_threshold_met': {
+        'season_packs': 3,
+        'season_record_counts': {(1, 1): 3},
+        'season_metadata': {(1, 1): {'next_airing': None, 'monitored_count': 10}},
+        'series_id': 1,
+        'season_number': 1,
+        'expected': True,
+    },
+    'int_threshold_exceeded': {
+        'season_packs': 3,
+        'season_record_counts': {(1, 1): 5},
+        'season_metadata': {(1, 1): {'next_airing': None, 'monitored_count': 10}},
+        'series_id': 1,
+        'season_number': 1,
+        'expected': True,
+    },
+    'int_threshold_not_met': {
+        'season_packs': 3,
+        'season_record_counts': {(1, 1): 2},
+        'season_metadata': {(1, 1): {'next_airing': None, 'monitored_count': 10}},
+        'series_id': 1,
+        'season_number': 1,
+        'expected': False,
+    },
+    'int_threshold_season_not_in_counts': {
+        'season_packs': 3,
+        'season_record_counts': {},
+        'season_metadata': {(1, 1): {'next_airing': None, 'monitored_count': 10}},
+        'series_id': 1,
+        'season_number': 1,
+        'expected': False,
+    },
+    'float_threshold_met': {
+        'season_packs': 0.5,
+        'season_record_counts': {(1, 1): 5},
+        'season_metadata': {(1, 1): {'next_airing': None, 'monitored_count': 10}},
+        'series_id': 1,
+        'season_number': 1,
+        'expected': True,
+    },
+    'float_threshold_exceeded': {
+        'season_packs': 0.5,
+        'season_record_counts': {(1, 1): 8},
+        'season_metadata': {(1, 1): {'next_airing': None, 'monitored_count': 10}},
+        'series_id': 1,
+        'season_number': 1,
+        'expected': True,
+    },
+    'float_threshold_not_met': {
+        'season_packs': 0.5,
+        'season_record_counts': {(1, 1): 4},
+        'season_metadata': {(1, 1): {'next_airing': None, 'monitored_count': 10}},
+        'series_id': 1,
+        'season_number': 1,
+        'expected': False,
+    },
+    'float_threshold_monitored_count_zero': {
+        'season_packs': 0.5,
+        'season_record_counts': {(1, 1): 5},
+        'season_metadata': {(1, 1): {'next_airing': None, 'monitored_count': 0}},
+        'series_id': 1,
+        'season_number': 1,
+        'expected': False,
+    },
+    'float_threshold_season_not_in_metadata': {
+        'season_packs': 0.5,
+        'season_record_counts': {(1, 1): 5},
+        'season_metadata': {},
+        'series_id': 1,
+        'season_number': 1,
+        'expected': False,
+    },
+}
+
+
+@pytest.mark.parametrize(
+    'season_packs, season_record_counts, season_metadata, series_id, season_number, expected',
+    [
+        (
+            case['season_packs'],
+            case['season_record_counts'],
+            case['season_metadata'],
+            case['series_id'],
+            case['season_number'],
+            case['expected'],
+        )
+        for case in _meets_season_pack_threshold_cases.values()
+    ],
+    ids=list(_meets_season_pack_threshold_cases.keys()),
+)
+def test_meets_season_pack_threshold(
+    season_packs: bool | int | float,
+    season_record_counts: dict[tuple[int, int], int],
+    season_metadata: dict[tuple[int, int], dict],
+    series_id: int,
+    season_number: int,
+    expected: bool,
+) -> None:
+    """Test _meets_season_pack_threshold returns True only when the threshold is satisfied."""
+    client = ClientBuilder().sonarr().with_settings(season_packs=season_packs, retry_interval_days=0).build()
+    result = client._meets_season_pack_threshold(  # pylint: disable=protected-access
+        series_id, season_number, season_record_counts, season_metadata
+    )
+    assert result == expected
+
+
+_tally_season_records_cases = {
+    'counts_episodes_per_season': {
+        'records': [
+            SonarrRecordBuilder().with_id(1).with_series_id(10).with_episode(1, 1).build(),
+            SonarrRecordBuilder().with_id(2).with_series_id(10).with_episode(1, 2).build(),
+            SonarrRecordBuilder().with_id(3).with_series_id(10).with_episode(2, 1).build(),
+            SonarrRecordBuilder().with_id(4).with_series_id(20).with_episode(1, 1).build(),
+        ],
+        'expected': {(10, 1): 2, (10, 2): 1, (20, 1): 1},
+    },
+    'skips_records_with_no_series_id': {
+        'records': [
+            SonarrRecordBuilder().with_id(1).with_episode(1, 1).build(),
+        ],
+        'expected': {},
+    },
+    'skips_records_with_no_season_number': {
+        'records': [
+            SonarrRecordBuilder().with_id(1).with_series_id(10).with_episode(1, 1).without_season_number().build(),
+        ],
+        'expected': {},
+    },
+    'returns_empty_for_no_records': {
+        'records': [],
+        'expected': {},
+    },
+}
+
+
+@pytest.mark.parametrize(
+    'records, expected',
+    [(case['records'], case['expected']) for case in _tally_season_records_cases.values()],
+    ids=list(_tally_season_records_cases.keys()),
+)
+def test_tally_season_records(records: list, expected: dict) -> None:
+    """Test _tally_season_records counts episode records per (series_id, season_number)."""
+    client = ClientBuilder().sonarr().build()
+    result = client._tally_season_records(records)  # pylint: disable=protected-access
     assert result == expected
 
 
@@ -146,7 +305,7 @@ _season_pack_unaired_filter_cases = {
         ],
         'upgrade_records': [],
         'supplemental_records': [],
-        'season_air_status': {(10, 1): '2030-01-01T00:00:00Z'},
+        'season_metadata': {(10, 1): {'next_airing': '2030-01-01T00:00:00Z', 'monitored_count': 8}},
         'expected_ids': [1],
     },
     'upgrade_path_falls_back_to_individual_for_airing_season': {
@@ -163,7 +322,7 @@ _season_pack_unaired_filter_cases = {
             .build(),
         ],
         'supplemental_records': [],
-        'season_air_status': {(20, 2): '2030-01-01T00:00:00Z'},
+        'season_metadata': {(20, 2): {'next_airing': '2030-01-01T00:00:00Z', 'monitored_count': 8}},
         'expected_ids': [2],
     },
     'completed_season_is_included': {
@@ -180,7 +339,7 @@ _season_pack_unaired_filter_cases = {
         ],
         'upgrade_records': [],
         'supplemental_records': [],
-        'season_air_status': {(30, 3): None},
+        'season_metadata': {(30, 3): {'next_airing': None, 'monitored_count': 13}},
         'expected_ids': ['season:30:3'],
     },
     'supplemental_path_falls_back_to_individual_for_airing_season': {
@@ -197,14 +356,14 @@ _season_pack_unaired_filter_cases = {
             .aired()
             .build(),
         ],
-        'season_air_status': {(40, 4): '2030-01-01T00:00:00Z'},
+        'season_metadata': {(40, 4): {'next_airing': '2030-01-01T00:00:00Z', 'monitored_count': 8}},
         'expected_ids': [4],
     },
 }
 
 
 @pytest.mark.parametrize(
-    'missing_batch_size, upgrade_batch_size, missing_records, upgrade_records, supplemental_records, season_air_status, expected_ids',
+    'missing_batch_size, upgrade_batch_size, missing_records, upgrade_records, supplemental_records, season_metadata, expected_ids',
     [
         (
             case['missing_batch_size'],
@@ -212,7 +371,7 @@ _season_pack_unaired_filter_cases = {
             case['missing_records'],
             case['upgrade_records'],
             case['supplemental_records'],
-            case['season_air_status'],
+            case['season_metadata'],
             case['expected_ids'],
         )
         for case in _season_pack_unaired_filter_cases.values()
@@ -225,7 +384,7 @@ def test_season_pack_falls_back_to_individual_for_airing_seasons(
     missing_records: list,
     upgrade_records: list,
     supplemental_records: list,
-    season_air_status: dict,
+    season_metadata: dict,
     expected_ids: list,
 ) -> None:
     """Test season pack collection falls back to individual episodes for airing seasons."""
@@ -238,7 +397,7 @@ def test_season_pack_falls_back_to_individual_for_airing_seasons(
 
     with (
         patch.object(client, '_fetch_unlimited', side_effect=fake_fetch_unlimited),
-        patch.object(client, '_fetch_season_air_status', return_value=season_air_status),
+        patch.object(client, '_fetch_season_metadata', return_value=season_metadata),
         patch.object(client, '_get_custom_format_score_unmet_records', return_value=supplemental_records),
     ):
         results = client.get_media_to_search(
@@ -254,6 +413,18 @@ def test_sonarr_client_reads_season_packs_setting() -> None:
     """Test that SonarrClient reads season_packs from settings."""
     client = SonarrClient(name='test', url='http://test', api_key='testkey', settings={'season_packs': True})
     assert client.season_packs is True
+
+
+def test_sonarr_client_reads_season_packs_int_setting() -> None:
+    """Test that SonarrClient stores an integer season_packs value."""
+    client = SonarrClient(name='test', url='http://test', api_key='testkey', settings={'season_packs': 3})
+    assert client.season_packs == 3
+
+
+def test_sonarr_client_reads_season_packs_float_setting() -> None:
+    """Test that SonarrClient stores a float season_packs value."""
+    client = SonarrClient(name='test', url='http://test', api_key='testkey', settings={'season_packs': 0.3})
+    assert client.season_packs == 0.3
 
 
 def test_sonarr_client_season_packs_defaults_to_false() -> None:
@@ -279,7 +450,7 @@ def test_sonarr_season_pack_cross_pass_deduplication_preserves_reason() -> None:
 
     with (
         patch.object(client, '_fetch_unlimited', side_effect=mock_fetch_unlimited),
-        patch.object(client, '_fetch_season_air_status', return_value={}),
+        patch.object(client, '_fetch_season_metadata', return_value={}),
         patch.object(client, '_get_custom_format_score_unmet_records', return_value=[]),
     ):
         results = client.get_media_to_search(missing_batch_size=10, upgrade_batch_size=10)
@@ -301,7 +472,7 @@ def test_sonarr_season_pack_supplemental_appended_to_items() -> None:
     ]
     with (
         patch.object(client, '_fetch_unlimited', return_value=cutoff_records),
-        patch.object(client, '_fetch_season_air_status', return_value={}),
+        patch.object(client, '_fetch_season_metadata', return_value={}),
         patch.object(client, '_get_custom_format_score_unmet_records', return_value=supplemental_records),
     ):
         results = client.get_media_to_search(missing_batch_size=0, upgrade_batch_size=10)
@@ -319,7 +490,7 @@ def test_sonarr_season_pack_supplemental_deduplicates_seen_seasons() -> None:
     )
     with (
         patch.object(client, '_fetch_unlimited', return_value=[shared_record]),
-        patch.object(client, '_fetch_season_air_status', return_value={}),
+        patch.object(client, '_fetch_season_metadata', return_value={}),
         patch.object(client, '_get_custom_format_score_unmet_records', return_value=[shared_record]),
     ):
         results = client.get_media_to_search(missing_batch_size=0, upgrade_batch_size=10)
@@ -349,7 +520,7 @@ def test_sonarr_season_pack_supplemental_interleaves_with_missing() -> None:
 
     with (
         patch.object(client, '_fetch_unlimited', side_effect=mock_fetch_unlimited),
-        patch.object(client, '_fetch_season_air_status', return_value={}),
+        patch.object(client, '_fetch_season_metadata', return_value={}),
         patch.object(client, '_get_custom_format_score_unmet_records', return_value=supplemental_records),
     ):
         results = client.get_media_to_search(missing_batch_size=10, upgrade_batch_size=10)
@@ -387,7 +558,7 @@ def test_sonarr_season_pack_supplemental_respects_upgrade_batch_size() -> None:
     ]
     with (
         patch.object(client, '_fetch_unlimited', return_value=cutoff_records),
-        patch.object(client, '_fetch_season_air_status', return_value={}),
+        patch.object(client, '_fetch_season_metadata', return_value={}),
         patch.object(client, '_get_custom_format_score_unmet_records', return_value=supplemental_records),
     ):
         results = client.get_media_to_search(missing_batch_size=0, upgrade_batch_size=3)

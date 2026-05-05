@@ -11,6 +11,7 @@ import yaml
 
 from rangarr.validators import _parse_hhmm
 from rangarr.validators import _validate_active_hours
+from rangarr.validators import _validate_season_packs
 
 logger = logging.getLogger(__name__)
 
@@ -75,7 +76,7 @@ SETTINGS_SCHEMA = {
     },
     'season_packs': {
         'default': False,
-        'type': bool,
+        'custom_validator': _validate_season_packs,
     },
     'include_tags': {
         'default': [],
@@ -166,6 +167,9 @@ def _validate_global_settings(settings: dict, schema: dict) -> None:
         default = definition['default']
         settings.setdefault(setting, list(default) if isinstance(default, list) else default)
         if definition['default'] is None and settings[setting] is None:
+            continue
+        if 'custom_validator' in definition:
+            definition['custom_validator'](setting, settings[setting])
             continue
         _validate_setting(
             setting,

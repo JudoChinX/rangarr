@@ -560,6 +560,60 @@ _parse_config_cases = {
             },
         },
     },
+    'season_packs_accepts_false': {
+        'config_data': {
+            'instances': {
+                'test-sonarr': {
+                    'type': 'sonarr',
+                    'url': 'http://localhost:8989',
+                    'api_key': 'testkey',
+                    'enabled': True,
+                }
+            },
+            'global': {'season_packs': False},
+        },
+        'expected_result': {
+            'global_settings': {
+                'season_packs': False,
+            },
+        },
+    },
+    'season_packs_accepts_float_ratio': {
+        'config_data': {
+            'instances': {
+                'test-sonarr': {
+                    'type': 'sonarr',
+                    'url': 'http://localhost:8989',
+                    'api_key': 'testkey',
+                    'enabled': True,
+                }
+            },
+            'global': {'season_packs': 0.3},
+        },
+        'expected_result': {
+            'global_settings': {
+                'season_packs': 0.3,
+            },
+        },
+    },
+    'season_packs_accepts_int_count': {
+        'config_data': {
+            'instances': {
+                'test-sonarr': {
+                    'type': 'sonarr',
+                    'url': 'http://localhost:8989',
+                    'api_key': 'testkey',
+                    'enabled': True,
+                }
+            },
+            'global': {'season_packs': 3},
+        },
+        'expected_result': {
+            'global_settings': {
+                'season_packs': 3,
+            },
+        },
+    },
     'season_packs_accepts_true': {
         'config_data': {
             'instances': {
@@ -578,7 +632,91 @@ _parse_config_cases = {
             },
         },
     },
+    'season_packs_rejects_float_above_one': {
+        'config_data': {
+            'instances': {
+                'test-sonarr': {
+                    'type': 'sonarr',
+                    'url': 'http://localhost:8989',
+                    'api_key': 'testkey',
+                    'enabled': True,
+                }
+            },
+            'global': {'season_packs': 1.5},
+        },
+        'expected_error': "'global.season_packs' float must be between 0.0 and 1.0 (exclusive).",
+    },
+    'season_packs_rejects_float_one': {
+        'config_data': {
+            'instances': {
+                'test-sonarr': {
+                    'type': 'sonarr',
+                    'url': 'http://localhost:8989',
+                    'api_key': 'testkey',
+                    'enabled': True,
+                }
+            },
+            'global': {'season_packs': 1.0},
+        },
+        'expected_error': "'global.season_packs' float must be between 0.0 and 1.0 (exclusive).",
+    },
+    'season_packs_rejects_float_zero': {
+        'config_data': {
+            'instances': {
+                'test-sonarr': {
+                    'type': 'sonarr',
+                    'url': 'http://localhost:8989',
+                    'api_key': 'testkey',
+                    'enabled': True,
+                }
+            },
+            'global': {'season_packs': 0.0},
+        },
+        'expected_error': "'global.season_packs' float must be between 0.0 and 1.0 (exclusive).",
+    },
+    'season_packs_rejects_int_negative': {
+        'config_data': {
+            'instances': {
+                'test-sonarr': {
+                    'type': 'sonarr',
+                    'url': 'http://localhost:8989',
+                    'api_key': 'testkey',
+                    'enabled': True,
+                }
+            },
+            'global': {'season_packs': -1},
+        },
+        'expected_error': "'global.season_packs' integer must be >= 1.",
+    },
+    'season_packs_rejects_int_zero': {
+        'config_data': {
+            'instances': {
+                'test-sonarr': {
+                    'type': 'sonarr',
+                    'url': 'http://localhost:8989',
+                    'api_key': 'testkey',
+                    'enabled': True,
+                }
+            },
+            'global': {'season_packs': 0},
+        },
+        'expected_error': "'global.season_packs' integer must be >= 1.",
+    },
     'season_packs_rejects_non_bool': {
+        'config_data': {
+            'instances': {
+                'test-sonarr': {
+                    'type': 'sonarr',
+                    'url': 'http://localhost:8989',
+                    'api_key': 'testkey',
+                    'enabled': True,
+                }
+            },
+            'global': {'season_packs': []},
+        },
+        'expected_error': "'global.season_packs' must be a bool, integer >= 1, or float between 0.0 and 1.0.",
+    },
+    'season_packs_rejects_string': {
         'config_data': {
             'instances': {
                 'test-sonarr': {
@@ -590,7 +728,7 @@ _parse_config_cases = {
             },
             'global': {'season_packs': 'yes'},
         },
-        'expected_error': "'global.season_packs' must be of type bool.",
+        'expected_error': "'global.season_packs' must be a bool, integer >= 1, or float between 0.0 and 1.0.",
     },
     'include_tags_defaults_to_empty_list': {
         'config_data': {

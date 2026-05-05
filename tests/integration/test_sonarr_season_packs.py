@@ -348,11 +348,11 @@ def test_sonarr_season_pack_falls_back_to_individual_for_airing_season() -> None
         .build(),
     ]
 
-    season_air_status = {(10, 1): '2030-01-01T00:00:00Z'}
+    season_metadata = {(10, 1): {'next_airing': '2030-01-01T00:00:00Z', 'monitored_count': 8}}
 
     with (
         patch.object(client, '_fetch_unlimited', return_value=missing_records),
-        patch.object(client, '_fetch_season_air_status', return_value=season_air_status),
+        patch.object(client, '_fetch_season_metadata', return_value=season_metadata),
         patch.object(client, '_get_custom_format_score_unmet_records', return_value=[]),
     ):
         items = client.get_media_to_search(missing_batch_size=10, upgrade_batch_size=10)
@@ -360,6 +360,88 @@ def test_sonarr_season_pack_falls_back_to_individual_for_airing_season() -> None
         expected_item = (1, 'missing', 'Show A - S01E01 - Test Episode')
         assert expected_item in items
         assert ('season:10:1', 'missing', 'Show A - Season 01') not in items
+
+
+def test_sonarr_season_pack_float_threshold_met_returns_season_pack() -> None:
+    """Verify ratio threshold is met when missing/monitored >= threshold."""
+    client = ClientBuilder().sonarr().with_settings(season_packs=0.5, retry_interval_days=0).build()
+
+    missing_records = [
+        SonarrRecordBuilder().with_id(1).with_series('Show A').with_series_id(10).with_episode(1, 1).aired().build(),
+        SonarrRecordBuilder().with_id(2).with_series('Show A').with_series_id(10).with_episode(1, 2).aired().build(),
+        SonarrRecordBuilder().with_id(3).with_series('Show A').with_series_id(10).with_episode(1, 3).aired().build(),
+        SonarrRecordBuilder().with_id(4).with_series('Show A').with_series_id(10).with_episode(1, 4).aired().build(),
+        SonarrRecordBuilder().with_id(5).with_series('Show A').with_series_id(10).with_episode(1, 5).aired().build(),
+    ]
+    season_metadata = {(10, 1): {'next_airing': None, 'monitored_count': 10}}
+
+    def mock_fetch_unlimited(endpoint: str) -> list[dict]:
+        if 'missing' in endpoint:
+            return missing_records.copy()
+        return []
+
+    with (
+        patch.object(client, '_fetch_unlimited', side_effect=mock_fetch_unlimited),
+        patch.object(client, '_fetch_season_metadata', return_value=season_metadata),
+        patch.object(client, '_get_custom_format_score_unmet_records', return_value=[]),
+    ):
+        items = client.get_media_to_search(missing_batch_size=10, upgrade_batch_size=10)
+
+    item_ids = [item_id for item_id, _, _ in items]
+    assert item_ids == ['season:10:1']
+
+
+def test_sonarr_season_pack_float_threshold_not_met_returns_individual_episodes() -> None:
+    """Verify ratio threshold not met falls back to individual episode searches."""
+    client = ClientBuilder().sonarr().with_settings(season_packs=0.5, retry_interval_days=0).build()
+
+    missing_records = [
+        SonarrRecordBuilder().with_id(1).with_series('Show A').with_series_id(10).with_episode(1, 1).aired().build(),
+        SonarrRecordBuilder().with_id(2).with_series('Show A').with_series_id(10).with_episode(1, 2).aired().build(),
+        SonarrRecordBuilder().with_id(3).with_series('Show A').with_series_id(10).with_episode(1, 3).aired().build(),
+        SonarrRecordBuilder().with_id(4).with_series('Show A').with_series_id(10).with_episode(1, 4).aired().build(),
+    ]
+    season_metadata = {(10, 1): {'next_airing': None, 'monitored_count': 10}}
+
+    def mock_fetch_unlimited(endpoint: str) -> list[dict]:
+        if 'missing' in endpoint:
+            return missing_records.copy()
+        return []
+
+    with (
+        patch.object(client, '_fetch_unlimited', side_effect=mock_fetch_unlimited),
+        patch.object(client, '_fetch_season_metadata', return_value=season_metadata),
+        patch.object(client, '_get_custom_format_score_unmet_records', return_value=[]),
+    ):
+        items = client.get_media_to_search(missing_batch_size=10, upgrade_batch_size=10)
+
+    item_ids = [item_id for item_id, _, _ in items]
+    assert item_ids == [1, 2, 3, 4]
+
+
+def test_sonarr_season_pack_float_threshold_zero_monitored_count_falls_back() -> None:
+    """Verify ratio threshold with monitored_count=0 falls back to individual episodes."""
+    client = ClientBuilder().sonarr().with_settings(season_packs=0.5, retry_interval_days=0).build()
+
+    missing_records = [
+        SonarrRecordBuilder().with_id(1).with_series('Show A').with_series_id(10).with_episode(1, 1).aired().build(),
+    ]
+    season_metadata = {(10, 1): {'next_airing': None, 'monitored_count': 0}}
+
+    def mock_fetch_unlimited(endpoint: str) -> list[dict]:
+        if 'missing' in endpoint:
+            return missing_records.copy()
+        return []
+
+    with (
+        patch.object(client, '_fetch_unlimited', side_effect=mock_fetch_unlimited),
+        patch.object(client, '_fetch_season_metadata', return_value=season_metadata),
+        patch.object(client, '_get_custom_format_score_unmet_records', return_value=[]),
+    ):
+        items = client.get_media_to_search(missing_batch_size=10, upgrade_batch_size=10)
+
+    item_ids = [item_id for item_id, _, _ in items]
+    assert item_ids == [1]
 
 
 @pytest.mark.parametrize(
@@ -404,6 +486,130 @@ def test_sonarr_season_pack_get_media_to_search(
     assert [item_id for item_id, unused_reason, unused_title in result] == expected_media_item_ids
     if expected_fetch_call_count is not None:
         assert mock_fetch.call_count == expected_fetch_call_count
+
+
+def test_sonarr_season_pack_int_threshold_met_returns_season_pack() -> None:
+    """Verify count threshold is met when missing episodes >= threshold."""
+    client = ClientBuilder().sonarr().with_settings(season_packs=3, retry_interval_days=0).build()
+
+    missing_records = [
+        SonarrRecordBuilder().with_id(1).with_series('Show A').with_series_id(10).with_episode(1, 1).aired().build(),
+        SonarrRecordBuilder().with_id(2).with_series('Show A').with_series_id(10).with_episode(1, 2).aired().build(),
+        SonarrRecordBuilder().with_id(3).with_series('Show A').with_series_id(10).with_episode(1, 3).aired().build(),
+    ]
+    season_metadata = {(10, 1): {'next_airing': None, 'monitored_count': 10}}
+
+    def mock_fetch_unlimited(endpoint: str) -> list[dict]:
+        if 'missing' in endpoint:
+            return missing_records.copy()
+        return []
+
+    with (
+        patch.object(client, '_fetch_unlimited', side_effect=mock_fetch_unlimited),
+        patch.object(client, '_fetch_season_metadata', return_value=season_metadata),
+        patch.object(client, '_get_custom_format_score_unmet_records', return_value=[]),
+    ):
+        items = client.get_media_to_search(missing_batch_size=10, upgrade_batch_size=10)
+
+    item_ids = [item_id for item_id, _, _ in items]
+    assert item_ids == ['season:10:1']
+
+
+def test_sonarr_season_pack_int_threshold_not_met_returns_individual_episodes() -> None:
+    """Verify count threshold not met falls back to individual episode searches."""
+    client = ClientBuilder().sonarr().with_settings(season_packs=3, retry_interval_days=0).build()
+
+    missing_records = [
+        SonarrRecordBuilder().with_id(1).with_series('Show A').with_series_id(10).with_episode(1, 1).aired().build(),
+        SonarrRecordBuilder().with_id(2).with_series('Show A').with_series_id(10).with_episode(1, 2).aired().build(),
+    ]
+    season_metadata = {(10, 1): {'next_airing': None, 'monitored_count': 10}}
+
+    def mock_fetch_unlimited(endpoint: str) -> list[dict]:
+        if 'missing' in endpoint:
+            return missing_records.copy()
+        return []
+
+    with (
+        patch.object(client, '_fetch_unlimited', side_effect=mock_fetch_unlimited),
+        patch.object(client, '_fetch_season_metadata', return_value=season_metadata),
+        patch.object(client, '_get_custom_format_score_unmet_records', return_value=[]),
+    ):
+        items = client.get_media_to_search(missing_batch_size=10, upgrade_batch_size=10)
+
+    item_ids = [item_id for item_id, _, _ in items]
+    assert item_ids == [1, 2]
+
+
+def test_sonarr_season_pack_mixed_threshold_pack_and_individual() -> None:
+    """Verify seasons that meet threshold get pack; seasons below get individual episodes."""
+    client = ClientBuilder().sonarr().with_settings(season_packs=3, retry_interval_days=0).build()
+
+    missing_records = [
+        SonarrRecordBuilder().with_id(1).with_series('Show A').with_series_id(10).with_episode(1, 1).aired().build(),
+        SonarrRecordBuilder().with_id(2).with_series('Show A').with_series_id(10).with_episode(1, 2).aired().build(),
+        SonarrRecordBuilder().with_id(3).with_series('Show A').with_series_id(10).with_episode(1, 3).aired().build(),
+        SonarrRecordBuilder().with_id(4).with_series('Show B').with_series_id(20).with_episode(1, 1).aired().build(),
+        SonarrRecordBuilder().with_id(5).with_series('Show B').with_series_id(20).with_episode(1, 2).aired().build(),
+    ]
+    season_metadata = {
+        (10, 1): {'next_airing': None, 'monitored_count': 10},
+        (20, 1): {'next_airing': None, 'monitored_count': 10},
+    }
+
+    def mock_fetch_unlimited(endpoint: str) -> list[dict]:
+        if 'missing' in endpoint:
+            return missing_records.copy()
+        return []
+
+    with (
+        patch.object(client, '_fetch_unlimited', side_effect=mock_fetch_unlimited),
+        patch.object(client, '_fetch_season_metadata', return_value=season_metadata),
+        patch.object(client, '_get_custom_format_score_unmet_records', return_value=[]),
+    ):
+        items = client.get_media_to_search(missing_batch_size=10, upgrade_batch_size=10)
+
+    item_ids = [item_id for item_id, _, _ in items]
+    assert item_ids == ['season:10:1', 4, 5]
+
+
+def test_sonarr_season_pack_threshold_applied_independently_per_pass() -> None:
+    """Verify missing and upgrade passes evaluate thresholds against their own counts.
+
+    When missing count is below the threshold the season falls back to individual
+    episodes; when the upgrade count for the same season meets the threshold the
+    upgrade pass emits a season-pack search.
+    """
+    client = ClientBuilder().sonarr().with_settings(season_packs=3, retry_interval_days=0).build()
+
+    missing_records = [
+        SonarrRecordBuilder().with_id(1).with_series('Show A').with_series_id(10).with_episode(1, 1).aired().build(),
+        SonarrRecordBuilder().with_id(2).with_series('Show A').with_series_id(10).with_episode(1, 2).aired().build(),
+    ]
+    upgrade_records = [
+        SonarrRecordBuilder().with_id(3).with_series('Show A').with_series_id(10).with_episode(1, 3).aired().build(),
+        SonarrRecordBuilder().with_id(4).with_series('Show A').with_series_id(10).with_episode(1, 4).aired().build(),
+        SonarrRecordBuilder().with_id(5).with_series('Show A').with_series_id(10).with_episode(1, 5).aired().build(),
+    ]
+    season_metadata = {(10, 1): {'next_airing': None, 'monitored_count': 10}}
+
+    def mock_fetch_unlimited(endpoint: str) -> list[dict]:
+        if 'missing' in endpoint:
+            return missing_records.copy()
+        return upgrade_records.copy()
+
+    with (
+        patch.object(client, '_fetch_unlimited', side_effect=mock_fetch_unlimited),
+        patch.object(client, '_fetch_season_metadata', return_value=season_metadata),
+        patch.object(client, '_get_custom_format_score_unmet_records', return_value=[]),
+    ):
+        items = client.get_media_to_search(missing_batch_size=10, upgrade_batch_size=10)
+
+    item_ids = [item_id for item_id, _, _ in items]
+    assert 1 in item_ids
+    assert 2 in item_ids
+    assert 'season:10:1' in item_ids
+    assert item_ids.count('season:10:1') == 1
 
 
 def test_sonarr_season_pack_skips_series_with_excluded_tag() -> None:

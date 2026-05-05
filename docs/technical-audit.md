@@ -134,7 +134,7 @@ config.yaml → config_parser.py → main.py → ArrClient instances → *arr AP
 
 **Search Commands Sent:**
 - Radarr: `{"name": "MoviesSearch", "movieIds": [...]}`
-- Sonarr: `{"name": "EpisodeSearch", "episodeIds": [...]}` (or `{"name": "SeasonSearch", "seriesId": ..., "seasonNumber": ...}` when `season_packs: true`; airing seasons always use `EpisodeSearch` regardless)
+- Sonarr: `{"name": "EpisodeSearch", "episodeIds": [...]}` (or `{"name": "SeasonSearch", "seriesId": ..., "seasonNumber": ...}` when `season_packs` is `true`, an integer count threshold is met, or a float ratio threshold is met; airing seasons and seasons that don't meet the configured threshold always use `EpisodeSearch`)
 - Lidarr: `{"name": "AlbumSearch", "albumIds": [...]}`
 
 **Data Accessed:**

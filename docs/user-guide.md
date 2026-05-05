@@ -272,17 +272,26 @@ global:
 
 #### `season_packs`
 
-**Type:** Boolean | **Default:** `false` | **Applies to:** Sonarr instances only
+**Type:** `Boolean | Integer (≥ 1) | Float (0.0 < x < 1.0)` | **Default:** `false` | **Applies to:** Sonarr instances only
 
-When `true`, Sonarr searches are grouped by season. Instead of sending one `EpisodeSearch` command per missing or upgrade-eligible episode, Rangarr sends one `SeasonSearch` command per `(series, season)` pair that has at least one affected episode. This is more efficient when many episodes of the same season are missing.
+Controls whether Sonarr searches are grouped into season packs, and optionally gated behind a threshold. Instead of sending one `EpisodeSearch` per episode, Rangarr sends one `SeasonSearch` per `(series, season)` pair — more efficient when many episodes of the same season are affected.
 
-For seasons that have not yet finished airing, Rangarr automatically falls back to individual episode searches. This ensures that missing episodes in current shows are still processed without attempting to search for incomplete season packs.
+| Value | Behaviour |
+|---|---|
+| `false` | Always use individual episode searches (default). |
+| `true` | Always use season pack searches for completed seasons. |
+| Integer `N` (≥ 1) | Use a season pack only if at least `N` episodes in that season are missing or upgrade-eligible; otherwise fall back to individual episode searches. |
+| Float `x` (0.0 < x < 1.0) | Use a season pack only if the ratio of affected episodes to total monitored episodes meets or exceeds `x`; otherwise fall back to individual episode searches. |
 
-`missing_batch_size` and `upgrade_batch_size` apply as normal — they limit the number of seasons searched per cycle.
+For seasons that have not yet finished airing, Rangarr always falls back to individual episode searches regardless of the `season_packs` value.
+
+`missing_batch_size` and `upgrade_batch_size` apply as normal — they limit the number of seasons (or individual episodes, after fallback) searched per cycle.
 
 ```yaml
 global:
-  season_packs: true
+  season_packs: true      # always use season packs
+  # season_packs: 3       # season pack only when 3+ episodes are affected
+  # season_packs: 0.5     # season pack only when ≥50% of monitored episodes are affected
 ```
 
 #### `include_tags`
@@ -511,7 +520,7 @@ The following global settings are supported, each prefixed with `RANGARR_GLOBAL_
 | `RANGARR_GLOBAL_SEARCH_ORDER` | `last_searched_ascending` | One of: `alphabetical_ascending`, `alphabetical_descending`, `last_added_ascending`, `last_added_descending`, `last_searched_ascending`, `last_searched_descending`, `random`, `release_date_ascending`, `release_date_descending`. |
 | `RANGARR_GLOBAL_DRY_RUN` | `false` | Log searches without triggering them. |
 | `RANGARR_GLOBAL_INTERLEAVE_INSTANCES` | `false` | `false` = run all items for one instance before moving to the next. `true` = alternate across instances in round-robin order. |
-| `RANGARR_GLOBAL_SEASON_PACKS` | `false` | Group Sonarr searches by season, sending one `SeasonSearch` per affected `(series, season)` pair. Sonarr only; ignored by other instance types. |
+| `RANGARR_GLOBAL_SEASON_PACKS` | `false` | Season pack mode for Sonarr. `false` = individual episode searches. `true` = always use season packs. Integer `N` = season pack only when N or more episodes are affected. Float `x` = season pack only when the ratio of affected to monitored episodes meets or exceeds x. Airing seasons always fall back to individual searches. Sonarr only; ignored by other instance types. |
 | `RANGARR_GLOBAL_INCLUDE_TAGS` | `(none)` | Comma-separated tag names. Only search items that have any of these tags. |
 | `RANGARR_GLOBAL_EXCLUDE_TAGS` | `(none)` | Comma-separated tag names. Skip items that have any of these tags. |
 | `RANGARR_GLOBAL_ACTIVE_HOURS` | `""` | Time window for searches, e.g. `22:00-06:00`. Leave empty to search at any hour. |
