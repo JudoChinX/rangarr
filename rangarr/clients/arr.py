@@ -379,15 +379,27 @@ class ArrClient(ABC):
 
         return merged
 
-    def trigger_search(self, items: list[MediaItem]) -> None:
+    def trigger_search(
+        self,
+        items: list[MediaItem],
+        *,
+        index: int | None = None,
+        total: int | None = None,
+    ) -> None:
         """Dispatch a staggered search command for each media item.
 
         Args:
             items: Ordered list of MediaItems to search.
+            index: Display index override; applied uniformly to all items in the list.
+                Only meaningful when ``items`` contains exactly one element.
+            total: Display total override; applied uniformly to all items in the list.
+                Only meaningful when ``items`` contains exactly one element.
         """
-        for index, (item_id, reason, title) in enumerate(items, start=1):
-            self._trigger_single(item_id, reason, title, index, len(items))
-            if self.stagger_seconds > 0 and index < len(items):
+        display_total = total if total is not None else len(items)
+        for local_index, (item_id, reason, title) in enumerate(items, start=1):
+            display_index = index if index is not None else local_index
+            self._trigger_single(item_id, reason, title, display_index, display_total)
+            if self.stagger_seconds > 0 and local_index < len(items):
                 logger.debug(f'[{self.name}] Staggering next search by {self.stagger_seconds}s.')
                 time.sleep(self.stagger_seconds)
 

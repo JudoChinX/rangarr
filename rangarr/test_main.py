@@ -6,6 +6,7 @@ import logging
 from typing import Any
 from unittest.mock import MagicMock
 from unittest.mock import Mock
+from unittest.mock import call
 from unittest.mock import patch
 
 import pytest
@@ -281,7 +282,7 @@ def test_run(
             if expected_config_path:
                 mock_load.assert_called_once_with(expected_config_path)
             if expected_trigger_called:
-                run_client.trigger_search.assert_called_once_with(media_to_return)
+                run_client.trigger_search.assert_called_once_with([media_to_return[0]], index=1, total=1)
 
 
 _is_within_active_hours_cases = {
@@ -529,6 +530,31 @@ def test_run_search_cycle_both_disabled(mock_client: Mock, caplog: pytest.LogCap
     mock_client.trigger_search.assert_not_called()
 
 
+def test_run_search_cycle_counter_increments(mock_client: Mock) -> None:
+    """Test that trigger_search receives incrementing index and correct total across a multi-item queue."""
+    from rangarr.main import _run_search_cycle
+
+    item_a = (1, 'missing', 'Item One')
+    item_b = (2, 'missing', 'Item Two')
+    item_c = (3, 'missing', 'Item Three')
+    mock_client.get_media_to_search = Mock(return_value=[item_a, item_b, item_c])
+
+    settings = {
+        'interleave_instances': False,
+        'missing_batch_size': 3,
+        'stagger_interval_seconds': 0,
+        'upgrade_batch_size': 0,
+    }
+
+    _run_search_cycle([mock_client], settings)
+
+    assert mock_client.trigger_search.call_args_list == [
+        call([item_a], index=1, total=3),
+        call([item_b], index=2, total=3),
+        call([item_c], index=3, total=3),
+    ]
+
+
 def test_run_search_cycle_missing_disabled(mock_client: Mock) -> None:
     """Test that search cycle still processes upgrade items when missing is disabled."""
     from rangarr.main import _run_search_cycle
@@ -546,7 +572,7 @@ def test_run_search_cycle_missing_disabled(mock_client: Mock) -> None:
     _run_search_cycle([mock_client], settings)
 
     mock_client.get_media_to_search.assert_called_once_with(0, 10)
-    mock_client.trigger_search.assert_called_once_with([upgrade_item])
+    mock_client.trigger_search.assert_called_once_with([upgrade_item], index=1, total=1)
 
 
 def test_run_search_cycle_unlimited(mock_client: Mock) -> None:

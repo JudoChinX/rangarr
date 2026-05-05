@@ -254,7 +254,7 @@ def _run_search_cycle(active_clients: list[ArrClient], settings: dict) -> None:
     logger.info(f'Total search batch: {len(final_queue)} item(s)')
 
     for index, (client, item) in enumerate(final_queue, start=1):
-        client.trigger_search([item])
+        client.trigger_search([item], index=index, total=len(final_queue))
 
         if stagger_seconds > 0 and index < len(final_queue):
             logger.debug(f'Staggering next search by {stagger_seconds}s.')

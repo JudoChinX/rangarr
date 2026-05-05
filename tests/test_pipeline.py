@@ -1,6 +1,7 @@
 """Integration tests for the 3-stage search pipeline in _run_search_cycle."""
 
 import logging
+from collections.abc import Callable
 from unittest.mock import Mock
 from unittest.mock import patch
 
@@ -29,6 +30,11 @@ def _make_settings(missing: int, upgrade: int, stagger: int = 0, interleave: boo
     }
 
 
+def _make_trigger_side_effect(accumulator: list) -> Callable[..., None]:
+    """Return a trigger_search side effect that appends dispatched items to accumulator."""
+    return lambda items, **kwargs: accumulator.extend(items)
+
+
 def test_pipeline_distributes_across_two_clients() -> None:
     """Test global allocation distributes slots across two equal-weight clients."""
     client_a = _make_mock_client('ClientA', 1.0, [(1, 'missing', 'A1'), (2, 'missing', 'A2')])
@@ -50,8 +56,8 @@ def test_pipeline_groups_by_instance_when_not_interleaved() -> None:
     settings = _make_settings(missing=4, upgrade=0, interleave=False)
 
     triggered_items: list = []
-    client_a.trigger_search = Mock(side_effect=triggered_items.extend)
-    client_b.trigger_search = Mock(side_effect=triggered_items.extend)
+    client_a.trigger_search = Mock(side_effect=_make_trigger_side_effect(triggered_items))
+    client_b.trigger_search = Mock(side_effect=_make_trigger_side_effect(triggered_items))
 
     _run_search_cycle([client_a, client_b], settings)
 
@@ -66,8 +72,8 @@ def test_pipeline_interleaves_across_clients_when_enabled() -> None:
     settings = _make_settings(missing=4, upgrade=0, interleave=True)
 
     triggered_items: list = []
-    client_a.trigger_search = Mock(side_effect=triggered_items.extend)
-    client_b.trigger_search = Mock(side_effect=triggered_items.extend)
+    client_a.trigger_search = Mock(side_effect=_make_trigger_side_effect(triggered_items))
+    client_b.trigger_search = Mock(side_effect=_make_trigger_side_effect(triggered_items))
 
     _run_search_cycle([client_a, client_b], settings)
 
@@ -90,7 +96,7 @@ def test_pipeline_interleaves_missing_and_upgrade() -> None:
     settings = _make_settings(missing=2, upgrade=2)
 
     triggered_items: list = []
-    client.trigger_search = Mock(side_effect=triggered_items.extend)
+    client.trigger_search = Mock(side_effect=_make_trigger_side_effect(triggered_items))
 
     _run_search_cycle([client], settings)
 
