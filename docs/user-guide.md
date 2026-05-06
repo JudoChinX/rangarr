@@ -205,7 +205,7 @@ global:
 
 **Type:** Integer | **Default:** `30` | **Minimum:** `1`
 
-Seconds to wait between individual search commands. Prevents overwhelming *arr instances with simultaneous requests.
+Seconds to wait between individual search commands. Prevents overwhelming *arr instances with simultaneous requests. When greater than zero, Rangarr logs an ETA alongside the total batch count at the start of each cycle (e.g. `Total search batch: 120 item(s) (1 every 30 seconds, ETA: 1:00:00)`).
 
 #### `interleave_instances`
 

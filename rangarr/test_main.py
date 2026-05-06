@@ -598,6 +598,43 @@ def test_run_search_cycle_unlimited(mock_client: Mock) -> None:
     mock_client.get_media_to_search.assert_called_once_with(-1, 10)
 
 
+_calculate_eta_cases = {
+    'stagger_disabled_returns_empty': {
+        'item_count': 100,
+        'stagger_seconds': 0,
+        'expected': '',
+    },
+    'stagger_enabled_returns_formatted_eta': {
+        'item_count': 10,
+        'stagger_seconds': 60,
+        'expected': ' (1 every 60 seconds, ETA: 0:10:00)',
+    },
+    'single_item_eta': {
+        'item_count': 1,
+        'stagger_seconds': 3600,
+        'expected': ' (1 every 3600 seconds, ETA: 1:00:00)',
+    },
+}
+
+
+@pytest.mark.parametrize(
+    'item_count, stagger_seconds, expected',
+    [(case['item_count'], case['stagger_seconds'], case['expected']) for case in _calculate_eta_cases.values()],
+    ids=list(_calculate_eta_cases.keys()),
+)
+def test_calculate_eta(item_count: int, stagger_seconds: int, expected: str) -> None:
+    """Test _calculate_eta returns the correct ETA string for staggered batches.
+
+    Args:
+        item_count: Number of items in the batch.
+        stagger_seconds: Seconds between each search.
+        expected: Expected output string.
+    """
+    from rangarr.main import _calculate_eta
+
+    assert _calculate_eta(item_count, stagger_seconds) == expected
+
+
 _log_rangarr_start_cases = {
     'disabled': {
         'missing_batch_size': 0,

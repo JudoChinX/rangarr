@@ -135,6 +135,14 @@ def _build_final_queue(
     return final_queue
 
 
+def _calculate_eta(item_count: int, stagger_seconds: int) -> str:
+    """Return a formatted ETA string for a staggered batch, or empty string if stagger is disabled."""
+    if stagger_seconds <= 0:
+        return ''
+    eta = datetime.timedelta(seconds=item_count * stagger_seconds)
+    return f' (1 every {stagger_seconds} seconds, ETA: {eta})'
+
+
 def _get_setting(settings: dict, key: str) -> Any:
     """Return setting value, falling back to its schema default."""
     return settings.get(key, get_setting_default(key))
@@ -251,7 +259,8 @@ def _run_search_cycle(active_clients: list[ArrClient], settings: dict) -> None:
         logger.info('No media to search this cycle across all instances.')
         return
 
-    logger.info(f'Total search batch: {len(final_queue)} item(s)')
+    eta_str = _calculate_eta(len(final_queue), stagger_seconds)
+    logger.info(f'Total search batch: {len(final_queue)} item(s){eta_str}')
 
     for index, (client, item) in enumerate(final_queue, start=1):
         client.trigger_search([item], index=index, total=len(final_queue))

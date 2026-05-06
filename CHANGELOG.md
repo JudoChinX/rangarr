@@ -10,6 +10,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - `season_packs` now accepts an integer or float in addition to a boolean. An integer (≥ 1) triggers a `SeasonSearch` only when at least that many episodes in a season are missing or upgrade-eligible; a float (0.0 < x < 1.0) triggers a `SeasonSearch` only when the ratio of affected to total monitored episodes meets or exceeds the value. Seasons that don't meet the threshold fall back to individual `EpisodeSearch` commands. Existing `true`/`false` behaviour is unchanged.
+- The total search batch log line now includes an ETA when `stagger_interval_seconds` is greater than zero. The ETA reflects the total time to complete all searches at the configured stagger rate (e.g. `Total search batch: 120 item(s) (1 every 30 seconds, ETA: 1:00:00)`).
+
+### Fixed
+
+- Search counter display (`1/N`, `2/N`, …) is now correct across multi-item queues built from multiple instances. Previously the counter could restart or skip values when items from more than one instance were interleaved.
 
 ## [0.7.1] - 2026-05-04
 
