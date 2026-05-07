@@ -19,7 +19,7 @@ global:
 
   # interleave_instances: false # false = group by instance (default), true = alternate across instances
 
-  # season_packs: false        # Sonarr only: group searches by season (SeasonSearch) instead of per-episode (EpisodeSearch)
+  # season_packs: false        # Sonarr only: false = per-episode, true = always season pack, integer = min missing episodes, float = min ratio (0.0–1.0)
 
   # include_tags: ["active"]     # Only search items that have ANY of these tags (case-insensitive)
   # exclude_tags: ["on-hold"]    # Skip items that have ANY of these tags; exclude wins if both match

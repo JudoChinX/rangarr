@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.2] - 2026-05-07
+
 ### Added
 
 - `season_packs` now accepts an integer or float in addition to a boolean. An integer (≥ 1) triggers a `SeasonSearch` only when at least that many episodes in a season are missing or upgrade-eligible; a float (0.0 < x < 1.0) triggers a `SeasonSearch` only when the ratio of affected to total monitored episodes meets or exceeds the value. Seasons that don't meet the threshold fall back to individual `EpisodeSearch` commands. Existing `true`/`false` behaviour is unchanged.
