@@ -138,9 +138,9 @@ def _build_final_queue(
 
 def _calculate_eta(item_count: int, stagger_seconds: int) -> str:
     """Return a formatted ETA string for a staggered batch, or empty string if stagger is disabled."""
-    if stagger_seconds <= 0:
+    if stagger_seconds <= 0 or item_count <= 1:
         return ''
-    eta = datetime.timedelta(seconds=item_count * stagger_seconds)
+    eta = datetime.timedelta(seconds=(item_count - 1) * stagger_seconds)
     return f' (1 every {stagger_seconds} seconds, ETA: {eta})'
 
 

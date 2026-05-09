@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Corrected an off-by-one error in the ETA calculation for staggered search batches. The ETA now reflects `N - 1` stagger intervals for `N` items, matching actual sleep behaviour. Single-item batches no longer display a stagger ETA.
+
 ## [0.7.3] - 2026-05-09
 
 ### Added

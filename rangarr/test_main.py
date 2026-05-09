@@ -736,12 +736,12 @@ _calculate_eta_cases = {
     'stagger_enabled_returns_formatted_eta': {
         'item_count': 10,
         'stagger_seconds': 60,
-        'expected': ' (1 every 60 seconds, ETA: 0:10:00)',
+        'expected': ' (1 every 60 seconds, ETA: 0:09:00)',
     },
-    'single_item_eta': {
+    'single_item_returns_empty': {
         'item_count': 1,
         'stagger_seconds': 3600,
-        'expected': ' (1 every 3600 seconds, ETA: 1:00:00)',
+        'expected': '',
     },
 }
 
