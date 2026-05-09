@@ -7,10 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.3] - 2026-05-09
+
 ### Added
 
 - `interval_missing` and `interval_upgrade` settings allow independent fetch schedules for missing and upgrade searches. When set, each overrides the global `interval` for its respective search type, enabling aggressive polling for missing content alongside a slower upgrade cadence (or vice versa). Both default to `null`, which falls back to `interval`. Values must be at least 60 seconds. The cycle-complete log reports which type(s) ran and the next scheduled time for each.
-- `fetch_page_size` setting controls how many records are fetched per API request when retrieving the wanted/missing and cutoff-unmet lists. Defaults to `2000` (previously hardcoded to `1000`). Increasing this value reduces round trips for large libraries — benchmarked at 38% faster than the previous default on a 12,800-item library.
+- `fetch_page_size` setting controls how many records are fetched per API request when retrieving the wanted/missing and cutoff-unmet lists. Defaults to `2000` (previously hardcoded to `1000`). Higher values reduce round trips for large libraries at the cost of a slightly longer per-request time — benchmarked at 38% faster than the previous default on a 12,800-item library. Tune this setting if you have a very large library and the fetch phase is slow.
 
 ## [0.7.2] - 2026-05-07
 
