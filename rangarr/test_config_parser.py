@@ -913,6 +913,72 @@ _parse_config_cases = {
         },
         'expected_error': "'global.retry_interval_days_missing' must be of type int",
     },
+    'invalid_interval_missing_type': {
+        'config_data': {'instances': {}, 'global': {'interval_missing': '3600'}},
+        'expected_error': "'global.interval_missing' must be an integer.",
+    },
+    'interval_missing_rejects_sub_60': {
+        'config_data': {'instances': {}, 'global': {'interval_missing': 30}},
+        'expected_error': "'global.interval_missing' must be at least 60 seconds.",
+    },
+    'invalid_interval_upgrade_type': {
+        'config_data': {'instances': {}, 'global': {'interval_upgrade': 'daily'}},
+        'expected_error': "'global.interval_upgrade' must be an integer.",
+    },
+    'interval_upgrade_rejects_sub_60': {
+        'config_data': {'instances': {}, 'global': {'interval_upgrade': 59}},
+        'expected_error': "'global.interval_upgrade' must be at least 60 seconds.",
+    },
+    'interval_missing_converts_to_minutes': {
+        'config_data': {
+            'instances': {
+                'test-inst': {
+                    'type': 'radarr',
+                    'host': 'http://test',
+                    'api_key': 'testkey',
+                    'enabled': True,
+                }
+            },
+            'global': {'interval_missing': 3600},
+        },
+        'expected_result': {
+            'global_settings': {'run_interval_minutes_missing': 60},
+        },
+    },
+    'interval_upgrade_converts_to_minutes': {
+        'config_data': {
+            'instances': {
+                'test-inst': {
+                    'type': 'radarr',
+                    'host': 'http://test',
+                    'api_key': 'testkey',
+                    'enabled': True,
+                }
+            },
+            'global': {'interval_upgrade': 21600},
+        },
+        'expected_result': {
+            'global_settings': {'run_interval_minutes_upgrade': 360},
+        },
+    },
+    'interval_missing_upgrade_defaults_to_none': {
+        'config_data': {
+            'instances': {
+                'test-inst': {
+                    'type': 'radarr',
+                    'host': 'http://test',
+                    'api_key': 'testkey',
+                    'enabled': True,
+                }
+            },
+        },
+        'expected_result': {
+            'global_settings': {
+                'run_interval_minutes_missing': None,
+                'run_interval_minutes_upgrade': None,
+            },
+        },
+    },
 }
 
 

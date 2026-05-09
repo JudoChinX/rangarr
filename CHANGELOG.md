@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `interval_missing` and `interval_upgrade` settings allow independent fetch schedules for missing and upgrade searches. When set, each overrides the global `interval` for its respective search type, enabling aggressive polling for missing content alongside a slower upgrade cadence (or vice versa). Both default to `null`, which falls back to `interval`. Values must be at least 60 seconds. The cycle-complete log reports which type(s) ran and the next scheduled time for each.
+
 ## [0.7.2] - 2026-05-07
 
 ### Added

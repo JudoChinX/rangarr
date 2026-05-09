@@ -13,6 +13,9 @@ global:
   # upgrade_batch_size: -1     # Search all available upgrades (unlimited)
   # upgrade_batch_size: 0      # Disable upgrade searches entirely
 
+  # interval_missing: 3600   # Override fetch interval for missing items only, in seconds (omit to use interval)
+  # interval_upgrade: 21600  # Override fetch interval for upgrade items only, in seconds (omit to use interval)
+
   # retry_interval_days: 30           # Skip items searched within this many days (default). 0 = disable.
   # retry_interval_days_missing: 7    # Override retry window for missing searches only (omit to use retry_interval_days)
   # retry_interval_days_upgrade: 60   # Override retry window for upgrade searches only (omit to use retry_interval_days)

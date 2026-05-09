@@ -248,6 +248,26 @@ _load_config_from_env_cases = {
             'global_settings': {'retry_interval_days_upgrade': 60},
         },
     },
+    'interval_missing_converted_to_minutes': {
+        'env': {
+            **_BASE_INSTANCE,
+            'RANGARR_INSTANCE_0_ENABLED': 'true',
+            'RANGARR_GLOBAL_INTERVAL_MISSING': '3600',
+        },
+        'expected_result': {
+            'global_settings': {'run_interval_minutes_missing': 60},
+        },
+    },
+    'interval_upgrade_converted_to_minutes': {
+        'env': {
+            **_BASE_INSTANCE,
+            'RANGARR_INSTANCE_0_ENABLED': 'true',
+            'RANGARR_GLOBAL_INTERVAL_UPGRADE': '21600',
+        },
+        'expected_result': {
+            'global_settings': {'run_interval_minutes_upgrade': 360},
+        },
+    },
     'season_packs_float_parsed_from_env': {
         'env': {
             **_BASE_INSTANCE,

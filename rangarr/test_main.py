@@ -32,11 +32,15 @@ def _make_run_config(
     upgrade_batch_size: Any = None,
     active_hours: str = '',
     dry_run: bool = False,
+    run_interval_minutes_missing: int | None = None,
+    run_interval_minutes_upgrade: int | None = None,
 ) -> Any:
     """Build a minimal valid run config dict with optional batch size overrides."""
     return {
         'global_settings': {
             'run_interval_minutes': 60,
+            'run_interval_minutes_missing': run_interval_minutes_missing,
+            'run_interval_minutes_upgrade': run_interval_minutes_upgrade,
             'missing_batch_size': missing_batch_size
             if missing_batch_size is not None
             else get_setting_default('missing_batch_size'),
@@ -419,44 +423,24 @@ def test_seconds_until_window_open(start: datetime.time, now: datetime.time, exp
     assert _seconds_until_window_open(start, now, today=_fixed_today) == expected_seconds
 
 
-def test_run_skips_cycle_outside_active_hours() -> None:
-    """Test run skips the search cycle and sleeps when outside the active hours window."""
-    run_client = MagicMock()
-    run_client.name = 'Test'
-    run_client.weight = 1.0
-    run_client.get_media_to_search.return_value = []
-
-    settings = _make_run_config(active_hours='22:00-06:00')
-
-    fixed_outside_time = datetime.time(12, 0)
-
-    sleep_calls = []
-
-    def fake_sleep(secs: float) -> None:
-        sleep_calls.append(secs)
-        raise KeyboardInterrupt
+def test_run_default_intervals_sleeps_for_global_interval(mock_client: Mock) -> None:
+    """Test run() sleeps for the global interval when no per-type overrides are set."""
+    sleep_mock = Mock(side_effect=KeyboardInterrupt)
 
     with (
         patch('pathlib.Path.is_file', return_value=True),
-        patch('rangarr.main.load_config', return_value=settings),
-        patch('rangarr.main.build_arr_clients', return_value=[run_client]),
-        patch('rangarr.main.datetime') as mock_dt,
-        patch('rangarr.main.time.sleep', side_effect=fake_sleep),
-        pytest.raises(KeyboardInterrupt),
+        patch('rangarr.main.load_config', return_value=_make_run_config()),
+        patch('rangarr.main.build_arr_clients', return_value=[mock_client]),
+        patch('rangarr.main.verify_arr_clients', side_effect=lambda c: c),
+        patch('rangarr.main.time.monotonic', side_effect=[1000.0, 1000.0]),
+        patch('rangarr.main.time.sleep', sleep_mock),
     ):
-        mock_dt.datetime.now.return_value.time.return_value = fixed_outside_time
-        mock_dt.date.today.return_value = datetime.date(2026, 4, 13)
-        mock_dt.datetime.combine = datetime.datetime.combine
-        mock_dt.timedelta = datetime.timedelta
-        mock_dt.time = datetime.time
-
         from rangarr.main import run
 
-        run()
+        with pytest.raises(KeyboardInterrupt):
+            run()
 
-    run_client.get_media_to_search.assert_not_called()
-    assert len(sleep_calls) == 1
-    assert sleep_calls[0] == 36000
+    sleep_mock.assert_called_once_with(3600.0)
 
 
 def test_run_executes_cycle_inside_active_hours() -> None:
@@ -509,6 +493,32 @@ def test_run_no_active_hours_always_executes() -> None:
         run()
 
     run_client.get_media_to_search.assert_called_once()
+
+
+def test_run_per_type_intervals_sleeps_for_shorter_interval(mock_client: Mock) -> None:
+    """Test run() sleeps for the shorter of the two type-specific intervals."""
+    sleep_mock = Mock(side_effect=KeyboardInterrupt)
+
+    with (
+        patch('pathlib.Path.is_file', return_value=True),
+        patch(
+            'rangarr.main.load_config',
+            return_value=_make_run_config(
+                run_interval_minutes_missing=30,
+                run_interval_minutes_upgrade=60,
+            ),
+        ),
+        patch('rangarr.main.build_arr_clients', return_value=[mock_client]),
+        patch('rangarr.main.verify_arr_clients', side_effect=lambda c: c),
+        patch('rangarr.main.time.monotonic', side_effect=[1000.0, 1000.0]),
+        patch('rangarr.main.time.sleep', sleep_mock),
+    ):
+        from rangarr.main import run
+
+        with pytest.raises(KeyboardInterrupt):
+            run()
+
+    sleep_mock.assert_called_once_with(1800.0)
 
 
 def test_run_search_cycle_both_disabled(mock_client: Mock, caplog: pytest.LogCaptureFixture) -> None:
@@ -575,6 +585,46 @@ def test_run_search_cycle_missing_disabled(mock_client: Mock) -> None:
     mock_client.trigger_search.assert_called_once_with([upgrade_item], index=1, total=1)
 
 
+def test_run_search_cycle_run_missing_false_skips_missing_fetch(mock_client: Mock) -> None:
+    """Test that run_missing=False passes missing_batch_size=0 to get_media_to_search."""
+    from rangarr.main import _run_search_cycle
+
+    upgrade_item = (1, 'upgrade', 'Movie 1')
+    mock_client.get_media_to_search = Mock(return_value=[upgrade_item])
+
+    settings = {
+        'interleave_instances': False,
+        'missing_batch_size': 20,
+        'stagger_interval_seconds': 0,
+        'upgrade_batch_size': 10,
+    }
+
+    _run_search_cycle([mock_client], settings, run_missing=False)
+
+    mock_client.get_media_to_search.assert_called_once_with(0, 10)
+    mock_client.trigger_search.assert_called_once_with([upgrade_item], index=1, total=1)
+
+
+def test_run_search_cycle_run_upgrade_false_skips_upgrade_fetch(mock_client: Mock) -> None:
+    """Test that run_upgrade=False passes upgrade_batch_size=0 to get_media_to_search."""
+    from rangarr.main import _run_search_cycle
+
+    missing_item = (1, 'missing', 'Movie 1')
+    mock_client.get_media_to_search = Mock(return_value=[missing_item])
+
+    settings = {
+        'interleave_instances': False,
+        'missing_batch_size': 20,
+        'stagger_interval_seconds': 0,
+        'upgrade_batch_size': 10,
+    }
+
+    _run_search_cycle([mock_client], settings, run_upgrade=False)
+
+    mock_client.get_media_to_search.assert_called_once_with(20, 0)
+    mock_client.trigger_search.assert_called_once_with([missing_item], index=1, total=1)
+
+
 def test_run_search_cycle_unlimited(mock_client: Mock) -> None:
     """Test that search cycle passes -1 for unlimited batch size."""
     from rangarr.main import _run_search_cycle
@@ -596,6 +646,85 @@ def test_run_search_cycle_unlimited(mock_client: Mock) -> None:
     _run_search_cycle([mock_client], settings)
 
     mock_client.get_media_to_search.assert_called_once_with(-1, 10)
+
+
+def test_run_skips_cycle_outside_active_hours() -> None:
+    """Test run skips the search cycle and sleeps when outside the active hours window."""
+    run_client = MagicMock()
+    run_client.name = 'Test'
+    run_client.weight = 1.0
+    run_client.get_media_to_search.return_value = []
+
+    settings = _make_run_config(active_hours='22:00-06:00')
+
+    fixed_outside_time = datetime.time(12, 0)
+
+    sleep_calls = []
+
+    def fake_sleep(secs: float) -> None:
+        sleep_calls.append(secs)
+        raise KeyboardInterrupt
+
+    with (
+        patch('pathlib.Path.is_file', return_value=True),
+        patch('rangarr.main.load_config', return_value=settings),
+        patch('rangarr.main.build_arr_clients', return_value=[run_client]),
+        patch('rangarr.main.datetime') as mock_dt,
+        patch('rangarr.main.time.sleep', side_effect=fake_sleep),
+        pytest.raises(KeyboardInterrupt),
+    ):
+        mock_dt.datetime.now.return_value.time.return_value = fixed_outside_time
+        mock_dt.date.today.return_value = datetime.date(2026, 4, 13)
+        mock_dt.datetime.combine = datetime.datetime.combine
+        mock_dt.timedelta = datetime.timedelta
+        mock_dt.time = datetime.time
+
+        from rangarr.main import run
+
+        run()
+
+    run_client.get_media_to_search.assert_not_called()
+    assert len(sleep_calls) == 1
+    assert sleep_calls[0] == 36000
+
+
+def test_run_skips_upgrade_on_second_cycle_when_not_due(mock_client: Mock) -> None:
+    """Test run() only runs missing on second cycle when upgrade interval has not elapsed."""
+    sleep_calls = []
+
+    def mock_sleep(secs: float) -> None:
+        sleep_calls.append(secs)
+        if len(sleep_calls) >= 2:
+            raise KeyboardInterrupt
+
+    # Cycle 1: monotonic 1000.0 (check), 1001.0 (after cycle)
+    # Cycle 2: monotonic 4601.0 (check, simulating 3600s elapsed), 4602.0 (after cycle)
+    monotonic_values = [1000.0, 1001.0, 4601.0, 4602.0]
+    cycle_mock = Mock()
+
+    with (
+        patch('pathlib.Path.is_file', return_value=True),
+        patch(
+            'rangarr.main.load_config',
+            return_value=_make_run_config(
+                run_interval_minutes_missing=60,
+                run_interval_minutes_upgrade=360,
+            ),
+        ),
+        patch('rangarr.main.build_arr_clients', return_value=[mock_client]),
+        patch('rangarr.main.verify_arr_clients', side_effect=lambda c: c),
+        patch('rangarr.main.time.monotonic', side_effect=monotonic_values),
+        patch('rangarr.main.time.sleep', side_effect=mock_sleep),
+        patch('rangarr.main._run_search_cycle', cycle_mock),
+    ):
+        from rangarr.main import run
+
+        with pytest.raises(KeyboardInterrupt):
+            run()
+
+    assert cycle_mock.call_count == 2
+    assert cycle_mock.call_args_list[0].kwargs == {'run_missing': True, 'run_upgrade': True}
+    assert cycle_mock.call_args_list[1].kwargs == {'run_missing': True, 'run_upgrade': False}
 
 
 _calculate_eta_cases = {
@@ -827,6 +956,80 @@ def test_log_rangarr_start_retry_interval(
         _log_rangarr_start([mock_client], settings)
 
     assert expected_retry in caplog.text
+
+
+_log_rangarr_start_interval_cases = {
+    'no_overrides': {
+        'run_interval_minutes': 60,
+        'run_interval_minutes_missing': None,
+        'run_interval_minutes_upgrade': None,
+        'expected_interval': 'Run Interval: 60m',
+    },
+    'missing_override_only': {
+        'run_interval_minutes': 60,
+        'run_interval_minutes_missing': 30,
+        'run_interval_minutes_upgrade': None,
+        'expected_interval': 'Run Interval: 60m (Missing: 30m, Upgrade: 60m)',
+    },
+    'upgrade_override_only': {
+        'run_interval_minutes': 60,
+        'run_interval_minutes_missing': None,
+        'run_interval_minutes_upgrade': 360,
+        'expected_interval': 'Run Interval: 60m (Missing: 60m, Upgrade: 360m)',
+    },
+    'both_overrides': {
+        'run_interval_minutes': 60,
+        'run_interval_minutes_missing': 30,
+        'run_interval_minutes_upgrade': 360,
+        'expected_interval': 'Run Interval: 60m (Missing: 30m, Upgrade: 360m)',
+    },
+}
+
+
+@pytest.mark.parametrize(
+    'run_interval_minutes, run_interval_minutes_missing, run_interval_minutes_upgrade, expected_interval',
+    [
+        (
+            case['run_interval_minutes'],
+            case['run_interval_minutes_missing'],
+            case['run_interval_minutes_upgrade'],
+            case['expected_interval'],
+        )
+        for case in _log_rangarr_start_interval_cases.values()
+    ],
+    ids=list(_log_rangarr_start_interval_cases.keys()),
+)
+def test_log_rangarr_start_run_interval(
+    mock_client: Mock,
+    caplog: pytest.LogCaptureFixture,
+    run_interval_minutes: int,
+    run_interval_minutes_missing: int | None,
+    run_interval_minutes_upgrade: int | None,
+    expected_interval: str,
+) -> None:
+    """Test startup log displays correct run interval string with optional per-type overrides."""
+    from rangarr.main import _log_rangarr_start
+
+    settings = {
+        'missing_batch_size': 20,
+        'upgrade_batch_size': 10,
+        'retry_interval_days': 30,
+        'retry_interval_days_missing': None,
+        'retry_interval_days_upgrade': None,
+        'run_interval_minutes': run_interval_minutes,
+        'run_interval_minutes_missing': run_interval_minutes_missing,
+        'run_interval_minutes_upgrade': run_interval_minutes_upgrade,
+        'stagger_interval_seconds': 30,
+        'search_order': 'last_searched_ascending',
+        'dry_run': False,
+        'active_hours': '',
+        'interleave_instances': False,
+    }
+
+    with caplog.at_level(logging.INFO):
+        _log_rangarr_start([mock_client], settings)
+
+    assert expected_interval in caplog.text
 
 
 _verify_arr_clients_cases = {

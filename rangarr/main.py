@@ -46,6 +46,7 @@ _CLIENT_MAP: dict[str, type[ArrClient]] = {
 }
 
 _MAX_CONNECTION_ATTEMPTS: int = 3
+_MIN_SLEEP_SECONDS: float = 1.0
 _RETRY_DELAY_SECONDS: int = 10
 
 _SEARCH_ORDER_LABELS: dict[str, str] = {
@@ -143,6 +144,59 @@ def _calculate_eta(item_count: int, stagger_seconds: int) -> str:
     return f' (1 every {stagger_seconds} seconds, ETA: {eta})'
 
 
+def _format_cycle_complete_log(
+    ran_missing: bool,
+    ran_upgrade: bool,
+    next_missing_secs: float,
+    next_upgrade_secs: float,
+) -> str:
+    """Format the end-of-cycle log message with which types ran and next scheduled times."""
+    types = []
+    if ran_missing:
+        types.append('missing')
+    if ran_upgrade:
+        types.append('upgrade')
+    ran_str = ', '.join(types)
+    next_missing_m = max(0, math.ceil(next_missing_secs / 60))
+    next_upgrade_m = max(0, math.ceil(next_upgrade_secs / 60))
+    return f'--- Cycle complete ({ran_str}). Next: missing in {next_missing_m}m, upgrade in {next_upgrade_m}m. ---'
+
+
+def _format_retry_interval_str(
+    retry_days: int,
+    retry_missing: int | None,
+    retry_upgrade: int | None,
+) -> str:
+    """Format the retry interval display string with optional per-type overrides."""
+    global_retry_str = 'Disabled' if retry_days == 0 else f'{retry_days} Days'
+    if retry_missing is not None or retry_upgrade is not None:
+        missing_retry_str = (
+            ('Disabled' if retry_missing == 0 else f'{retry_missing} Days')
+            if retry_missing is not None
+            else global_retry_str
+        )
+        upgrade_retry_str = (
+            ('Disabled' if retry_upgrade == 0 else f'{retry_upgrade} Days')
+            if retry_upgrade is not None
+            else global_retry_str
+        )
+        return f'Global: {global_retry_str}, Missing: {missing_retry_str}, Upgrade: {upgrade_retry_str}'
+    return global_retry_str
+
+
+def _format_run_interval_str(
+    run_interval_m: int,
+    run_interval_missing_m: int | None,
+    run_interval_upgrade_m: int | None,
+) -> str:
+    """Format the run interval display string with optional per-type overrides."""
+    if run_interval_missing_m is not None or run_interval_upgrade_m is not None:
+        eff_missing_m = run_interval_missing_m if run_interval_missing_m is not None else run_interval_m
+        eff_upgrade_m = run_interval_upgrade_m if run_interval_upgrade_m is not None else run_interval_m
+        return f'{run_interval_m}m (Missing: {eff_missing_m}m, Upgrade: {eff_upgrade_m}m)'
+    return f'{run_interval_m}m'
+
+
 def _get_setting(settings: dict, key: str) -> Any:
     """Return setting value, falling back to its schema default."""
     return settings.get(key, get_setting_default(key))
@@ -185,39 +239,31 @@ def _log_rangarr_start(active_clients: list[ArrClient], settings: dict) -> None:
     """Log startup information for Rangarr."""
     global_missing = _get_setting(settings, 'missing_batch_size')
     global_upgrade = _get_setting(settings, 'upgrade_batch_size')
-    retry_days = _get_setting(settings, 'retry_interval_days')
-    retry_missing = _get_setting(settings, 'retry_interval_days_missing')
-    retry_upgrade = _get_setting(settings, 'retry_interval_days_upgrade')
     stagger_seconds = _get_setting(settings, 'stagger_interval_seconds')
     dry_run = _get_setting(settings, 'dry_run')
     active_hours = _get_setting(settings, 'active_hours')
     interleave = _get_setting(settings, 'interleave_instances')
 
-    global_retry_str = 'Disabled' if retry_days == 0 else f'{retry_days} Days'
-    missing_retry_str = (
-        ('Disabled' if retry_missing == 0 else f'{retry_missing} Days')
-        if retry_missing is not None
-        else global_retry_str
+    retry_str = _format_retry_interval_str(
+        _get_setting(settings, 'retry_interval_days'),
+        _get_setting(settings, 'retry_interval_days_missing'),
+        _get_setting(settings, 'retry_interval_days_upgrade'),
     )
-    upgrade_retry_str = (
-        ('Disabled' if retry_upgrade == 0 else f'{retry_upgrade} Days')
-        if retry_upgrade is not None
-        else global_retry_str
-    )
-    if retry_missing is not None or retry_upgrade is not None:
-        retry_str = f'Global: {global_retry_str}, Missing: {missing_retry_str}, Upgrade: {upgrade_retry_str}'
-    else:
-        retry_str = global_retry_str
     raw_order = _get_setting(settings, 'search_order')
     search_order_str = _SEARCH_ORDER_LABELS.get(raw_order, raw_order.capitalize())
     dry_run_str = ' (DRY RUN ENABLED)' if dry_run else ''
     active_hours_str = active_hours if active_hours else 'All hours'
     interleave_str = 'Yes' if interleave else 'No'
+    interval_str = _format_run_interval_str(
+        _get_setting(settings, 'run_interval_minutes'),
+        _get_setting(settings, 'run_interval_minutes_missing'),
+        _get_setting(settings, 'run_interval_minutes_upgrade'),
+    )
 
     logger.info(
         f'Rangarr started{dry_run_str} | '
         f'Instances: {len(active_clients)} active | '
-        f'Run Interval: {_get_setting(settings, "run_interval_minutes")} Minutes | '
+        f'Run Interval: {interval_str} | '
         f'Missing Batch: {_batch_display_str(global_missing)} | '
         f'Upgrade Batch: {_batch_display_str(global_upgrade)} | '
         f'Search Stagger: {stagger_seconds} Seconds | '
@@ -228,12 +274,25 @@ def _log_rangarr_start(active_clients: list[ArrClient], settings: dict) -> None:
     )
 
 
-def _run_search_cycle(active_clients: list[ArrClient], settings: dict) -> None:
+def _resolve_interval_secs(settings: dict, specific_key: str) -> float:
+    """Return per-type interval in seconds, falling back to the global interval."""
+    override = _get_setting(settings, specific_key)
+    resolved_minutes = override if override is not None else _get_setting(settings, 'run_interval_minutes')
+    return resolved_minutes * 60
+
+
+def _run_search_cycle(
+    active_clients: list[ArrClient],
+    settings: dict,
+    *,
+    run_missing: bool = True,
+    run_upgrade: bool = True,
+) -> None:
     """Run a single search cycle across all active clients using global allocation."""
     logger.info('--- Starting search cycle ---')
 
-    global_missing = _get_setting(settings, 'missing_batch_size')
-    global_upgrade = _get_setting(settings, 'upgrade_batch_size')
+    global_missing = _get_setting(settings, 'missing_batch_size') if run_missing else 0
+    global_upgrade = _get_setting(settings, 'upgrade_batch_size') if run_upgrade else 0
     stagger_seconds = _get_setting(settings, 'stagger_interval_seconds')
     interleave = _get_setting(settings, 'interleave_instances')
 
@@ -352,9 +411,13 @@ def run() -> None:
 
     _log_rangarr_start(active_clients, settings)
 
-    run_interval_seconds = _get_setting(settings, 'run_interval_minutes') * 60
+    missing_interval_secs = _resolve_interval_secs(settings, 'run_interval_minutes_missing')
+    upgrade_interval_secs = _resolve_interval_secs(settings, 'run_interval_minutes_upgrade')
     active_hours = _get_setting(settings, 'active_hours')
     parsed_window = parse_active_hours(active_hours) if active_hours else None
+
+    last_missing_run = -math.inf
+    last_upgrade_run = -math.inf
 
     while True:
         if parsed_window:
@@ -365,9 +428,36 @@ def run() -> None:
                 logger.info(f'Outside active hours ({active_hours}). Sleeping {secs}s until window opens.')
                 time.sleep(secs)
                 continue
-        _run_search_cycle(active_clients, settings)
-        logger.info(f'--- Cycle complete. Sleeping for {_get_setting(settings, "run_interval_minutes")}m. ---')
-        time.sleep(run_interval_seconds)
+
+        now = time.monotonic()
+        run_missing = (now - last_missing_run) >= missing_interval_secs
+        run_upgrade = (now - last_upgrade_run) >= upgrade_interval_secs
+
+        if run_missing:
+            last_missing_run = now
+        if run_upgrade:
+            last_upgrade_run = now
+
+        _run_search_cycle(active_clients, settings, run_missing=run_missing, run_upgrade=run_upgrade)
+
+        now = time.monotonic()
+        logger.info(
+            _format_cycle_complete_log(
+                run_missing,
+                run_upgrade,
+                missing_interval_secs - (now - last_missing_run),
+                upgrade_interval_secs - (now - last_upgrade_run),
+            )
+        )
+        time.sleep(
+            max(
+                _MIN_SLEEP_SECONDS,
+                min(
+                    missing_interval_secs - (now - last_missing_run),
+                    upgrade_interval_secs - (now - last_upgrade_run),
+                ),
+            )
+        )
 
 
 def verify_arr_clients(clients: list[ArrClient]) -> list[ArrClient]:

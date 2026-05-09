@@ -41,6 +41,14 @@ SETTINGS_SCHEMA = {
         'default': 60,
         'type': int,
     },
+    'run_interval_minutes_missing': {
+        'default': None,
+        'type': int,
+    },
+    'run_interval_minutes_upgrade': {
+        'default': None,
+        'type': int,
+    },
     'dry_run': {
         'default': False,
         'type': bool,
@@ -94,6 +102,26 @@ SETTINGS_SCHEMA = {
         'validator': _validate_active_hours,
     },
 }
+
+
+def _apply_interval_conversions(settings: dict) -> None:
+    """Convert interval seconds settings to run_interval_minutes variants."""
+    if 'interval' in settings:
+        if not isinstance(settings['interval'], int):
+            raise ValueError("'global.interval' must be an integer.")
+        settings['run_interval_minutes'] = settings['interval'] // 60
+    if 'interval_missing' in settings:
+        if not isinstance(settings['interval_missing'], int):
+            raise ValueError("'global.interval_missing' must be an integer.")
+        if settings['interval_missing'] < 60:
+            raise ValueError("'global.interval_missing' must be at least 60 seconds.")
+        settings['run_interval_minutes_missing'] = settings['interval_missing'] // 60
+    if 'interval_upgrade' in settings:
+        if not isinstance(settings['interval_upgrade'], int):
+            raise ValueError("'global.interval_upgrade' must be an integer.")
+        if settings['interval_upgrade'] < 60:
+            raise ValueError("'global.interval_upgrade' must be at least 60 seconds.")
+        settings['run_interval_minutes_upgrade'] = settings['interval_upgrade'] // 60
 
 
 def _expand_env_var(match: re.Match) -> str:
@@ -347,12 +375,7 @@ def parse_config(config: Any) -> dict:
     if not isinstance(settings, dict):
         raise ValueError("'global' must be a YAML mapping.")
 
-    # Convert interval (seconds) to run_interval_minutes.
-    if 'interval' in settings:
-        if not isinstance(settings['interval'], int):
-            raise ValueError("'global.interval' must be an integer.")
-        settings['run_interval_minutes'] = settings['interval'] // 60
-
+    _apply_interval_conversions(settings)
     _validate_global_settings(settings, SETTINGS_SCHEMA)
     config['global_settings'] = settings
 

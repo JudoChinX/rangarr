@@ -31,7 +31,8 @@
 - **Proportional Interleaving:** Balanced searching between missing items and upgrades within each instance.
 - **Weighted Distribution:** Prioritize specific instances (e.g., prioritize Movies over Music).
 - **Season Pack Support:** Group Sonarr searches by season, with configurable count or ratio thresholds and automatic fallback to individual episode searches for seasons that are still airing.
-- **Retry Logic:** Configurable skip windows for recently searched items, with independent intervals for missing and upgrade searches, plus automatic startup connection retries (3 attempts, 10-second delay) to handle Docker Compose race conditions.
+- **Independent Scheduling:** Run missing item searches and upgrade searches on separate, configurable intervals — poll for missing content aggressively while checking for upgrades less frequently, or any combination that fits your indexer usage.
+- **Retry Logic:** Configurable skip windows for recently searched items, with independent retry intervals for missing and upgrade searches, plus automatic startup connection retries (3 attempts, 10-second delay) to handle Docker Compose race conditions.
 - **Custom Format Score Awareness:** Finds Radarr and Sonarr items below their custom format score target — candidates *arr's Cutoff Unmet endpoint silently omits.
 - **Tag Filtering:** Restrict searches to items with specific *arr tags, or exclude tagged items entirely.
 - **Active Hours:** Restrict searches to a configured time window (e.g., overnight only) to avoid peak indexer load.

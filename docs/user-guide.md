@@ -134,11 +134,38 @@ Settings that apply to all instances.
 
 **Type:** Integer | **Default:** `3600`
 
-Seconds to wait between orchestration cycles.
+Seconds to wait between orchestration cycles. Both missing item searches and upgrade searches run on this interval unless overridden by `interval_missing` or `interval_upgrade`.
 
 ```yaml
 global:
   interval: 1800  # Run every 30 minutes
+```
+
+#### `interval_missing`
+
+**Type:** Integer | **Default:** `null` (inherits `interval`) | **Minimum:** `60`
+
+Override `interval` for **missing** item searches only. When set, Rangarr runs missing item searches on this independent schedule rather than the global interval. Upgrade searches continue to use their own schedule (`interval_upgrade` if set, otherwise `interval`).
+
+Use a shorter value than `interval_upgrade` to poll aggressively for missing content while checking for upgrades less frequently.
+
+```yaml
+global:
+  interval: 3600           # Fallback for any type not individually overridden
+  interval_missing: 1800   # Search for missing items every 30 minutes
+  interval_upgrade: 21600  # Check for upgrade candidates every 6 hours
+```
+
+#### `interval_upgrade`
+
+**Type:** Integer | **Default:** `null` (inherits `interval`) | **Minimum:** `60`
+
+Override `interval` for **upgrade** searches only. When set, Rangarr runs upgrade searches on this independent schedule rather than the global interval. Missing item searches continue to use their own schedule (`interval_missing` if set, otherwise `interval`).
+
+```yaml
+global:
+  interval: 3600           # Fallback for any type not individually overridden
+  interval_upgrade: 21600  # Check for upgrade candidates every 6 hours
 ```
 
 #### `dry_run`
@@ -509,7 +536,9 @@ The following global settings are supported, each prefixed with `RANGARR_GLOBAL_
 
 | Variable | Default | Description |
 |---|---|---|
-| `RANGARR_GLOBAL_INTERVAL` | `3600` | Run interval in seconds (converted to minutes internally). |
+| `RANGARR_GLOBAL_INTERVAL` | `3600` | Run interval in seconds for all search types. |
+| `RANGARR_GLOBAL_INTERVAL_MISSING` | `(none)` | Override `interval` for missing item searches only, in seconds. Must be at least 60. |
+| `RANGARR_GLOBAL_INTERVAL_UPGRADE` | `(none)` | Override `interval` for upgrade searches only, in seconds. Must be at least 60. |
 | `RANGARR_GLOBAL_RUN_INTERVAL_MINUTES` | `60` | Run interval in minutes. Ignored if `INTERVAL` is also set. |
 | `RANGARR_GLOBAL_MISSING_BATCH_SIZE` | `20` | Items to search per instance per cycle. `0` disables, `-1` is unlimited. |
 | `RANGARR_GLOBAL_UPGRADE_BATCH_SIZE` | `10` | Upgrade-eligible items to search per cycle. `0` disables, `-1` is unlimited. |
