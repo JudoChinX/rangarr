@@ -20,6 +20,34 @@ VALID_ARR_TYPES = ('radarr', 'sonarr', 'lidarr')
 
 
 SETTINGS_SCHEMA = {
+    'active_hours': {
+        'default': '',
+        'type': str,
+        'validator': _validate_active_hours,
+    },
+    'dry_run': {
+        'default': False,
+        'type': bool,
+    },
+    'exclude_tags': {
+        'default': [],
+        'type': list,
+        'element_type': str,
+    },
+    'fetch_page_size': {
+        'default': 2000,
+        'type': int,
+        'min_value': 1,
+    },
+    'include_tags': {
+        'default': [],
+        'type': list,
+        'element_type': str,
+    },
+    'interleave_instances': {
+        'default': False,
+        'type': bool,
+    },
     'missing_batch_size': {
         'default': 20,
         'type': int,
@@ -49,14 +77,6 @@ SETTINGS_SCHEMA = {
         'default': None,
         'type': int,
     },
-    'dry_run': {
-        'default': False,
-        'type': bool,
-    },
-    'interleave_instances': {
-        'default': False,
-        'type': bool,
-    },
     'search_order': {
         'default': 'last_searched_ascending',
         'type': str,
@@ -72,6 +92,10 @@ SETTINGS_SCHEMA = {
             'release_date_descending',
         ),
     },
+    'season_packs': {
+        'default': False,
+        'custom_validator': _validate_season_packs,
+    },
     'stagger_interval_seconds': {
         'default': 30,
         'type': int,
@@ -81,25 +105,6 @@ SETTINGS_SCHEMA = {
         'default': 10,
         'type': int,
         'allow_special_values': True,
-    },
-    'season_packs': {
-        'default': False,
-        'custom_validator': _validate_season_packs,
-    },
-    'include_tags': {
-        'default': [],
-        'type': list,
-        'element_type': str,
-    },
-    'exclude_tags': {
-        'default': [],
-        'type': list,
-        'element_type': str,
-    },
-    'active_hours': {
-        'default': '',
-        'type': str,
-        'validator': _validate_active_hours,
     },
 }
 

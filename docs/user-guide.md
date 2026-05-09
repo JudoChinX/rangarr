@@ -228,6 +228,18 @@ global:
   # upgrade_batch_size: 0   # Disabled - skip upgrades
 ```
 
+#### `fetch_page_size`
+
+**Type:** Integer | **Default:** `2000` | **Minimum:** `1`
+
+Number of records fetched per API request when retrieving the wanted/missing and cutoff-unmet lists from *arr. Higher values reduce the number of round trips for large libraries at the cost of a slightly longer per-request time. Tune this setting if you have a very large library and the fetch phase is slow.
+
+```yaml
+global:
+  fetch_page_size: 2000   # Default — suitable for most libraries
+  # fetch_page_size: 5000  # Fewer round trips for very large libraries
+```
+
 #### `stagger_interval_seconds`
 
 **Type:** Integer | **Default:** `30` | **Minimum:** `1`
@@ -542,6 +554,7 @@ The following global settings are supported, each prefixed with `RANGARR_GLOBAL_
 | `RANGARR_GLOBAL_RUN_INTERVAL_MINUTES` | `60` | Run interval in minutes. Ignored if `INTERVAL` is also set. |
 | `RANGARR_GLOBAL_MISSING_BATCH_SIZE` | `20` | Items to search per instance per cycle. `0` disables, `-1` is unlimited. |
 | `RANGARR_GLOBAL_UPGRADE_BATCH_SIZE` | `10` | Upgrade-eligible items to search per cycle. `0` disables, `-1` is unlimited. |
+| `RANGARR_GLOBAL_FETCH_PAGE_SIZE` | `2000` | Records per API request when fetching wanted/missing/cutoff lists. Must be at least 1. |
 | `RANGARR_GLOBAL_STAGGER_INTERVAL_SECONDS` | `30` | Delay between individual search triggers. |
 | `RANGARR_GLOBAL_RETRY_INTERVAL_DAYS` | `30` | Days before a previously searched item is eligible again. `0` disables. |
 | `RANGARR_GLOBAL_RETRY_INTERVAL_DAYS_MISSING` | `(none)` | Override `retry_interval_days` for missing searches only. |

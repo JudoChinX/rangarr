@@ -343,6 +343,112 @@ _parse_config_cases = {
         },
         'expected_error': "'global.stagger_interval_seconds' must be at least 1.",
     },
+    'fetch_page_size_default': {
+        'config_data': {
+            'instances': {
+                'test-instance': {
+                    'type': 'radarr',
+                    'host': 'http://test',
+                    'api_key': 'testkey',
+                    'enabled': True,
+                }
+            },
+            'global': {},
+        },
+        'expected_result': {
+            'global_settings': {
+                'fetch_page_size': 2000,
+            },
+        },
+    },
+    'fetch_page_size_custom': {
+        'config_data': {
+            'instances': {
+                'test-instance': {
+                    'type': 'radarr',
+                    'host': 'http://test',
+                    'api_key': 'testkey',
+                    'enabled': True,
+                }
+            },
+            'global': {
+                'fetch_page_size': 5000,
+            },
+        },
+        'expected_result': {
+            'global_settings': {
+                'fetch_page_size': 5000,
+            },
+        },
+    },
+    'fetch_page_size_minimum_valid': {
+        'config_data': {
+            'instances': {
+                'test-instance': {
+                    'type': 'radarr',
+                    'host': 'http://test',
+                    'api_key': 'testkey',
+                    'enabled': True,
+                }
+            },
+            'global': {
+                'fetch_page_size': 1,
+            },
+        },
+        'expected_result': {
+            'global_settings': {
+                'fetch_page_size': 1,
+            },
+        },
+    },
+    'fetch_page_size_rejects_zero': {
+        'config_data': {
+            'instances': {
+                'test-instance': {
+                    'type': 'radarr',
+                    'host': 'http://test',
+                    'api_key': 'testkey',
+                    'enabled': True,
+                }
+            },
+            'global': {
+                'fetch_page_size': 0,
+            },
+        },
+        'expected_error': "'global.fetch_page_size' must be at least 1.",
+    },
+    'fetch_page_size_rejects_negative': {
+        'config_data': {
+            'instances': {
+                'test-instance': {
+                    'type': 'radarr',
+                    'host': 'http://test',
+                    'api_key': 'testkey',
+                    'enabled': True,
+                }
+            },
+            'global': {
+                'fetch_page_size': -1,
+            },
+        },
+        'expected_error': "'global.fetch_page_size' must be at least 1.",
+    },
+    'fetch_page_size_rejects_wrong_type': {
+        'config_data': {
+            'instances': {
+                'test-instance': {
+                    'type': 'radarr',
+                    'host': 'http://test',
+                    'api_key': 'testkey',
+                    'enabled': True,
+                }
+            },
+            'global': {
+                'fetch_page_size': '1000',
+            },
+        },
+        'expected_error': "'global.fetch_page_size' must be of type int.",
+    },
     'retry_interval_days_rejects_negative': {
         'config_data': {
             'instances': {

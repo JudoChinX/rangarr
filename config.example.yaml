@@ -13,6 +13,8 @@ global:
   # upgrade_batch_size: -1     # Search all available upgrades (unlimited)
   # upgrade_batch_size: 0      # Disable upgrade searches entirely
 
+  # fetch_page_size: 2000  # Records per API request when fetching wanted/missing/cutoff lists. Higher = fewer round trips for large libraries.
+
   # interval_missing: 3600   # Override fetch interval for missing items only, in seconds (omit to use interval)
   # interval_upgrade: 21600  # Override fetch interval for upgrade items only, in seconds (omit to use interval)
 

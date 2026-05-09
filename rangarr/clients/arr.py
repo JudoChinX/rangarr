@@ -19,6 +19,7 @@ type SeasonPackThreshold = bool | int | float
 class ArrClient(ABC):
     """Abstract base class for *arr application clients."""
 
+    DEFAULT_FETCH_PAGE_SIZE = 2000
     ENDPOINT_COMMAND = '/api/v3/command'
     ENDPOINT_QUALITY_PROFILE = '/api/v3/qualityprofile'
     ENDPOINT_TAG = '/api/v3/tag'
@@ -59,6 +60,7 @@ class ArrClient(ABC):
         self.session.headers.update({'X-Api-Key': api_key, 'Content-Type': 'application/json'})
 
         self.dry_run = self.settings.get('dry_run', False)
+        self.fetch_page_size = self.settings.get('fetch_page_size', self.DEFAULT_FETCH_PAGE_SIZE)
         self._include_tag_ids: set[int] = set()
         self._exclude_tag_ids: set[int] = set()
         self._resolve_tag_ids()
@@ -103,7 +105,7 @@ class ArrClient(ABC):
         url = f'{self.url}{endpoint}'
         result = []
         current_page = 1
-        page_size = 1000
+        page_size = self.fetch_page_size
 
         while True:
             params = {
