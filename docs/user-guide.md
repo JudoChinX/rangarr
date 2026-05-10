@@ -256,6 +256,32 @@ Controls the execution order of the search queue.
 - `true`: Alternates between instances in round-robin order for the duration of the cycle.
 
 Interleaving is recommended when multiple instances share indexers. Global weighted slot allocation applies in both modes.
+See also [`interleave_types`](#interleave_types) to control whether missing and upgrade searches are interleaved with each other.
+
+#### `interleave_types`
+
+**Type:** Boolean | **Default:** `true`
+
+Controls whether missing and upgrade items are interleaved in the search execution queue.
+
+- `true` (default): Missing and upgrade items are interleaved — the ordering within each cycle is determined by `interleave_instances`.
+- `false`: All missing items are searched first; upgrade items follow only after all missing searches are complete.
+
+Use `interleave_types: false` when you want to ensure missing content is always prioritised over quality upgrades within any given cycle.
+
+**Combination reference** — the table below shows the effective execution order for all flag combinations, using two instances A and B with two missing items (M1, M2) and two upgrade items (U1, U2) each:
+
+| `interleave_instances` | `interleave_types` | Execution order |
+|---|---|---|
+| `true` | `true` | `A_M1, A_U1, B_M1, B_U1, A_M2, A_U2, B_M2, B_U2` — global round-robin, missing and upgrade zipped |
+| `false` | `true` | `A_M1, A_U1, A_M2, A_U2, B_M1, B_U1, B_M2, B_U2` — per-instance grouping, missing and upgrade zipped within each instance ← *default* |
+| `true` | `false` | `A_M1, B_M1, A_M2, B_M2, A_U1, B_U1, A_U2, B_U2` — all missing (round-robin across instances) then all upgrades |
+| `false` | `false` | `A_M1, A_M2, A_U1, A_U2, B_M1, B_M2, B_U1, B_U2` — per-instance grouping, all missing then all upgrades within each instance |
+
+```yaml
+global:
+  interleave_types: false  # Search all missing items before any upgrade searches
+```
 
 #### `retry_interval_days`
 

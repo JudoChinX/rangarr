@@ -48,6 +48,10 @@ SETTINGS_SCHEMA = {
         'default': False,
         'type': bool,
     },
+    'interleave_types': {
+        'default': True,
+        'type': bool,
+    },
     'missing_batch_size': {
         'default': 20,
         'type': int,

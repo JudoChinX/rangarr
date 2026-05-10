@@ -108,24 +108,19 @@ def _batch_display_str(batch: int) -> str:
 def _build_final_queue(
     allocated_missing: list[tuple[Any, MediaItem]],
     allocated_upgrade: list[tuple[Any, MediaItem]],
-    interleave: bool,
+    interleave_instances: bool,
+    interleave_types: bool,
 ) -> list[tuple[Any, MediaItem]]:
     """Build the ordered execution queue from allocated missing and upgrade slots."""
     final_queue: list[tuple[Any, MediaItem]] = []
-    if interleave:
+    if interleave_types and interleave_instances:
         for idx in range(max(len(allocated_missing), len(allocated_upgrade))):
             if idx < len(allocated_missing):
                 final_queue.append(allocated_missing[idx])
             if idx < len(allocated_upgrade):
                 final_queue.append(allocated_upgrade[idx])
-    else:
-        seen: set[Any] = set()
-        clients_order: list[Any] = []
-        for client, _ in allocated_missing + allocated_upgrade:
-            if client not in seen:
-                clients_order.append(client)
-                seen.add(client)
-        for client in clients_order:
+    elif interleave_types:
+        for client in _clients_in_allocation_order(allocated_missing, allocated_upgrade):
             cli_missing = [(clt, item) for clt, item in allocated_missing if clt is client]
             cli_upgrade = [(clt, item) for clt, item in allocated_upgrade if clt is client]
             for idx in range(max(len(cli_missing), len(cli_upgrade))):
@@ -133,6 +128,14 @@ def _build_final_queue(
                     final_queue.append(cli_missing[idx])
                 if idx < len(cli_upgrade):
                     final_queue.append(cli_upgrade[idx])
+    elif interleave_instances:
+        final_queue = allocated_missing + allocated_upgrade
+    else:
+        for client in _clients_in_allocation_order(allocated_missing, allocated_upgrade):
+            cli_missing = [(clt, item) for clt, item in allocated_missing if clt is client]
+            cli_upgrade = [(clt, item) for clt, item in allocated_upgrade if clt is client]
+            final_queue.extend(cli_missing)
+            final_queue.extend(cli_upgrade)
     return final_queue
 
 
@@ -142,6 +145,20 @@ def _calculate_eta(item_count: int, stagger_seconds: int) -> str:
         return ''
     eta = datetime.timedelta(seconds=(item_count - 1) * stagger_seconds)
     return f' (1 every {stagger_seconds} seconds, ETA: {eta})'
+
+
+def _clients_in_allocation_order(
+    allocated_missing: list[tuple[Any, MediaItem]],
+    allocated_upgrade: list[tuple[Any, MediaItem]],
+) -> list[Any]:
+    """Return unique clients in the order they first appear across allocated slots."""
+    seen: set[Any] = set()
+    clients: list[Any] = []
+    for client, _ in allocated_missing + allocated_upgrade:
+        if client not in seen:
+            clients.append(client)
+            seen.add(client)
+    return clients
 
 
 def _format_cycle_complete_log(
@@ -242,7 +259,8 @@ def _log_rangarr_start(active_clients: list[ArrClient], settings: dict) -> None:
     stagger_seconds = _get_setting(settings, 'stagger_interval_seconds')
     dry_run = _get_setting(settings, 'dry_run')
     active_hours = _get_setting(settings, 'active_hours')
-    interleave = _get_setting(settings, 'interleave_instances')
+    interleave_instances = _get_setting(settings, 'interleave_instances')
+    interleave_types = _get_setting(settings, 'interleave_types')
 
     retry_str = _format_retry_interval_str(
         _get_setting(settings, 'retry_interval_days'),
@@ -253,7 +271,8 @@ def _log_rangarr_start(active_clients: list[ArrClient], settings: dict) -> None:
     search_order_str = _SEARCH_ORDER_LABELS.get(raw_order, raw_order.capitalize())
     dry_run_str = ' (DRY RUN ENABLED)' if dry_run else ''
     active_hours_str = active_hours if active_hours else 'All hours'
-    interleave_str = 'Yes' if interleave else 'No'
+    interleave_instances_str = 'Yes' if interleave_instances else 'No'
+    interleave_types_str = 'Yes' if interleave_types else 'No'
     interval_str = _format_run_interval_str(
         _get_setting(settings, 'run_interval_minutes'),
         _get_setting(settings, 'run_interval_minutes_missing'),
@@ -270,7 +289,8 @@ def _log_rangarr_start(active_clients: list[ArrClient], settings: dict) -> None:
         f'Search Order: {search_order_str} | '
         f'Retry Interval: {retry_str} | '
         f'Active Hours: {active_hours_str} | '
-        f'Interleave Instances: {interleave_str}'
+        f'Interleave Instances: {interleave_instances_str} | '
+        f'Interleave Types: {interleave_types_str}'
     )
 
 
@@ -294,7 +314,8 @@ def _run_search_cycle(
     global_missing = _get_setting(settings, 'missing_batch_size') if run_missing else 0
     global_upgrade = _get_setting(settings, 'upgrade_batch_size') if run_upgrade else 0
     stagger_seconds = _get_setting(settings, 'stagger_interval_seconds')
-    interleave = _get_setting(settings, 'interleave_instances')
+    interleave_instances = _get_setting(settings, 'interleave_instances')
+    interleave_types = _get_setting(settings, 'interleave_types')
 
     missing_pools: dict[ArrClient, list[MediaItem]] = {}
     upgrade_pools: dict[ArrClient, list[MediaItem]] = {}
@@ -312,14 +333,13 @@ def _run_search_cycle(
 
     allocated_missing = _allocate_slots(global_missing, missing_pools)
     allocated_upgrade = _allocate_slots(global_upgrade, upgrade_pools)
-    final_queue = _build_final_queue(allocated_missing, allocated_upgrade, interleave)
+    final_queue = _build_final_queue(allocated_missing, allocated_upgrade, interleave_instances, interleave_types)
 
     if not final_queue:
         logger.info('No media to search this cycle across all instances.')
         return
 
-    eta_str = _calculate_eta(len(final_queue), stagger_seconds)
-    logger.info(f'Total search batch: {len(final_queue)} item(s){eta_str}')
+    logger.info(f'Total search batch: {len(final_queue)} item(s){_calculate_eta(len(final_queue), stagger_seconds)}')
 
     for index, (client, item) in enumerate(final_queue, start=1):
         client.trigger_search([item], index=index, total=len(final_queue))

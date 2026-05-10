@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `interleave_types` setting controls whether missing and upgrade searches are interleaved in the execution queue. When `false`, all missing items are searched before any upgrade items begin, regardless of the `interleave_instances` setting. Defaults to `true` (current behaviour). See the user guide for the full combination reference table.
+
 ### Fixed
 
 - Corrected an off-by-one error in the ETA calculation for staggered search batches. The ETA now reflects `N - 1` stagger intervals for `N` items, matching actual sleep behaviour. Single-item batches no longer display a stagger ETA.

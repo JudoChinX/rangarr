@@ -23,6 +23,7 @@ global:
   # retry_interval_days_upgrade: 60   # Override retry window for upgrade searches only (omit to use retry_interval_days)
 
   # interleave_instances: false # false = group by instance (default), true = alternate across instances
+  # interleave_types: true   # true = interleave missing and upgrade items (default), false = missing-first
 
   # season_packs: false        # Sonarr only: false = per-episode, true = always season pack, integer = min missing episodes, float = min ratio (0.0–1.0)
 

@@ -20,10 +20,17 @@ def _make_mock_client(name: str, weight: float, media: list[tuple[int, str, str]
     return client
 
 
-def _make_settings(missing: int, upgrade: int, stagger: int = 0, interleave: bool = False) -> dict:
+def _make_settings(
+    missing: int,
+    upgrade: int,
+    stagger: int = 0,
+    interleave_instances: bool = False,
+    interleave_types: bool = True,
+) -> dict:
     """Create a minimal settings dict for pipeline tests."""
     return {
-        'interleave_instances': interleave,
+        'interleave_instances': interleave_instances,
+        'interleave_types': interleave_types,
         'missing_batch_size': missing,
         'stagger_interval_seconds': stagger,
         'upgrade_batch_size': upgrade,
@@ -53,7 +60,7 @@ def test_pipeline_groups_by_instance_when_not_interleaved() -> None:
     """Test all of client A's items execute before client B's when interleave_instances is False."""
     client_a = _make_mock_client('ClientA', 1.0, [(1, 'missing', 'A1'), (2, 'missing', 'A2')])
     client_b = _make_mock_client('ClientB', 1.0, [(3, 'missing', 'B1'), (4, 'missing', 'B2')])
-    settings = _make_settings(missing=4, upgrade=0, interleave=False)
+    settings = _make_settings(missing=4, upgrade=0, interleave_instances=False)
 
     triggered_items: list = []
     client_a.trigger_search = Mock(side_effect=_make_trigger_side_effect(triggered_items))
@@ -69,7 +76,7 @@ def test_pipeline_interleaves_across_clients_when_enabled() -> None:
     """Test items from multiple clients alternate when interleave_instances is True."""
     client_a = _make_mock_client('ClientA', 1.0, [(1, 'missing', 'A1'), (2, 'missing', 'A2')])
     client_b = _make_mock_client('ClientB', 1.0, [(3, 'missing', 'B1'), (4, 'missing', 'B2')])
-    settings = _make_settings(missing=4, upgrade=0, interleave=True)
+    settings = _make_settings(missing=4, upgrade=0, interleave_instances=True)
 
     triggered_items: list = []
     client_a.trigger_search = Mock(side_effect=_make_trigger_side_effect(triggered_items))
@@ -145,3 +152,73 @@ def test_pipeline_staggers_between_items() -> None:
         _run_search_cycle([client], settings)
 
     mock_sleep.assert_called_once_with(5)
+
+
+def test_pipeline_missing_before_upgrades_with_instance_interleave() -> None:
+    """Test all missing items execute before upgrades when interleave_types is False and instances are interleaved."""
+    client_a = _make_mock_client(
+        'ClientA',
+        1.0,
+        [
+            (1, 'missing', 'AM1'),
+            (2, 'missing', 'AM2'),
+            (3, 'upgrade', 'AU1'),
+            (4, 'upgrade', 'AU2'),
+        ],
+    )
+    client_b = _make_mock_client(
+        'ClientB',
+        1.0,
+        [
+            (5, 'missing', 'BM1'),
+            (6, 'missing', 'BM2'),
+            (7, 'upgrade', 'BU1'),
+            (8, 'upgrade', 'BU2'),
+        ],
+    )
+    settings = _make_settings(missing=4, upgrade=4, interleave_instances=True, interleave_types=False)
+
+    triggered_items: list = []
+    client_a.trigger_search = Mock(side_effect=_make_trigger_side_effect(triggered_items))
+    client_b.trigger_search = Mock(side_effect=_make_trigger_side_effect(triggered_items))
+
+    _run_search_cycle([client_a, client_b], settings)
+
+    titles = [item[2] for item in triggered_items]
+    missing_indices = [idx for idx, title in enumerate(titles) if title.startswith(('AM', 'BM'))]
+    upgrade_indices = [idx for idx, title in enumerate(titles) if title.startswith(('AU', 'BU'))]
+    assert max(missing_indices) < min(upgrade_indices)
+
+
+def test_pipeline_missing_before_upgrades_per_instance() -> None:
+    """Test per-instance grouping with missing before upgrades when interleave_types is False."""
+    client_a = _make_mock_client(
+        'ClientA',
+        1.0,
+        [
+            (1, 'missing', 'AM1'),
+            (2, 'missing', 'AM2'),
+            (3, 'upgrade', 'AU1'),
+            (4, 'upgrade', 'AU2'),
+        ],
+    )
+    client_b = _make_mock_client(
+        'ClientB',
+        1.0,
+        [
+            (5, 'missing', 'BM1'),
+            (6, 'missing', 'BM2'),
+            (7, 'upgrade', 'BU1'),
+            (8, 'upgrade', 'BU2'),
+        ],
+    )
+    settings = _make_settings(missing=4, upgrade=4, interleave_instances=False, interleave_types=False)
+
+    triggered_items: list = []
+    client_a.trigger_search = Mock(side_effect=_make_trigger_side_effect(triggered_items))
+    client_b.trigger_search = Mock(side_effect=_make_trigger_side_effect(triggered_items))
+
+    _run_search_cycle([client_a, client_b], settings)
+
+    titles = [item[2] for item in triggered_items]
+    assert titles == ['AM1', 'AM2', 'AU1', 'AU2', 'BM1', 'BM2', 'BU1', 'BU2']

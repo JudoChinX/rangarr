@@ -521,6 +521,65 @@ def test_run_per_type_intervals_sleeps_for_shorter_interval(mock_client: Mock) -
     sleep_mock.assert_called_once_with(1800.0)
 
 
+_build_final_queue_cases = {
+    'instances_true_types_true': {
+        'interleave_instances': True,
+        'interleave_types': True,
+        'expected_titles': ['AM1', 'AU1', 'BM1', 'BU1', 'AM2', 'AU2', 'BM2', 'BU2'],
+    },
+    'instances_false_types_true': {
+        'interleave_instances': False,
+        'interleave_types': True,
+        'expected_titles': ['AM1', 'AU1', 'AM2', 'AU2', 'BM1', 'BU1', 'BM2', 'BU2'],
+    },
+    'instances_true_types_false': {
+        'interleave_instances': True,
+        'interleave_types': False,
+        'expected_titles': ['AM1', 'BM1', 'AM2', 'BM2', 'AU1', 'BU1', 'AU2', 'BU2'],
+    },
+    'instances_false_types_false': {
+        'interleave_instances': False,
+        'interleave_types': False,
+        'expected_titles': ['AM1', 'AM2', 'AU1', 'AU2', 'BM1', 'BM2', 'BU1', 'BU2'],
+    },
+}
+
+
+@pytest.mark.parametrize(
+    'interleave_instances, interleave_types, expected_titles',
+    [
+        (case['interleave_instances'], case['interleave_types'], case['expected_titles'])
+        for case in _build_final_queue_cases.values()
+    ],
+    ids=list(_build_final_queue_cases.keys()),
+)
+def test_build_final_queue(
+    interleave_instances: bool,
+    interleave_types: bool,
+    expected_titles: list[str],
+) -> None:
+    """Test _build_final_queue produces the correct execution order for all flag combinations."""
+    from rangarr.main import _build_final_queue
+
+    client_a = Mock()
+    client_b = Mock()
+    am1 = (1, 'missing', 'AM1')
+    am2 = (2, 'missing', 'AM2')
+    au1 = (3, 'upgrade', 'AU1')
+    au2 = (4, 'upgrade', 'AU2')
+    bm1 = (5, 'missing', 'BM1')
+    bm2 = (6, 'missing', 'BM2')
+    bu1 = (7, 'upgrade', 'BU1')
+    bu2 = (8, 'upgrade', 'BU2')
+
+    allocated_missing = [(client_a, am1), (client_b, bm1), (client_a, am2), (client_b, bm2)]
+    allocated_upgrade = [(client_a, au1), (client_b, bu1), (client_a, au2), (client_b, bu2)]
+
+    queue = _build_final_queue(allocated_missing, allocated_upgrade, interleave_instances, interleave_types)
+
+    assert [item[2] for _, item in queue] == expected_titles
+
+
 def test_run_search_cycle_both_disabled(mock_client: Mock, caplog: pytest.LogCaptureFixture) -> None:
     """Test that search cycle reports no media when both batch types are disabled."""
     from rangarr.main import _run_search_cycle
@@ -769,109 +828,109 @@ _log_rangarr_start_cases = {
         'missing_batch_size': 0,
         'upgrade_batch_size': 20,
         'interleave_instances': False,
+        'interleave_types': True,
         'expected_missing': 'Missing Batch: Disabled',
         'expected_upgrade': 'Upgrade Batch: 20',
         'expected_interleave': 'Interleave Instances: No',
+        'expected_interleave_types': 'Interleave Types: Yes',
     },
     'unlimited': {
         'missing_batch_size': -1,
         'upgrade_batch_size': -1,
         'interleave_instances': False,
+        'interleave_types': True,
         'expected_missing': 'Missing Batch: Unlimited',
         'expected_upgrade': 'Upgrade Batch: Unlimited',
         'expected_interleave': 'Interleave Instances: No',
+        'expected_interleave_types': 'Interleave Types: Yes',
     },
     'limited': {
         'missing_batch_size': 20,
         'upgrade_batch_size': 10,
         'interleave_instances': False,
+        'interleave_types': True,
         'expected_missing': 'Missing Batch: 20',
         'expected_upgrade': 'Upgrade Batch: 10',
         'expected_interleave': 'Interleave Instances: No',
+        'expected_interleave_types': 'Interleave Types: Yes',
     },
     'active_hours_set': {
         'missing_batch_size': 20,
         'upgrade_batch_size': 10,
         'active_hours': '22:00-06:00',
         'interleave_instances': False,
+        'interleave_types': True,
         'expected_missing': 'Missing Batch: 20',
         'expected_upgrade': 'Upgrade Batch: 10',
         'expected_active_hours': 'Active Hours: 22:00-06:00',
         'expected_interleave': 'Interleave Instances: No',
+        'expected_interleave_types': 'Interleave Types: Yes',
     },
     'active_hours_all': {
         'missing_batch_size': 20,
         'upgrade_batch_size': 10,
         'active_hours': '',
         'interleave_instances': False,
+        'interleave_types': True,
         'expected_missing': 'Missing Batch: 20',
         'expected_upgrade': 'Upgrade Batch: 10',
         'expected_active_hours': 'Active Hours: All hours',
         'expected_interleave': 'Interleave Instances: No',
+        'expected_interleave_types': 'Interleave Types: Yes',
     },
     'interleave_enabled': {
         'missing_batch_size': 20,
         'upgrade_batch_size': 10,
         'interleave_instances': True,
+        'interleave_types': True,
         'expected_missing': 'Missing Batch: 20',
         'expected_upgrade': 'Upgrade Batch: 10',
         'expected_interleave': 'Interleave Instances: Yes',
+        'expected_interleave_types': 'Interleave Types: Yes',
+    },
+    'interleave_types_disabled': {
+        'missing_batch_size': 20,
+        'upgrade_batch_size': 10,
+        'interleave_instances': False,
+        'interleave_types': False,
+        'expected_missing': 'Missing Batch: 20',
+        'expected_upgrade': 'Upgrade Batch: 10',
+        'expected_interleave': 'Interleave Instances: No',
+        'expected_interleave_types': 'Interleave Types: No',
     },
 }
 
 
 @pytest.mark.parametrize(
-    'missing_batch_size, upgrade_batch_size, active_hours, interleave_instances, '
-    'expected_missing, expected_upgrade, expected_active_hours, expected_interleave',
-    [
-        (
-            case['missing_batch_size'],
-            case['upgrade_batch_size'],
-            case.get('active_hours', ''),
-            case['interleave_instances'],
-            case['expected_missing'],
-            case['expected_upgrade'],
-            case.get('expected_active_hours', 'Active Hours: All hours'),
-            case['expected_interleave'],
-        )
-        for case in _log_rangarr_start_cases.values()
-    ],
+    'case',
+    list(_log_rangarr_start_cases.values()),
     ids=list(_log_rangarr_start_cases.keys()),
 )
-def test_log_rangarr_start(
-    mock_client: Mock,
-    caplog: pytest.LogCaptureFixture,
-    missing_batch_size: int,
-    upgrade_batch_size: int,
-    active_hours: str,
-    interleave_instances: bool,
-    expected_missing: str,
-    expected_upgrade: str,
-    expected_active_hours: str,
-    expected_interleave: str,
-) -> None:
-    """Test startup log displays correct batch size labels and active hours."""
+def test_log_rangarr_start(mock_client: Mock, caplog: pytest.LogCaptureFixture, case: dict) -> None:
+    """Test startup log displays correct batch size labels, active hours, and interleave flags."""
     from rangarr.main import _log_rangarr_start
 
     settings = {
-        'missing_batch_size': missing_batch_size,
-        'upgrade_batch_size': upgrade_batch_size,
+        'missing_batch_size': case['missing_batch_size'],
+        'upgrade_batch_size': case['upgrade_batch_size'],
         'retry_interval_days': 30,
         'run_interval_minutes': 60,
         'stagger_interval_seconds': 30,
         'search_order': 'last_searched_ascending',
         'dry_run': False,
-        'active_hours': active_hours,
-        'interleave_instances': interleave_instances,
+        'active_hours': case.get('active_hours', ''),
+        'interleave_instances': case['interleave_instances'],
+        'interleave_types': case['interleave_types'],
     }
 
     with caplog.at_level(logging.INFO):
         _log_rangarr_start([mock_client], settings)
 
-    assert expected_missing in caplog.text
-    assert expected_upgrade in caplog.text
-    assert expected_active_hours in caplog.text
-    assert expected_interleave in caplog.text
+    assert case['expected_missing'] in caplog.text
+    assert case['expected_upgrade'] in caplog.text
+    assert case.get('expected_active_hours', 'Active Hours: All hours') in caplog.text
+    assert case['expected_interleave'] in caplog.text
+    assert case['expected_interleave_types'] in caplog.text
 
 
 _log_rangarr_start_retry_cases = {
@@ -1088,28 +1147,14 @@ _verify_arr_clients_cases = {
 
 
 @pytest.mark.parametrize(
-    'connection_results, expected_count, expected_sleep_count, expected_log_fragments',
-    [
-        (
-            case['connection_results'],
-            case['expected_count'],
-            case['expected_sleep_count'],
-            case['expected_log_fragments'],
-        )
-        for case in _verify_arr_clients_cases.values()
-    ],
+    'case',
+    list(_verify_arr_clients_cases.values()),
     ids=list(_verify_arr_clients_cases.keys()),
 )
-def test_verify_arr_clients(
-    connection_results: list[list[bool]],
-    expected_count: int,
-    expected_sleep_count: int,
-    expected_log_fragments: list[str],
-    caplog: pytest.LogCaptureFixture,
-) -> None:
+def test_verify_arr_clients(case: dict, caplog: pytest.LogCaptureFixture) -> None:
     """Test verify_arr_clients retries and filters clients based on connection results."""
     clients = []
-    for results in connection_results:
+    for results in case['connection_results']:
         client = Mock()
         client.name = 'test-instance'
         client.check_connection = Mock(side_effect=results)
@@ -1119,11 +1164,11 @@ def test_verify_arr_clients(
         with patch('rangarr.main.time.sleep') as mock_sleep:
             verified = verify_arr_clients(clients)
 
-    assert len(verified) == expected_count
-    assert mock_sleep.call_count == expected_sleep_count
-    if expected_sleep_count > 0:
+    assert len(verified) == case['expected_count']
+    assert mock_sleep.call_count == case['expected_sleep_count']
+    if case['expected_sleep_count'] > 0:
         mock_sleep.assert_called_with(10)
-    for fragment in expected_log_fragments:
+    for fragment in case['expected_log_fragments']:
         assert fragment in caplog.text
 
 

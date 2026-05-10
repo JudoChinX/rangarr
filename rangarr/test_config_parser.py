@@ -649,6 +649,55 @@ _parse_config_cases = {
         },
         'expected_error': "'global.interleave_instances' must be of type bool.",
     },
+    'interleave_types_defaults_to_true': {
+        'config_data': {
+            'instances': {
+                'test-radarr': {
+                    'type': 'radarr',
+                    'url': 'http://test',
+                    'api_key': 'testkey',
+                    'enabled': True,
+                }
+            },
+        },
+        'expected_result': {
+            'global_settings': {
+                'interleave_types': True,
+            },
+        },
+    },
+    'interleave_types_accepts_false': {
+        'config_data': {
+            'instances': {
+                'test-radarr': {
+                    'type': 'radarr',
+                    'url': 'http://test',
+                    'api_key': 'testkey',
+                    'enabled': True,
+                }
+            },
+            'global': {'interleave_types': False},
+        },
+        'expected_result': {
+            'global_settings': {
+                'interleave_types': False,
+            },
+        },
+    },
+    'interleave_types_rejects_non_bool': {
+        'config_data': {
+            'instances': {
+                'test-radarr': {
+                    'type': 'radarr',
+                    'url': 'http://test',
+                    'api_key': 'testkey',
+                    'enabled': True,
+                }
+            },
+            'global': {'interleave_types': 'yes'},
+        },
+        'expected_error': "'global.interleave_types' must be of type bool.",
+    },
     'season_packs_defaults_to_false': {
         'config_data': {
             'instances': {

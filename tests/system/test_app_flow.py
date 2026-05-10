@@ -112,7 +112,7 @@ def _make_sonarr_router(
     return route
 
 
-def _three_instance_config(interleave: bool) -> dict:
+def _three_instance_config(interleave: bool, interleave_types: bool = True) -> dict:
     """Return a config dict for Radarr + Sonarr + Lidarr with upgrade disabled."""
     return {
         'instances': {
@@ -147,6 +147,7 @@ def _three_instance_config(interleave: bool) -> dict:
         'global_settings': {
             'dry_run': False,
             'interleave_instances': interleave,
+            'interleave_types': interleave_types,
             'missing_batch_size': 9,
             'retry_interval_days': 0,
             'search_order': 'last_searched_ascending',
