@@ -588,6 +588,7 @@ The following global settings are supported, each prefixed with `RANGARR_GLOBAL_
 | `RANGARR_GLOBAL_SEARCH_ORDER` | `last_searched_ascending` | One of: `alphabetical_ascending`, `alphabetical_descending`, `last_added_ascending`, `last_added_descending`, `last_searched_ascending`, `last_searched_descending`, `random`, `release_date_ascending`, `release_date_descending`. |
 | `RANGARR_GLOBAL_DRY_RUN` | `false` | Log searches without triggering them. |
 | `RANGARR_GLOBAL_INTERLEAVE_INSTANCES` | `false` | `false` = run all items for one instance before moving to the next. `true` = alternate across instances in round-robin order. |
+| `RANGARR_GLOBAL_INTERLEAVE_TYPES` | `true` | `true` = interleave missing and upgrade items in the execution queue. `false` = search all missing items before any upgrade searches. |
 | `RANGARR_GLOBAL_SEASON_PACKS` | `false` | Season pack mode for Sonarr. `false` = individual episode searches. `true` = always use season packs. Integer `N` = season pack only when N or more episodes are affected. Float `x` = season pack only when the ratio of affected to monitored episodes meets or exceeds x. Airing seasons always fall back to individual searches. Sonarr only; ignored by other instance types. |
 | `RANGARR_GLOBAL_INCLUDE_TAGS` | `(none)` | Comma-separated tag names. Only search items that have any of these tags. |
 | `RANGARR_GLOBAL_EXCLUDE_TAGS` | `(none)` | Comma-separated tag names. Skip items that have any of these tags. |

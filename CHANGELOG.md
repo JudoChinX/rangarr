@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.4] - 2026-05-10
+
 ### Added
 
 - `interleave_types` setting controls whether missing and upgrade searches are interleaved in the execution queue. When `false`, all missing items are searched before any upgrade items begin, regardless of the `interleave_instances` setting. Defaults to `true` (current behaviour). See the user guide for the full combination reference table.
