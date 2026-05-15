@@ -1,6 +1,22 @@
 """Tests for main.py formatting helper functions."""
 
+from unittest.mock import Mock
+
 import pytest
+
+
+def _make_allocation_pairs(pairs: list[tuple[str, str]]) -> list[tuple[Mock, str]]:
+    """Convert (name, item) string pairs into (Mock client, item) allocation pairs."""
+    clients: dict[str, Mock] = {}
+    result: list[tuple[Mock, str]] = []
+    for name, item in pairs:
+        if name not in clients:
+            client = Mock()
+            client.name = name
+            clients[name] = client
+        result.append((clients[name], item))
+    return result
+
 
 _format_cycle_complete_log_cases = {
     'both_ran': {
@@ -82,7 +98,7 @@ _format_retry_interval_str_cases = {
         'retry_days': 30,
         'retry_missing': None,
         'retry_upgrade': None,
-        'expected': '30 Days',
+        'expected': '30d',
     },
     'disabled': {
         'retry_days': 0,
@@ -94,25 +110,31 @@ _format_retry_interval_str_cases = {
         'retry_days': 30,
         'retry_missing': 14,
         'retry_upgrade': None,
-        'expected': 'Global: 30 Days, Missing: 14 Days, Upgrade: 30 Days',
+        'expected': '30d (Missing: 14d)',
     },
     'upgrade_override_only': {
         'retry_days': 30,
         'retry_missing': None,
         'retry_upgrade': 60,
-        'expected': 'Global: 30 Days, Missing: 30 Days, Upgrade: 60 Days',
+        'expected': '30d (Upgrade: 60d)',
     },
     'both_overrides': {
         'retry_days': 30,
         'retry_missing': 14,
         'retry_upgrade': 60,
-        'expected': 'Global: 30 Days, Missing: 14 Days, Upgrade: 60 Days',
+        'expected': '30d (Missing: 14d, Upgrade: 60d)',
     },
     'base_disabled_with_missing_override': {
         'retry_days': 0,
         'retry_missing': 7,
         'retry_upgrade': None,
-        'expected': 'Global: Disabled, Missing: 7 Days, Upgrade: Disabled',
+        'expected': 'Disabled (Missing: 7d)',
+    },
+    'override_equals_global_suppressed': {
+        'retry_days': 30,
+        'retry_missing': 30,
+        'retry_upgrade': 60,
+        'expected': '30d (Upgrade: 60d)',
     },
 }
 
@@ -155,19 +177,25 @@ _format_run_interval_str_cases = {
         'run_interval_m': 60,
         'run_interval_missing_m': 30,
         'run_interval_upgrade_m': None,
-        'expected': '60m (Missing: 30m, Upgrade: 60m)',
+        'expected': '60m (Missing: 30m)',
     },
     'upgrade_override_only': {
         'run_interval_m': 60,
         'run_interval_missing_m': None,
         'run_interval_upgrade_m': 360,
-        'expected': '60m (Missing: 60m, Upgrade: 360m)',
+        'expected': '60m (Upgrade: 360m)',
     },
     'both_overrides': {
         'run_interval_m': 60,
         'run_interval_missing_m': 30,
         'run_interval_upgrade_m': 360,
         'expected': '60m (Missing: 30m, Upgrade: 360m)',
+    },
+    'override_equals_global_suppressed': {
+        'run_interval_m': 60,
+        'run_interval_missing_m': 60,
+        'run_interval_upgrade_m': 360,
+        'expected': '60m (Upgrade: 360m)',
     },
 }
 
@@ -195,6 +223,62 @@ def test_format_run_interval_str(
     from rangarr.main import _format_run_interval_str
 
     result = _format_run_interval_str(run_interval_m, run_interval_missing_m, run_interval_upgrade_m)
+
+    assert result == expected
+
+
+_format_instance_breakdown_cases = {
+    'missing_only_single_instance': {
+        'allocated_missing': [('Alpha', 'item1'), ('Alpha', 'item2'), ('Alpha', 'item3')],
+        'allocated_upgrade': [],
+        'expected': 'Alpha: 3 missing',
+    },
+    'upgrade_only_single_instance': {
+        'allocated_missing': [],
+        'allocated_upgrade': [('Beta', 'item1')],
+        'expected': 'Beta: 1 upgrade',
+    },
+    'mixed_single_instance': {
+        'allocated_missing': [('Alpha', 'item1'), ('Alpha', 'item2')],
+        'allocated_upgrade': [('Alpha', 'item3')],
+        'expected': 'Alpha: 2 missing, 1 upgrade',
+    },
+    'multiple_instances': {
+        'allocated_missing': [('Alpha', 'item1'), ('Alpha', 'item2'), ('Beta', 'item3')],
+        'allocated_upgrade': [('Beta', 'item4'), ('Gamma', 'item5')],
+        'expected': 'Alpha: 2 missing, Beta: 1 missing, 1 upgrade, Gamma: 1 upgrade',
+    },
+    'preserves_allocation_order': {
+        'allocated_missing': [('Beta', 'item1')],
+        'allocated_upgrade': [('Alpha', 'item2')],
+        'expected': 'Beta: 1 missing, Alpha: 1 upgrade',
+    },
+    'both_empty': {
+        'allocated_missing': [],
+        'allocated_upgrade': [],
+        'expected': '',
+    },
+}
+
+
+@pytest.mark.parametrize(
+    'allocated_missing, allocated_upgrade, expected',
+    [
+        (case['allocated_missing'], case['allocated_upgrade'], case['expected'])
+        for case in _format_instance_breakdown_cases.values()
+    ],
+    ids=list(_format_instance_breakdown_cases.keys()),
+)
+def test_format_instance_breakdown(
+    allocated_missing: list[tuple[str, str]],
+    allocated_upgrade: list[tuple[str, str]],
+    expected: str,
+) -> None:
+    """Test _format_instance_breakdown returns correct per-instance item count string."""
+    from rangarr.main import _format_instance_breakdown
+
+    all_pairs = _make_allocation_pairs(allocated_missing + allocated_upgrade)
+    result = _format_instance_breakdown(all_pairs[: len(allocated_missing)], all_pairs[len(allocated_missing) :])
 
     assert result == expected
 

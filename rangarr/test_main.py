@@ -707,6 +707,25 @@ def test_run_search_cycle_unlimited(mock_client: Mock) -> None:
     mock_client.get_media_to_search.assert_called_once_with(-1, 10)
 
 
+def test_run_search_cycle_logs_instance_breakdown(mock_client: Mock, caplog: pytest.LogCaptureFixture) -> None:
+    """Test that the batch log line includes count and per-instance breakdown."""
+    from rangarr.main import _run_search_cycle
+
+    mock_client.get_media_to_search = Mock(return_value=[(1, 'missing', 'Item 1'), (2, 'missing', 'Item 2')])
+
+    settings = {
+        'interleave_instances': False,
+        'missing_batch_size': 2,
+        'stagger_interval_seconds': 0,
+        'upgrade_batch_size': 0,
+    }
+
+    with caplog.at_level(logging.INFO):
+        _run_search_cycle([mock_client], settings)
+
+    assert f'Total search batch: 2 item(s) | {mock_client.name}: 2 missing' in caplog.text
+
+
 def test_run_skips_cycle_outside_active_hours() -> None:
     """Test run skips the search cycle and sleeps when outside the active hours window."""
     run_client = MagicMock()
@@ -786,43 +805,6 @@ def test_run_skips_upgrade_on_second_cycle_when_not_due(mock_client: Mock) -> No
     assert cycle_mock.call_args_list[1].kwargs == {'run_missing': True, 'run_upgrade': False}
 
 
-_calculate_eta_cases = {
-    'stagger_disabled_returns_empty': {
-        'item_count': 100,
-        'stagger_seconds': 0,
-        'expected': '',
-    },
-    'stagger_enabled_returns_formatted_eta': {
-        'item_count': 10,
-        'stagger_seconds': 60,
-        'expected': ' (1 every 60 seconds, ETA: 0:09:00)',
-    },
-    'single_item_returns_empty': {
-        'item_count': 1,
-        'stagger_seconds': 3600,
-        'expected': '',
-    },
-}
-
-
-@pytest.mark.parametrize(
-    'item_count, stagger_seconds, expected',
-    [(case['item_count'], case['stagger_seconds'], case['expected']) for case in _calculate_eta_cases.values()],
-    ids=list(_calculate_eta_cases.keys()),
-)
-def test_calculate_eta(item_count: int, stagger_seconds: int, expected: str) -> None:
-    """Test _calculate_eta returns the correct ETA string for staggered batches.
-
-    Args:
-        item_count: Number of items in the batch.
-        stagger_seconds: Seconds between each search.
-        expected: Expected output string.
-    """
-    from rangarr.main import _calculate_eta
-
-    assert _calculate_eta(item_count, stagger_seconds) == expected
-
-
 _log_rangarr_start_cases = {
     'disabled': {
         'missing_batch_size': 0,
@@ -831,8 +813,7 @@ _log_rangarr_start_cases = {
         'interleave_types': True,
         'expected_missing': 'Missing Batch: Disabled',
         'expected_upgrade': 'Upgrade Batch: 20',
-        'expected_interleave': 'Interleave Instances: No',
-        'expected_interleave_types': 'Interleave Types: Yes',
+        'expected_interleave': 'Interleave: Types',
     },
     'unlimited': {
         'missing_batch_size': -1,
@@ -841,8 +822,7 @@ _log_rangarr_start_cases = {
         'interleave_types': True,
         'expected_missing': 'Missing Batch: Unlimited',
         'expected_upgrade': 'Upgrade Batch: Unlimited',
-        'expected_interleave': 'Interleave Instances: No',
-        'expected_interleave_types': 'Interleave Types: Yes',
+        'expected_interleave': 'Interleave: Types',
     },
     'limited': {
         'missing_batch_size': 20,
@@ -851,8 +831,7 @@ _log_rangarr_start_cases = {
         'interleave_types': True,
         'expected_missing': 'Missing Batch: 20',
         'expected_upgrade': 'Upgrade Batch: 10',
-        'expected_interleave': 'Interleave Instances: No',
-        'expected_interleave_types': 'Interleave Types: Yes',
+        'expected_interleave': 'Interleave: Types',
     },
     'active_hours_set': {
         'missing_batch_size': 20,
@@ -863,8 +842,7 @@ _log_rangarr_start_cases = {
         'expected_missing': 'Missing Batch: 20',
         'expected_upgrade': 'Upgrade Batch: 10',
         'expected_active_hours': 'Active Hours: 22:00-06:00',
-        'expected_interleave': 'Interleave Instances: No',
-        'expected_interleave_types': 'Interleave Types: Yes',
+        'expected_interleave': 'Interleave: Types',
     },
     'active_hours_all': {
         'missing_batch_size': 20,
@@ -874,29 +852,44 @@ _log_rangarr_start_cases = {
         'interleave_types': True,
         'expected_missing': 'Missing Batch: 20',
         'expected_upgrade': 'Upgrade Batch: 10',
-        'expected_active_hours': 'Active Hours: All hours',
-        'expected_interleave': 'Interleave Instances: No',
-        'expected_interleave_types': 'Interleave Types: Yes',
+        'expected_active_hours': 'Active Hours: All Hours',
+        'expected_interleave': 'Interleave: Types',
     },
-    'interleave_enabled': {
+    'interleave_both': {
         'missing_batch_size': 20,
         'upgrade_batch_size': 10,
         'interleave_instances': True,
         'interleave_types': True,
         'expected_missing': 'Missing Batch: 20',
         'expected_upgrade': 'Upgrade Batch: 10',
-        'expected_interleave': 'Interleave Instances: Yes',
-        'expected_interleave_types': 'Interleave Types: Yes',
+        'expected_interleave': 'Interleave: Instances, Types',
     },
-    'interleave_types_disabled': {
+    'interleave_instances_only': {
+        'missing_batch_size': 20,
+        'upgrade_batch_size': 10,
+        'interleave_instances': True,
+        'interleave_types': False,
+        'expected_missing': 'Missing Batch: 20',
+        'expected_upgrade': 'Upgrade Batch: 10',
+        'expected_interleave': 'Interleave: Instances',
+    },
+    'interleave_none': {
         'missing_batch_size': 20,
         'upgrade_batch_size': 10,
         'interleave_instances': False,
         'interleave_types': False,
         'expected_missing': 'Missing Batch: 20',
         'expected_upgrade': 'Upgrade Batch: 10',
-        'expected_interleave': 'Interleave Instances: No',
-        'expected_interleave_types': 'Interleave Types: No',
+        'expected_interleave': 'Interleave: None',
+    },
+    'interleave_types_only': {
+        'missing_batch_size': 20,
+        'upgrade_batch_size': 10,
+        'interleave_instances': False,
+        'interleave_types': True,
+        'expected_missing': 'Missing Batch: 20',
+        'expected_upgrade': 'Upgrade Batch: 10',
+        'expected_interleave': 'Interleave: Types',
     },
 }
 
@@ -928,9 +921,55 @@ def test_log_rangarr_start(mock_client: Mock, caplog: pytest.LogCaptureFixture, 
 
     assert case['expected_missing'] in caplog.text
     assert case['expected_upgrade'] in caplog.text
-    assert case.get('expected_active_hours', 'Active Hours: All hours') in caplog.text
+    assert case.get('expected_active_hours', 'Active Hours: All Hours') in caplog.text
     assert case['expected_interleave'] in caplog.text
-    assert case['expected_interleave_types'] in caplog.text
+    assert 'Search Stagger: 30s' in caplog.text
+    assert 'Instances: 1' in caplog.text
+    assert 'Instances: 1 active' not in caplog.text
+
+
+_log_rangarr_start_dry_run_cases = {
+    'enabled': {'dry_run': True, 'expected_present': 'Dry Run: Yes', 'expected_absent': '(DRY RUN ENABLED)'},
+    'disabled': {'dry_run': False, 'expected_present': 'Rangarr started', 'expected_absent': 'Dry Run: Yes'},
+}
+
+
+@pytest.mark.parametrize(
+    'dry_run, expected_present, expected_absent',
+    [
+        (case['dry_run'], case['expected_present'], case['expected_absent'])
+        for case in _log_rangarr_start_dry_run_cases.values()
+    ],
+    ids=list(_log_rangarr_start_dry_run_cases.keys()),
+)
+def test_log_rangarr_start_dry_run(
+    mock_client: Mock,
+    caplog: pytest.LogCaptureFixture,
+    dry_run: bool,
+    expected_present: str,
+    expected_absent: str,
+) -> None:
+    """Test startup log shows Dry Run field only when enabled."""
+    from rangarr.main import _log_rangarr_start
+
+    settings = {
+        'missing_batch_size': 10,
+        'upgrade_batch_size': 10,
+        'retry_interval_days': 30,
+        'run_interval_minutes': 60,
+        'stagger_interval_seconds': 30,
+        'search_order': 'last_searched_ascending',
+        'dry_run': dry_run,
+        'active_hours': '',
+        'interleave_instances': False,
+        'interleave_types': False,
+    }
+
+    with caplog.at_level(logging.INFO):
+        _log_rangarr_start([mock_client], settings)
+
+    assert expected_present in caplog.text
+    assert expected_absent not in caplog.text
 
 
 _log_rangarr_start_retry_cases = {
@@ -938,37 +977,13 @@ _log_rangarr_start_retry_cases = {
         'retry_interval_days': 30,
         'retry_interval_days_missing': None,
         'retry_interval_days_upgrade': None,
-        'expected_retry': 'Retry Interval: 30 Days',
-    },
-    'base_disabled': {
-        'retry_interval_days': 0,
-        'retry_interval_days_missing': None,
-        'retry_interval_days_upgrade': None,
-        'expected_retry': 'Retry Interval: Disabled',
+        'expected_retry': 'Retry: 30d',
     },
     'missing_override_only': {
         'retry_interval_days': 30,
         'retry_interval_days_missing': 7,
         'retry_interval_days_upgrade': None,
-        'expected_retry': 'Retry Interval: Global: 30 Days, Missing: 7 Days, Upgrade: 30 Days',
-    },
-    'upgrade_override_only': {
-        'retry_interval_days': 30,
-        'retry_interval_days_missing': None,
-        'retry_interval_days_upgrade': 60,
-        'expected_retry': 'Retry Interval: Global: 30 Days, Missing: 30 Days, Upgrade: 60 Days',
-    },
-    'both_overrides': {
-        'retry_interval_days': 30,
-        'retry_interval_days_missing': 7,
-        'retry_interval_days_upgrade': 14,
-        'expected_retry': 'Retry Interval: Global: 30 Days, Missing: 7 Days, Upgrade: 14 Days',
-    },
-    'base_disabled_with_missing_override': {
-        'retry_interval_days': 0,
-        'retry_interval_days_missing': 7,
-        'retry_interval_days_upgrade': None,
-        'expected_retry': 'Retry Interval: Global: Disabled, Missing: 7 Days, Upgrade: Disabled',
+        'expected_retry': 'Retry: 30d (Missing: 7d)',
     },
 }
 
@@ -1009,6 +1024,7 @@ def test_log_rangarr_start_retry_interval(
         'dry_run': False,
         'active_hours': '',
         'interleave_instances': False,
+        'interleave_types': False,
     }
 
     with caplog.at_level(logging.INFO):
@@ -1023,18 +1039,6 @@ _log_rangarr_start_interval_cases = {
         'run_interval_minutes_missing': None,
         'run_interval_minutes_upgrade': None,
         'expected_interval': 'Run Interval: 60m',
-    },
-    'missing_override_only': {
-        'run_interval_minutes': 60,
-        'run_interval_minutes_missing': 30,
-        'run_interval_minutes_upgrade': None,
-        'expected_interval': 'Run Interval: 60m (Missing: 30m, Upgrade: 60m)',
-    },
-    'upgrade_override_only': {
-        'run_interval_minutes': 60,
-        'run_interval_minutes_missing': None,
-        'run_interval_minutes_upgrade': 360,
-        'expected_interval': 'Run Interval: 60m (Missing: 60m, Upgrade: 360m)',
     },
     'both_overrides': {
         'run_interval_minutes': 60,
@@ -1073,7 +1077,6 @@ def test_log_rangarr_start_run_interval(
         'missing_batch_size': 20,
         'upgrade_batch_size': 10,
         'retry_interval_days': 30,
-        'retry_interval_days_missing': None,
         'retry_interval_days_upgrade': None,
         'run_interval_minutes': run_interval_minutes,
         'run_interval_minutes_missing': run_interval_minutes_missing,
@@ -1083,6 +1086,7 @@ def test_log_rangarr_start_run_interval(
         'dry_run': False,
         'active_hours': '',
         'interleave_instances': False,
+        'interleave_types': False,
     }
 
     with caplog.at_level(logging.INFO):

@@ -66,10 +66,10 @@ type MediaItem = tuple[int | str, str, str]
 
 def _allocate_slots(
     limit: int,
-    client_backlogs: dict[Any, list[MediaItem]],
-) -> list[tuple[Any, MediaItem]]:
+    client_backlogs: dict[ArrClient, list[MediaItem]],
+) -> list[tuple[ArrClient, MediaItem]]:
     """Allocate global search slots using weighted round-robin distribution."""
-    winners: list[tuple[Any, MediaItem]] = []
+    winners: list[tuple[ArrClient, MediaItem]] = []
     pools = {client: list(items) for client, items in client_backlogs.items() if items}
 
     if limit == 0 or not pools:
@@ -87,7 +87,7 @@ def _allocate_slots(
             weight = getattr(client, 'weight', 1.0)
             # Fractional weights affect sort order but not turn count; truncate to int.
             turns = max(1, int(weight))
-            for _ in range(turns):
+            for _turn in range(turns):
                 if limit != -1 and len(winners) >= limit:
                     break
                 if pools[client]:
@@ -106,13 +106,13 @@ def _batch_display_str(batch: int) -> str:
 
 
 def _build_final_queue(
-    allocated_missing: list[tuple[Any, MediaItem]],
-    allocated_upgrade: list[tuple[Any, MediaItem]],
+    allocated_missing: list[tuple[ArrClient, MediaItem]],
+    allocated_upgrade: list[tuple[ArrClient, MediaItem]],
     interleave_instances: bool,
     interleave_types: bool,
-) -> list[tuple[Any, MediaItem]]:
+) -> list[tuple[ArrClient, MediaItem]]:
     """Build the ordered execution queue from allocated missing and upgrade slots."""
-    final_queue: list[tuple[Any, MediaItem]] = []
+    final_queue: list[tuple[ArrClient, MediaItem]] = []
     if interleave_types and interleave_instances:
         for idx in range(max(len(allocated_missing), len(allocated_upgrade))):
             if idx < len(allocated_missing):
@@ -139,26 +139,23 @@ def _build_final_queue(
     return final_queue
 
 
-def _calculate_eta(item_count: int, stagger_seconds: int) -> str:
-    """Return a formatted ETA string for a staggered batch, or empty string if stagger is disabled."""
-    if stagger_seconds <= 0 or item_count <= 1:
-        return ''
-    eta = datetime.timedelta(seconds=(item_count - 1) * stagger_seconds)
-    return f' (1 every {stagger_seconds} seconds, ETA: {eta})'
-
-
 def _clients_in_allocation_order(
-    allocated_missing: list[tuple[Any, MediaItem]],
-    allocated_upgrade: list[tuple[Any, MediaItem]],
-) -> list[Any]:
+    allocated_missing: list[tuple[ArrClient, MediaItem]],
+    allocated_upgrade: list[tuple[ArrClient, MediaItem]],
+) -> list[ArrClient]:
     """Return unique clients in the order they first appear across allocated slots."""
-    seen: set[Any] = set()
-    clients: list[Any] = []
-    for client, _ in allocated_missing + allocated_upgrade:
+    seen: set[ArrClient] = set()
+    clients: list[ArrClient] = []
+    for client, _item in allocated_missing + allocated_upgrade:
         if client not in seen:
             clients.append(client)
             seen.add(client)
     return clients
+
+
+def _day_str(days: int) -> str:
+    """Format a day count as a display string."""
+    return 'Disabled' if days == 0 else f'{days}d'
 
 
 def _format_cycle_complete_log(
@@ -179,26 +176,45 @@ def _format_cycle_complete_log(
     return f'--- Cycle complete ({ran_str}). Next: missing in {next_missing_m}m, upgrade in {next_upgrade_m}m. ---'
 
 
+def _format_instance_breakdown(
+    allocated_missing: list[tuple[ArrClient, MediaItem]],
+    allocated_upgrade: list[tuple[ArrClient, MediaItem]],
+) -> str:
+    """Return a per-instance item count string, e.g. 'Alpha: 3 missing, Beta: 1 missing, 2 upgrade'."""
+    missing_counts: dict[str, int] = {}
+    upgrade_counts: dict[str, int] = {}
+    for client, _item in allocated_missing:
+        missing_counts[client.name] = missing_counts.get(client.name, 0) + 1
+    for client, _item in allocated_upgrade:
+        upgrade_counts[client.name] = upgrade_counts.get(client.name, 0) + 1
+    parts = []
+    for client in _clients_in_allocation_order(allocated_missing, allocated_upgrade):
+        counts = []
+        if missing_counts.get(client.name, 0):
+            counts.append(f'{missing_counts[client.name]} missing')
+        if upgrade_counts.get(client.name, 0):
+            counts.append(f'{upgrade_counts[client.name]} upgrade')
+        parts.append(f'{client.name}: {", ".join(counts)}')
+    return ', '.join(parts)
+
+
 def _format_retry_interval_str(
     retry_days: int,
     retry_missing: int | None,
     retry_upgrade: int | None,
 ) -> str:
     """Format the retry interval display string with optional per-type overrides."""
-    global_retry_str = 'Disabled' if retry_days == 0 else f'{retry_days} Days'
-    if retry_missing is not None or retry_upgrade is not None:
-        missing_retry_str = (
-            ('Disabled' if retry_missing == 0 else f'{retry_missing} Days')
-            if retry_missing is not None
-            else global_retry_str
-        )
-        upgrade_retry_str = (
-            ('Disabled' if retry_upgrade == 0 else f'{retry_upgrade} Days')
-            if retry_upgrade is not None
-            else global_retry_str
-        )
-        return f'Global: {global_retry_str}, Missing: {missing_retry_str}, Upgrade: {upgrade_retry_str}'
-    return global_retry_str
+    global_str = _day_str(retry_days)
+    eff_missing = retry_missing if retry_missing is not None else retry_days
+    eff_upgrade = retry_upgrade if retry_upgrade is not None else retry_days
+    parts = []
+    if eff_missing != retry_days:
+        parts.append(f'Missing: {_day_str(eff_missing)}')
+    if eff_upgrade != retry_days:
+        parts.append(f'Upgrade: {_day_str(eff_upgrade)}')
+    if parts:
+        return f'{global_str} ({", ".join(parts)})'
+    return global_str
 
 
 def _format_run_interval_str(
@@ -207,10 +223,15 @@ def _format_run_interval_str(
     run_interval_upgrade_m: int | None,
 ) -> str:
     """Format the run interval display string with optional per-type overrides."""
-    if run_interval_missing_m is not None or run_interval_upgrade_m is not None:
-        eff_missing_m = run_interval_missing_m if run_interval_missing_m is not None else run_interval_m
-        eff_upgrade_m = run_interval_upgrade_m if run_interval_upgrade_m is not None else run_interval_m
-        return f'{run_interval_m}m (Missing: {eff_missing_m}m, Upgrade: {eff_upgrade_m}m)'
+    eff_missing_m = run_interval_missing_m if run_interval_missing_m is not None else run_interval_m
+    eff_upgrade_m = run_interval_upgrade_m if run_interval_upgrade_m is not None else run_interval_m
+    parts = []
+    if eff_missing_m != run_interval_m:
+        parts.append(f'Missing: {eff_missing_m}m')
+    if eff_upgrade_m != run_interval_m:
+        parts.append(f'Upgrade: {eff_upgrade_m}m')
+    if parts:
+        return f'{run_interval_m}m ({", ".join(parts)})'
     return f'{run_interval_m}m'
 
 
@@ -269,28 +290,32 @@ def _log_rangarr_start(active_clients: list[ArrClient], settings: dict) -> None:
     )
     raw_order = _get_setting(settings, 'search_order')
     search_order_str = _SEARCH_ORDER_LABELS.get(raw_order, raw_order.capitalize())
-    dry_run_str = ' (DRY RUN ENABLED)' if dry_run else ''
-    active_hours_str = active_hours if active_hours else 'All hours'
-    interleave_instances_str = 'Yes' if interleave_instances else 'No'
-    interleave_types_str = 'Yes' if interleave_types else 'No'
+    active_hours_str = active_hours if active_hours else 'All Hours'
+    interleave_parts = []
+    if interleave_instances:
+        interleave_parts.append('Instances')
+    if interleave_types:
+        interleave_parts.append('Types')
+    interleave_str = ', '.join(interleave_parts) if interleave_parts else 'None'
     interval_str = _format_run_interval_str(
         _get_setting(settings, 'run_interval_minutes'),
         _get_setting(settings, 'run_interval_minutes_missing'),
         _get_setting(settings, 'run_interval_minutes_upgrade'),
     )
 
+    dry_run_str = ' | Dry Run: Yes' if dry_run else ''
     logger.info(
-        f'Rangarr started{dry_run_str} | '
-        f'Instances: {len(active_clients)} active | '
+        f'Rangarr started | '
+        f'Instances: {len(active_clients)} | '
         f'Run Interval: {interval_str} | '
         f'Missing Batch: {_batch_display_str(global_missing)} | '
         f'Upgrade Batch: {_batch_display_str(global_upgrade)} | '
-        f'Search Stagger: {stagger_seconds} Seconds | '
+        f'Search Stagger: {stagger_seconds}s | '
         f'Search Order: {search_order_str} | '
-        f'Retry Interval: {retry_str} | '
+        f'Retry: {retry_str} | '
         f'Active Hours: {active_hours_str} | '
-        f'Interleave Instances: {interleave_instances_str} | '
-        f'Interleave Types: {interleave_types_str}'
+        f'Interleave: {interleave_str}'
+        f'{dry_run_str}'
     )
 
 
@@ -339,7 +364,9 @@ def _run_search_cycle(
         logger.info('No media to search this cycle across all instances.')
         return
 
-    logger.info(f'Total search batch: {len(final_queue)} item(s){_calculate_eta(len(final_queue), stagger_seconds)}')
+    logger.info(
+        f'Total search batch: {len(final_queue)} item(s) | {_format_instance_breakdown(allocated_missing, allocated_upgrade)}'
+    )
 
     for index, (client, item) in enumerate(final_queue, start=1):
         client.trigger_search([item], index=index, total=len(final_queue))

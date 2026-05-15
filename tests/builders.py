@@ -9,6 +9,7 @@ from rangarr.clients.arr import ArrClient
 from rangarr.clients.arr import LidarrClient
 from rangarr.clients.arr import RadarrClient
 from rangarr.clients.arr import SonarrClient
+from tests.conftest import FIXED_NOW
 
 
 class _RecordBuilder:
@@ -18,14 +19,12 @@ class _RecordBuilder:
 
     def added_long_ago(self) -> Self:
         """Set date added to 30 days ago."""
-        now = datetime.datetime.now(datetime.UTC)
-        self._data['dateAdded'] = (now - datetime.timedelta(days=30)).strftime('%Y-%m-%dT%H:%M:%SZ')
+        self._data['dateAdded'] = (FIXED_NOW - datetime.timedelta(days=30)).strftime('%Y-%m-%dT%H:%M:%SZ')
         return self
 
     def added_recently(self) -> Self:
         """Set date added to 1 day ago."""
-        now = datetime.datetime.now(datetime.UTC)
-        self._data['dateAdded'] = (now - datetime.timedelta(days=1)).strftime('%Y-%m-%dT%H:%M:%SZ')
+        self._data['dateAdded'] = (FIXED_NOW - datetime.timedelta(days=1)).strftime('%Y-%m-%dT%H:%M:%SZ')
         return self
 
     def build(self) -> dict[str, Any]:
@@ -34,14 +33,12 @@ class _RecordBuilder:
 
     def searched_long_ago(self) -> Self:
         """Set last search time to 30 days ago."""
-        now = datetime.datetime.now(datetime.UTC)
-        self._data['lastSearchTime'] = (now - datetime.timedelta(days=30)).strftime('%Y-%m-%dT%H:%M:%SZ')
+        self._data['lastSearchTime'] = (FIXED_NOW - datetime.timedelta(days=30)).strftime('%Y-%m-%dT%H:%M:%SZ')
         return self
 
     def searched_recently(self) -> Self:
         """Set last search time to 1 day ago."""
-        now = datetime.datetime.now(datetime.UTC)
-        self._data['lastSearchTime'] = (now - datetime.timedelta(days=1)).strftime('%Y-%m-%dT%H:%M:%SZ')
+        self._data['lastSearchTime'] = (FIXED_NOW - datetime.timedelta(days=1)).strftime('%Y-%m-%dT%H:%M:%SZ')
         return self
 
     def unmonitored(self) -> Self:

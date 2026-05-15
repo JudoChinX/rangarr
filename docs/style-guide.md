@@ -139,8 +139,8 @@ public ones.
 
 ```python
 # Do (excerpt from main.py — all private functions precede all public ones)
-def _calculate_batch(...): ...      # private, 'c'
-def _calculate_eta(...): ...        # private, 'c' then 'e'
+def _allocate_slots(...): ...       # private, 'a'
+def _day_str(...): ...              # private, 'd'
 def _format_batch_info(...): ...    # private, 'f'
 # ... additional private functions in alphabetical order ...
 def build_arr_clients(...): ...     # public, 'b'
@@ -329,13 +329,13 @@ Mypy enforces `disallow_untyped_defs`. Every parameter and return type must be a
 
 ```python
 # Do
-def _calculate_eta(item_count: int, stagger_seconds: int) -> str:
-    """Calculate and format estimated time for batch processing."""
+def _day_str(days: int) -> str:
+    """Format a day count as a display string."""
     ...
 
 
 # Don't
-def _calculate_eta(item_count, stagger_seconds): ...
+def _day_str(days): ...
 ```
 
 ### Type Aliases
