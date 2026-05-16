@@ -498,7 +498,7 @@ Tests must produce the same result regardless of the machine or time. Normalize 
 
 #### 3. Tiered Structure
 Separate fast logic tests from broader integration flows:
-- `rangarr/**`: Unit tests adjacent to source code (e.g., `rangarr/test_config_parser.py`, `rangarr/clients/test_radarr.py`). Fast, isolated tests for individual modules.
+- `tests/unit/`: Unit tests (e.g., `tests/unit/test_config_parser.py`, `tests/unit/clients/test_radarr.py`). Fast, isolated tests for individual modules.
 - `tests/integration/`: Cross-module tests verifying interactions between components.
 - `tests/system/`: End-to-end tests using realistic API fixtures.
 
@@ -556,7 +556,7 @@ record = RadarrRecordBuilder().with_id(42).with_title('Test Movie').available().
 ### Conventions
 
 #### Naming
-- **Files:** `test_<module>.py` either adjacent to source (`rangarr/test_<module>.py`) for unit tests, or inside `tests/integration/` or `tests/system/` for broader tests.
+- **Files:** `test_<module>.py` inside `tests/unit/` for unit tests (e.g., `tests/unit/test_config_parser.py`, `tests/unit/clients/test_radarr.py`), or inside `tests/integration/` or `tests/system/` for broader tests.
 - **Standalone test:** `test_<function>_<scenario>`.
 - **Parametrized test:** `test_<function>` (the case dict key serves as the scenario id).
 

@@ -48,7 +48,7 @@ _get_release_date_cases = {
 def test_get_release_date(client_class: str, record: dict, expected: str) -> None:
     """Test that _get_release_date returns the correct field value per Arr type."""
     client = _CLIENT_MAP[client_class](name='test', url='https://test', api_key='testkey', settings={})
-    assert client._get_release_date(record) == expected  # pylint: disable=protected-access
+    assert client._get_release_date(record) == expected
 
 
 _get_target_media_sort_cases = {
@@ -149,7 +149,7 @@ def test_get_target_media_client_side_sort(
     )
 
     with patch.object(client, '_fetch_unlimited', return_value=records):
-        result = client._get_target_media(  # pylint: disable=protected-access
+        result = client._get_target_media(
             endpoint='movie/wanted/missing',
             target_batch_size=len(records),
             reason='missing',

@@ -64,8 +64,8 @@ pylint rangarr/ tests/
 
 # Run tests
 pytest
-pytest tests/test_arr_client.py -v  # Run specific test file
-pytest tests/test_arr_client.py::test_function_name -v  # Run specific test
+pytest tests/unit/clients/test_arr_base.py -v  # Run specific test file
+pytest tests/unit/clients/test_arr_base.py::test_function_name -v  # Run specific test
 ```
 
 ### Code Style Requirements

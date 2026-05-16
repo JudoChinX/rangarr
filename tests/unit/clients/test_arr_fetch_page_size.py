@@ -88,7 +88,7 @@ def test_fetch_unlimited_page_size(
     client = builder.build()
 
     with patch.object(client.session, 'get', side_effect=_paged_responses(records)) as mock_get:
-        result = client._fetch_unlimited('/api/v3/wanted/missing')  # pylint: disable=protected-access
+        result = client._fetch_unlimited('/api/v3/wanted/missing')
 
     assert mock_get.call_args_list[0].kwargs['params']['pageSize'] == expected_page_size
     assert len(result) == expected_record_count

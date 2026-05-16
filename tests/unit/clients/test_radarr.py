@@ -44,7 +44,7 @@ def test_fetch_movie_file_scores(file_ids: Any, movie_files: Any, expected: Any)
     """Test RadarrClient._fetch_movie_file_scores returns {fileId: score} map."""
     client = ClientBuilder().radarr().build()
     with patch.object(client, '_fetch_list', return_value=movie_files):
-        result = client._fetch_movie_file_scores(file_ids)  # pylint: disable=protected-access
+        result = client._fetch_movie_file_scores(file_ids)
     assert result == expected
 
 
@@ -58,8 +58,7 @@ def test_fetch_movie_file_scores_batches_requests_above_batch_limit() -> None:
         return [{'id': file_id, 'customFormatScore': 0} for file_id in ids]
 
     with patch.object(client, '_fetch_list', side_effect=fake_fetch_list) as mock_fetch:
-        result = client._fetch_movie_file_scores(file_ids)  # pylint: disable=protected-access
-
+        result = client._fetch_movie_file_scores(file_ids)
     assert mock_fetch.call_count == 2
     assert len(result) == 101
 
@@ -132,7 +131,7 @@ def test_radarr_get_custom_format_upgrade_records(
     with patch.object(
         client, '_fetch_list', side_effect=mock_fetch_list_factory({'moviefile': movie_files, 'movie': movies})
     ):
-        result = client._get_custom_format_upgrade_records(profile_cutoffs)  # pylint: disable=protected-access
+        result = client._get_custom_format_upgrade_records(profile_cutoffs)
     assert [rec['id'] for rec in result] == expected_ids
 
 
@@ -143,7 +142,7 @@ def test_supplemental_early_exit_when_no_cutoff_profiles() -> None:
         patch.object(client, '_fetch_quality_profile_cutoffs', return_value={}),
         patch.object(client, '_fetch_list') as mock_fetch_list,
     ):
-        result = client._get_custom_format_score_unmet_records()  # pylint: disable=protected-access
+        result = client._get_custom_format_score_unmet_records()
     assert result == []
     mock_fetch_list.assert_not_called()
 

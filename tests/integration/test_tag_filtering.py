@@ -80,7 +80,7 @@ def test_process_record_tag_filtering(
     with patch.object(requests.Session, 'get', return_value=mock_tag_api(tag_data)):
         client = builder.build()
     record = RadarrRecordBuilder().with_tags(record_tags).build()
-    result = client._process_record(record, 'missing', set())  # pylint: disable=protected-access
+    result = client._process_record(record, 'missing', set())
     if expected_match:
         assert result is not None
     else:
@@ -92,8 +92,8 @@ def test_resolve_tag_ids_falls_back_to_empty_sets_on_api_error(caplog: pytest.Lo
     with patch.object(requests.Session, 'get', side_effect=requests.RequestException('timeout')):
         with caplog.at_level(logging.ERROR):
             client = ClientBuilder().with_include_tags('action').build()
-    assert client._include_tag_ids == set()  # pylint: disable=protected-access
-    assert client._exclude_tag_ids == set()  # pylint: disable=protected-access
+    assert client._include_tag_ids == set()
+    assert client._exclude_tag_ids == set()
     assert 'tag filtering disabled' in caplog.text
 
 
@@ -102,8 +102,8 @@ def test_resolve_tag_ids_resolves_names_case_insensitively() -> None:
     tag_data = [{'id': 1, 'label': 'action'}, {'id': 2, 'label': 'drama'}]
     with patch.object(requests.Session, 'get', return_value=mock_tag_api(tag_data)):
         client = ClientBuilder().with_include_tags('Action').with_exclude_tags('DRAMA').build()
-    assert client._include_tag_ids == {1}  # pylint: disable=protected-access
-    assert client._exclude_tag_ids == {2}  # pylint: disable=protected-access
+    assert client._include_tag_ids == {1}
+    assert client._exclude_tag_ids == {2}
 
 
 def test_resolve_tag_ids_skips_api_call_when_no_tags_configured() -> None:
@@ -119,5 +119,5 @@ def test_resolve_tag_ids_warns_on_unknown_tag(caplog: pytest.LogCaptureFixture) 
     with patch.object(requests.Session, 'get', return_value=mock_tag_api(tag_data)):
         with caplog.at_level(logging.WARNING):
             client = ClientBuilder().with_include_tags('missing-tag').build()
-    assert client._include_tag_ids == set()  # pylint: disable=protected-access
+    assert client._include_tag_ids == set()
     assert 'missing-tag' in caplog.text

@@ -24,9 +24,7 @@ def test_collect_season_pack_records_returns_individual_for_airing_season() -> N
     seen_seasons: set[tuple[int, int]] = set()
     season_metadata = {(10, 1): {'next_airing': '2030-01-01T00:00:00Z', 'monitored_count': 8}}
 
-    result = client._collect_season_pack_records(  # pylint: disable=protected-access
-        records, 10, 'missing', seen_seasons, True, season_metadata, {}
-    )
+    result = client._collect_season_pack_records(records, 10, 'missing', seen_seasons, True, season_metadata, {})
 
     assert result == [(99, 'missing', 'Show A - S01E01 - Test Episode')]
 
@@ -39,9 +37,7 @@ def test_collect_season_pack_records_returns_season_item() -> None:
     ]
     seen_seasons: set[tuple[int, int]] = set()
 
-    result = client._collect_season_pack_records(  # pylint: disable=protected-access
-        records, 10, 'missing', seen_seasons, True, {}, {}
-    )
+    result = client._collect_season_pack_records(records, 10, 'missing', seen_seasons, True, {}, {})
 
     assert result == [('season:10:1', 'missing', 'Show A - Season 01')]
 
@@ -65,8 +61,7 @@ def test_fetch_season_metadata_builds_lookup() -> None:
         .build(),
     ]
     with patch.object(client, '_fetch_list', return_value=series_list) as mock_fetch:
-        result = client._fetch_season_metadata()  # pylint: disable=protected-access
-
+        result = client._fetch_season_metadata()
     mock_fetch.assert_called_once_with(client.ENDPOINT_SERIES)
     assert result == {
         (1, 1): {'next_airing': '2030-01-01T00:00:00Z', 'monitored_count': 8},
@@ -87,7 +82,7 @@ def test_fetch_season_metadata_skips_records_with_none_id_or_missing_season() ->
         },
     ]
     with patch.object(client, '_fetch_list', return_value=series_list):
-        result = client._fetch_season_metadata()  # pylint: disable=protected-access
+        result = client._fetch_season_metadata()
     assert result == {(3, 1): {'next_airing': '2030-06-01T00:00:00Z', 'monitored_count': 10}}
 
 
@@ -130,7 +125,7 @@ _is_season_still_airing_cases = {
 def test_is_season_still_airing(season_metadata: dict, series_id: int, season_number: int, expected: bool) -> None:
     """Test _is_season_still_airing returns True only when nextAiring is a future date."""
     client = ClientBuilder().sonarr().build()
-    result = client._is_season_still_airing(series_id, season_number, season_metadata)  # pylint: disable=protected-access
+    result = client._is_season_still_airing(series_id, season_number, season_metadata)
     assert result == expected
 
 
@@ -243,50 +238,7 @@ def test_meets_season_pack_threshold(
 ) -> None:
     """Test _meets_season_pack_threshold returns True only when the threshold is satisfied."""
     client = ClientBuilder().sonarr().with_settings(season_packs=season_packs, retry_interval_days=0).build()
-    result = client._meets_season_pack_threshold(  # pylint: disable=protected-access
-        series_id, season_number, season_record_counts, season_metadata
-    )
-    assert result == expected
-
-
-_tally_season_records_cases = {
-    'counts_episodes_per_season': {
-        'records': [
-            SonarrRecordBuilder().with_id(1).with_series_id(10).with_episode(1, 1).build(),
-            SonarrRecordBuilder().with_id(2).with_series_id(10).with_episode(1, 2).build(),
-            SonarrRecordBuilder().with_id(3).with_series_id(10).with_episode(2, 1).build(),
-            SonarrRecordBuilder().with_id(4).with_series_id(20).with_episode(1, 1).build(),
-        ],
-        'expected': {(10, 1): 2, (10, 2): 1, (20, 1): 1},
-    },
-    'skips_records_with_no_series_id': {
-        'records': [
-            SonarrRecordBuilder().with_id(1).with_episode(1, 1).build(),
-        ],
-        'expected': {},
-    },
-    'skips_records_with_no_season_number': {
-        'records': [
-            SonarrRecordBuilder().with_id(1).with_series_id(10).with_episode(1, 1).without_season_number().build(),
-        ],
-        'expected': {},
-    },
-    'returns_empty_for_no_records': {
-        'records': [],
-        'expected': {},
-    },
-}
-
-
-@pytest.mark.parametrize(
-    'records, expected',
-    [(case['records'], case['expected']) for case in _tally_season_records_cases.values()],
-    ids=list(_tally_season_records_cases.keys()),
-)
-def test_tally_season_records(records: list, expected: dict) -> None:
-    """Test _tally_season_records counts episode records per (series_id, season_number)."""
-    client = ClientBuilder().sonarr().build()
-    result = client._tally_season_records(records)  # pylint: disable=protected-access
+    result = client._meets_season_pack_threshold(series_id, season_number, season_record_counts, season_metadata)
     assert result == expected
 
 
@@ -407,6 +359,47 @@ def test_season_pack_falls_back_to_individual_for_airing_seasons(
 
     result_ids = [item_id for item_id, _, _ in results]
     assert result_ids == expected_ids
+
+
+_tally_season_records_cases = {
+    'counts_episodes_per_season': {
+        'records': [
+            SonarrRecordBuilder().with_id(1).with_series_id(10).with_episode(1, 1).build(),
+            SonarrRecordBuilder().with_id(2).with_series_id(10).with_episode(1, 2).build(),
+            SonarrRecordBuilder().with_id(3).with_series_id(10).with_episode(2, 1).build(),
+            SonarrRecordBuilder().with_id(4).with_series_id(20).with_episode(1, 1).build(),
+        ],
+        'expected': {(10, 1): 2, (10, 2): 1, (20, 1): 1},
+    },
+    'skips_records_with_no_series_id': {
+        'records': [
+            SonarrRecordBuilder().with_id(1).with_episode(1, 1).build(),
+        ],
+        'expected': {},
+    },
+    'skips_records_with_no_season_number': {
+        'records': [
+            SonarrRecordBuilder().with_id(1).with_series_id(10).with_episode(1, 1).without_season_number().build(),
+        ],
+        'expected': {},
+    },
+    'returns_empty_for_no_records': {
+        'records': [],
+        'expected': {},
+    },
+}
+
+
+@pytest.mark.parametrize(
+    'records, expected',
+    [(case['records'], case['expected']) for case in _tally_season_records_cases.values()],
+    ids=list(_tally_season_records_cases.keys()),
+)
+def test_tally_season_records(records: list, expected: dict) -> None:
+    """Test _tally_season_records counts episode records per (series_id, season_number)."""
+    client = ClientBuilder().sonarr().build()
+    result = client._tally_season_records(records)
+    assert result == expected
 
 
 def test_sonarr_client_reads_season_packs_setting() -> None:
@@ -587,8 +580,7 @@ def test_sonarr_supplemental_finds_episode_with_low_score_file() -> None:
     mock_fetch = mock_fetch_list_factory({'episodefile': episode_files, 'episode': episodes, 'series': series_list})
 
     with patch.object(client, '_fetch_list', side_effect=mock_fetch):
-        result = client._get_custom_format_upgrade_records(profile_cutoffs)  # pylint: disable=protected-access
-
+        result = client._get_custom_format_upgrade_records(profile_cutoffs)
     assert [rec['id'] for rec in result] == [100]
 
 
@@ -613,8 +605,7 @@ def test_sonarr_supplemental_injects_series_into_episode_record() -> None:
     mock_fetch = mock_fetch_list_factory({'episodefile': episode_files, 'episode': episodes, 'series': series_list})
 
     with patch.object(client, '_fetch_list', side_effect=mock_fetch):
-        result = client._get_custom_format_upgrade_records(profile_cutoffs)  # pylint: disable=protected-access
-
+        result = client._get_custom_format_upgrade_records(profile_cutoffs)
     assert result[0]['series']['id'] == 1
     assert result[0]['series']['title'] == 'My Show'
 
@@ -627,8 +618,7 @@ def test_sonarr_supplemental_skips_series_on_untracked_profile() -> None:
     mock_fetch = mock_fetch_list_factory({'series': series_list})
 
     with patch.object(client, '_fetch_list', side_effect=mock_fetch) as mock_fl:
-        result = client._get_custom_format_upgrade_records(profile_cutoffs)  # pylint: disable=protected-access
-
+        result = client._get_custom_format_upgrade_records(profile_cutoffs)
     assert result == []
     episode_file_calls = [call for call in mock_fl.call_args_list if 'episodefile' in str(call)]
     assert len(episode_file_calls) == 0
@@ -645,8 +635,7 @@ def test_sonarr_supplemental_skips_series_when_all_files_meet_cutoff() -> None:
     mock_fetch = mock_fetch_list_factory({'episodefile': episode_files, 'series': series_list})
 
     with patch.object(client, '_fetch_list', side_effect=mock_fetch):
-        result = client._get_custom_format_upgrade_records(profile_cutoffs)  # pylint: disable=protected-access
-
+        result = client._get_custom_format_upgrade_records(profile_cutoffs)
     assert result == []
 
 
@@ -672,8 +661,7 @@ def test_sonarr_supplemental_skips_unmonitored_episodes() -> None:
     mock_fetch = mock_fetch_list_factory({'episodefile': episode_files, 'episode': episodes, 'series': series_list})
 
     with patch.object(client, '_fetch_list', side_effect=mock_fetch):
-        result = client._get_custom_format_upgrade_records(profile_cutoffs)  # pylint: disable=protected-access
-
+        result = client._get_custom_format_upgrade_records(profile_cutoffs)
     assert [rec['id'] for rec in result] == []
 
 
@@ -700,8 +688,7 @@ def test_sonarr_supplemental_skips_unmonitored_series() -> None:
     mock_fetch = mock_fetch_list_factory({'episodefile': episode_files, 'episode': episodes, 'series': series_list})
 
     with patch.object(client, '_fetch_list', side_effect=mock_fetch):
-        result = client._get_custom_format_upgrade_records(profile_cutoffs)  # pylint: disable=protected-access
-
+        result = client._get_custom_format_upgrade_records(profile_cutoffs)
     assert [rec['id'] for rec in result] == []
 
 
@@ -712,8 +699,7 @@ def test_sonarr_trigger_single_episode_delegates_to_base() -> None:
     mock_resp.raise_for_status.return_value = None
     client.session.post = MagicMock(return_value=mock_resp)
 
-    client._trigger_single(100, 'missing', 'Show B - S02E01 - Title', 1, 1)  # pylint: disable=protected-access
-
+    client._trigger_single(100, 'missing', 'Show B - S02E01 - Title', 1, 1)
     client.session.post.assert_called_once()
     assert client.session.post.call_args.args[0] == 'http://test/api/v3/command'
     assert client.session.post.call_args.kwargs['json'] == {'name': 'EpisodeSearch', 'episodeIds': [100]}
@@ -725,8 +711,7 @@ def test_sonarr_trigger_single_season_pack_dry_run(caplog: pytest.LogCaptureFixt
     client.session.post = MagicMock()
 
     with caplog.at_level(logging.INFO):
-        client._trigger_single('season:10:1', 'missing', 'Show A - Season 01', 1, 1)  # pylint: disable=protected-access
-
+        client._trigger_single('season:10:1', 'missing', 'Show A - Season 01', 1, 1)
     client.session.post.assert_not_called()
     assert 'DRY RUN' in caplog.text
 
@@ -737,8 +722,7 @@ def test_sonarr_trigger_single_season_pack_handles_request_exception(caplog: pyt
     client.session.post = MagicMock(side_effect=requests.RequestException('timeout'))
 
     with caplog.at_level(logging.ERROR):
-        client._trigger_single('season:10:1', 'missing', 'Show A - Season 01', 1, 1)  # pylint: disable=protected-access
-
+        client._trigger_single('season:10:1', 'missing', 'Show A - Season 01', 1, 1)
     assert 'Failed to trigger SeasonSearch' in caplog.text
 
 
@@ -749,8 +733,7 @@ def test_sonarr_trigger_single_season_pack_posts_season_search() -> None:
     mock_resp.raise_for_status.return_value = None
     client.session.post = MagicMock(return_value=mock_resp)
 
-    client._trigger_single('season:10:1', 'missing', 'Show A - Season 01', 1, 1)  # pylint: disable=protected-access
-
+    client._trigger_single('season:10:1', 'missing', 'Show A - Season 01', 1, 1)
     client.session.post.assert_called_once()
     assert client.session.post.call_args.kwargs['json'] == {
         'name': 'SeasonSearch',

@@ -1,5 +1,4 @@
 """System tests for the full search cycle flow."""
-# pylint: disable=redefined-outer-name
 
 import logging
 from unittest.mock import MagicMock

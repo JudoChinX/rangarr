@@ -93,6 +93,62 @@ def test_format_cycle_complete_log(
     assert result == expected
 
 
+_format_instance_breakdown_cases = {
+    'missing_only_single_instance': {
+        'allocated_missing': [('Alpha', 'item1'), ('Alpha', 'item2'), ('Alpha', 'item3')],
+        'allocated_upgrade': [],
+        'expected': 'Alpha: 3 missing',
+    },
+    'upgrade_only_single_instance': {
+        'allocated_missing': [],
+        'allocated_upgrade': [('Beta', 'item1')],
+        'expected': 'Beta: 1 upgrade',
+    },
+    'mixed_single_instance': {
+        'allocated_missing': [('Alpha', 'item1'), ('Alpha', 'item2')],
+        'allocated_upgrade': [('Alpha', 'item3')],
+        'expected': 'Alpha: 2 missing, 1 upgrade',
+    },
+    'multiple_instances': {
+        'allocated_missing': [('Alpha', 'item1'), ('Alpha', 'item2'), ('Beta', 'item3')],
+        'allocated_upgrade': [('Beta', 'item4'), ('Gamma', 'item5')],
+        'expected': 'Alpha: 2 missing, Beta: 1 missing, 1 upgrade, Gamma: 1 upgrade',
+    },
+    'preserves_allocation_order': {
+        'allocated_missing': [('Beta', 'item1')],
+        'allocated_upgrade': [('Alpha', 'item2')],
+        'expected': 'Beta: 1 missing, Alpha: 1 upgrade',
+    },
+    'both_empty': {
+        'allocated_missing': [],
+        'allocated_upgrade': [],
+        'expected': '',
+    },
+}
+
+
+@pytest.mark.parametrize(
+    'allocated_missing, allocated_upgrade, expected',
+    [
+        (case['allocated_missing'], case['allocated_upgrade'], case['expected'])
+        for case in _format_instance_breakdown_cases.values()
+    ],
+    ids=list(_format_instance_breakdown_cases.keys()),
+)
+def test_format_instance_breakdown(
+    allocated_missing: list[tuple[str, str]],
+    allocated_upgrade: list[tuple[str, str]],
+    expected: str,
+) -> None:
+    """Test _format_instance_breakdown returns correct per-instance item count string."""
+    from rangarr.main import _format_instance_breakdown
+
+    all_pairs = _make_allocation_pairs(allocated_missing + allocated_upgrade)
+    result = _format_instance_breakdown(all_pairs[: len(allocated_missing)], all_pairs[len(allocated_missing) :])
+
+    assert result == expected
+
+
 _format_retry_interval_str_cases = {
     'no_overrides': {
         'retry_days': 30,
@@ -223,62 +279,6 @@ def test_format_run_interval_str(
     from rangarr.main import _format_run_interval_str
 
     result = _format_run_interval_str(run_interval_m, run_interval_missing_m, run_interval_upgrade_m)
-
-    assert result == expected
-
-
-_format_instance_breakdown_cases = {
-    'missing_only_single_instance': {
-        'allocated_missing': [('Alpha', 'item1'), ('Alpha', 'item2'), ('Alpha', 'item3')],
-        'allocated_upgrade': [],
-        'expected': 'Alpha: 3 missing',
-    },
-    'upgrade_only_single_instance': {
-        'allocated_missing': [],
-        'allocated_upgrade': [('Beta', 'item1')],
-        'expected': 'Beta: 1 upgrade',
-    },
-    'mixed_single_instance': {
-        'allocated_missing': [('Alpha', 'item1'), ('Alpha', 'item2')],
-        'allocated_upgrade': [('Alpha', 'item3')],
-        'expected': 'Alpha: 2 missing, 1 upgrade',
-    },
-    'multiple_instances': {
-        'allocated_missing': [('Alpha', 'item1'), ('Alpha', 'item2'), ('Beta', 'item3')],
-        'allocated_upgrade': [('Beta', 'item4'), ('Gamma', 'item5')],
-        'expected': 'Alpha: 2 missing, Beta: 1 missing, 1 upgrade, Gamma: 1 upgrade',
-    },
-    'preserves_allocation_order': {
-        'allocated_missing': [('Beta', 'item1')],
-        'allocated_upgrade': [('Alpha', 'item2')],
-        'expected': 'Beta: 1 missing, Alpha: 1 upgrade',
-    },
-    'both_empty': {
-        'allocated_missing': [],
-        'allocated_upgrade': [],
-        'expected': '',
-    },
-}
-
-
-@pytest.mark.parametrize(
-    'allocated_missing, allocated_upgrade, expected',
-    [
-        (case['allocated_missing'], case['allocated_upgrade'], case['expected'])
-        for case in _format_instance_breakdown_cases.values()
-    ],
-    ids=list(_format_instance_breakdown_cases.keys()),
-)
-def test_format_instance_breakdown(
-    allocated_missing: list[tuple[str, str]],
-    allocated_upgrade: list[tuple[str, str]],
-    expected: str,
-) -> None:
-    """Test _format_instance_breakdown returns correct per-instance item count string."""
-    from rangarr.main import _format_instance_breakdown
-
-    all_pairs = _make_allocation_pairs(allocated_missing + allocated_upgrade)
-    result = _format_instance_breakdown(all_pairs[: len(allocated_missing)], all_pairs[len(allocated_missing) :])
 
     assert result == expected
 

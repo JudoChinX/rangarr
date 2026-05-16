@@ -36,6 +36,8 @@ disable = [
     "import-outside-toplevel",
     "too-few-public-methods",
     "logging-fstring-interpolation",
+    "protected-access",
+    "redefined-outer-name",
 ]
 
 [tool.pylint.design]

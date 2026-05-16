@@ -96,7 +96,7 @@ def test_load_config(tmp_path: Any, file_exists: Any, file_path: Any, expected_e
         with pytest.raises(expected_error):
             load_config(str(tmp_path / 'does_not_exist.yaml'))
     else:
-        assert load_config(str(Path(__file__).parent.parent / 'tests' / file_path)) is not None
+        assert load_config(str(Path(__file__).parent.parent.parent / 'tests' / file_path)) is not None
 
 
 def test_load_config_empty_yaml_treats_as_empty_dict(tmp_path: Any) -> None:
@@ -167,14 +167,14 @@ def test_load_config_expands_multiple_placeholders_in_single_value(monkeypatch: 
     """Test load_config expands multiple ${VAR} placeholders within a single string value."""
     monkeypatch.setenv('APP_HOST', 'radarr')
     monkeypatch.setenv('APP_PORT', '7878')
-    result = load_config(str(Path(__file__).parent.parent / 'tests' / 'test_config_env_vars.yaml'))
+    result = load_config(str(Path(__file__).parent.parent.parent / 'tests' / 'test_config_env_vars.yaml'))
     instance = result['instances']['radarr'][0]
     assert instance['url'] == 'http://radarr:7878'
 
 
 def test_load_config_leaves_plain_string_values_unchanged() -> None:
     """Test load_config does not alter string values that contain no ${VAR} placeholders."""
-    result = load_config(str(Path(__file__).parent.parent / 'tests' / 'test_config.yaml'))
+    result = load_config(str(Path(__file__).parent.parent.parent / 'tests' / 'test_config.yaml'))
     instance = result['instances']['radarr'][0]
     assert instance['url'] == 'http://localhost:7878'
     assert instance['api_key'] == 'somekey'

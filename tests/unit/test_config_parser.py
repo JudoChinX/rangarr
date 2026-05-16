@@ -186,14 +186,14 @@ _parse_config_cases = {
     'invalid_instance_type': {
         'config_data': {
             'instances': {
-                'readarr': {
-                    'type': 'readarr',
-                    'url': 'http://localhost:8787',
-                    'api_key': 'readarr_api_key',
+                'test': {
+                    'type': 'plex',
+                    'url': 'http://test',
+                    'api_key': 'testkey',
                 }
             }
         },
-        'expected_error': "Invalid type 'readarr' for instance 'readarr'. Must be one of: radarr, sonarr, lidarr.",
+        'expected_error': "Invalid type 'plex' for instance 'test'. Must be one of: radarr, sonarr, lidarr.",
     },
     'empty_instances_dict': {
         'config_data': {'instances': {}},

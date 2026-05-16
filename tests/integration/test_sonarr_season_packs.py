@@ -615,7 +615,7 @@ def test_sonarr_season_pack_threshold_applied_independently_per_pass() -> None:
 def test_sonarr_season_pack_skips_series_with_excluded_tag() -> None:
     """Test that season-pack mode skips series whose tag is in the exclude set."""
     client = ClientBuilder().sonarr().with_settings(season_packs=True, retry_interval_days=0).build()
-    client._exclude_tag_ids = {5}  # pylint: disable=protected-access
+    client._exclude_tag_ids = {5}
 
     missing_records = [
         SonarrRecordBuilder()

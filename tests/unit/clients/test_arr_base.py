@@ -718,7 +718,7 @@ def test_fetch_list_returns_empty_on_request_exception() -> None:
     """Test _fetch_list returns [] and logs an error when a RequestException is raised."""
     client = ClientBuilder().radarr().build()
     client.session.get = MagicMock(side_effect=requests.RequestException('timeout'))
-    result = client._fetch_list('/api/v3/movie')  # pylint: disable=protected-access
+    result = client._fetch_list('/api/v3/movie')
     assert result == []
 
 
@@ -775,7 +775,7 @@ def test_fetch_quality_profile_cutoffs(
         client.session.get = MagicMock(side_effect=requests.RequestException('error'))
     else:
         client.session.get = MagicMock(return_value=mock_http_response(profiles))
-    result = client._fetch_quality_profile_cutoffs()  # pylint: disable=protected-access
+    result = client._fetch_quality_profile_cutoffs()
     assert result == expected
 
 
@@ -783,7 +783,7 @@ def test_fetch_unlimited_returns_empty_on_request_exception() -> None:
     """Test _fetch_unlimited returns [] and logs an error when a RequestException is raised."""
     client = ClientBuilder().radarr().build()
     client.session.get = MagicMock(side_effect=requests.RequestException('timeout'))
-    result = client._fetch_unlimited('/api/v3/wanted/missing')  # pylint: disable=protected-access
+    result = client._fetch_unlimited('/api/v3/wanted/missing')
     assert result == []
 
 
@@ -833,7 +833,7 @@ def test_get_target_media_modes(
     client = ClientBuilder().radarr().with_settings(search_order=search_order).build()
 
     with patch.object(client, '_fetch_unlimited', return_value=fetch_wanted_records) as mock_fetch:
-        result = client._get_target_media(  # pylint: disable=protected-access
+        result = client._get_target_media(
             endpoint='movie/wanted/missing',
             target_batch_size=target_batch_size,
             reason='missing',
@@ -886,5 +886,5 @@ def test_is_within_retry_window_override(
     """Test _is_within_retry_window selects the correct interval based on reason."""
     client = RadarrClient(name='test', url='http://test', api_key='testkey', settings=settings)
     record = {'id': 1, 'lastSearchTime': last_search_time}
-    result = client._is_within_retry_window(record, reason)  # pylint: disable=protected-access
+    result = client._is_within_retry_window(record, reason)
     assert result == expected
