@@ -166,6 +166,16 @@ def test_build_arr_clients_instance_settings_override_global() -> None:
     assert global_settings['season_packs'] is False
 
 
+def test_build_arr_clients_logs_whisparr_display_name(caplog: pytest.LogCaptureFixture) -> None:
+    """Test build_arr_clients logs 'Whisparr' for whisparr instances."""
+    instances_config = {
+        'whisparr': [{'name': 'my-whisparr', 'url': 'http://test', 'api_key': 'key'}],
+    }
+    with caplog.at_level(logging.INFO):
+        build_arr_clients(instances_config, {})
+    assert 'Registered Whisparr instance: my-whisparr' in caplog.text
+
+
 _log_rangarr_start_cases = {
     'disabled': {
         'missing_batch_size': 0,

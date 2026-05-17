@@ -18,6 +18,7 @@ from rangarr.clients.arr import ArrClient
 from rangarr.clients.arr import LidarrClient
 from rangarr.clients.arr import RadarrClient
 from rangarr.clients.arr import SonarrClient
+from rangarr.clients.arr import WhisparrClient
 from rangarr.config_parser import SETTINGS_SCHEMA
 from rangarr.config_parser import get_setting_default
 from rangarr.config_parser import load_config
@@ -43,6 +44,7 @@ _CLIENT_MAP: dict[str, type[ArrClient]] = {
     'lidarr': LidarrClient,
     'radarr': RadarrClient,
     'sonarr': SonarrClient,
+    'whisparr': WhisparrClient,
 }
 
 _MAX_CONNECTION_ATTEMPTS: int = 3
@@ -415,7 +417,8 @@ def build_arr_clients(
                 weight=instance.get('weight', 1.0),
             )
             clients.append(client)
-            logger.info(f'Registered {arr_type.capitalize()} instance: {instance["name"]} (Weight: {client.weight})')
+            display_name = client_class.__name__.removesuffix('Client')
+            logger.info(f'Registered {display_name} instance: {instance["name"]} (Weight: {client.weight})')
     return clients
 
 

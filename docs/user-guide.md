@@ -402,9 +402,9 @@ Settings for individual *arr instances.
 
 #### `type` (required)
 
-**Options:** `radarr`, `sonarr`, `lidarr`
+**Options:** `radarr`, `sonarr`, `lidarr`, `whisparr`
 
-Prowlarr is not supported — it is an indexer aggregator, not a media manager, and does not expose the missing/cutoff wanted endpoints that Rangarr uses.
+Use `whisparr` for Whisparr v3 instances. Only Whisparr v3 is supported. Log output uses `Performer - Scene Title` format. Prowlarr is not supported — it is an indexer aggregator, not a media manager, and does not expose the missing/cutoff wanted endpoints that Rangarr uses.
 
 ```yaml
 instances:
@@ -601,7 +601,7 @@ Each instance is identified by a numeric index. Prefix instance fields with `RAN
 | Variable | Required | Description |
 |---|---|---|
 | `RANGARR_INSTANCE_<n>_NAME` | Yes | Unique name for this instance. |
-| `RANGARR_INSTANCE_<n>_TYPE` | Yes | `radarr`, `sonarr`, or `lidarr` (case-insensitive). |
+| `RANGARR_INSTANCE_<n>_TYPE` | Yes | `radarr`, `sonarr`, `lidarr`, or `whisparr` (case-insensitive). Whisparr v3 only. |
 | `RANGARR_INSTANCE_<n>_URL` | Yes | Base URL of the instance (e.g. `http://radarr:7878`). `HOST` is accepted as an alias. |
 | `RANGARR_INSTANCE_<n>_API_KEY` | Yes | API key from the instance's settings page. |
 | `RANGARR_INSTANCE_<n>_ENABLED` | No | Defaults to `true`. Set to `false` to disable without removing the variable. |
@@ -710,7 +710,7 @@ docker stop rangarr && docker rm rangarr
 
 ### Docker Networking
 
-Rangarr and all *arr containers (Radarr, Sonarr, Lidarr, Prowlarr) should share a single, dedicated Docker network. This keeps traffic between containers internal and off the host network stack.
+Rangarr and all *arr containers (Radarr, Sonarr, Lidarr, Whisparr, Prowlarr) should share a single, dedicated Docker network. This keeps traffic between containers internal and off the host network stack.
 
 Create the network once:
 ```bash
@@ -741,7 +741,7 @@ In Prowlarr: *Indexers → (select indexer) → Query Limit / Grab Limit*
 
 ### Alternative: Configure limits per *arr app
 
-If you manage indexers directly in Radarr, Sonarr, or Lidarr (without Prowlarr), set limits on each indexer within each app. Be aware that limits are enforced independently per app, so the effective total across all apps can exceed any single app's cap.
+If you manage indexers directly in Radarr, Sonarr, Lidarr, or Whisparr (without Prowlarr), set limits on each indexer within each app. Be aware that limits are enforced independently per app, so the effective total across all apps can exceed any single app's cap.
 
 In each *arr app: *Settings → Indexers → (select indexer) → Query Limit / Grab Limit*
 

@@ -16,7 +16,7 @@ from rangarr.validators import _validate_season_packs
 logger = logging.getLogger(__name__)
 
 REQUIRED_TOP_LEVEL = ('instances',)
-VALID_ARR_TYPES = ('radarr', 'sonarr', 'lidarr')
+VALID_ARR_TYPES = ('lidarr', 'radarr', 'sonarr', 'whisparr')
 
 
 SETTINGS_SCHEMA = {
@@ -392,7 +392,7 @@ def parse_config(config: Any) -> dict:
     if not isinstance(raw_instances, dict):
         raise ValueError("'instances' must be a YAML mapping.")
 
-    final_instances = {'radarr': [], 'sonarr': [], 'lidarr': []}
+    final_instances = {'lidarr': [], 'radarr': [], 'sonarr': [], 'whisparr': []}
     all_empty = True
 
     for instance_name, instance_config in raw_instances.items():
@@ -406,7 +406,9 @@ def parse_config(config: Any) -> dict:
             final_instances[inst_type].append(inst)
 
     if all_empty:
-        raise ValueError("No instances defined under 'instances'. Add at least one Radarr, Sonarr, or Lidarr instance.")
+        raise ValueError(
+            "No instances defined under 'instances'. Add at least one Lidarr, Radarr, Sonarr, or Whisparr instance."
+        )
 
     config['instances'] = final_instances
     return config

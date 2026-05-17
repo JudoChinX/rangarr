@@ -55,3 +55,9 @@ instances:
     host: "http://lidarr:8686"     # Use container hostname for Docker deployments
     api_key: "YOUR_LIDARR_KEY"
     enabled: false                 # Set to true to activate
+
+  whisparr:
+    type: whisparr
+    host: "http://whisparr:6969"   # Use container hostname for Docker deployments
+    api_key: "YOUR_WHISPARR_KEY"
+    enabled: false                 # Set to true to activate

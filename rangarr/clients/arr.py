@@ -424,11 +424,6 @@ class LidarrClient(ArrClient):
     def _fetch_quality_profile_cutoffs(self) -> dict[int, int]:
         return {}
 
-    @property
-    @override
-    def _id_field(self) -> str:
-        return 'albumIds'
-
     @override
     def _get_record_tags(self, record: dict) -> list[int]:
         return record.get('tags', [])
@@ -442,6 +437,11 @@ class LidarrClient(ArrClient):
     @override
     def _get_release_date(self, record: dict) -> str:
         return record.get('releaseDate') or ''
+
+    @property
+    @override
+    def _id_field(self) -> str:
+        return 'albumIds'
 
     @override
     def _is_available(self, record: dict) -> bool:
@@ -776,3 +776,26 @@ class SonarrClient(ArrClient):
             random.shuffle(merged)
 
         return merged
+
+
+class WhisparrClient(SonarrClient):
+    """Whisparr v3 API client."""
+
+    @override
+    def _get_record_title(self, record: dict) -> str:
+        performer = record.get('series', {}).get('title', 'Unknown Performer')
+        scene_title = record.get('title', 'Unknown Scene')
+        return f'{performer} - {scene_title}'
+
+    @override
+    def _get_release_date(self, record: dict) -> str:
+        return record.get('releaseDate') or ''
+
+    @override
+    def _get_season_title(self, record: dict, season_number: int) -> str:
+        performer = record.get('series', {}).get('title', 'Unknown Performer')
+        return f'{performer} - Season {season_number:02d}'
+
+    @override
+    def _is_available(self, record: dict) -> bool:
+        return self._is_date_past(record.get('releaseDate'))
