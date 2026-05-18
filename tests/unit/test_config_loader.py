@@ -99,6 +99,21 @@ def test_load_config(tmp_path: Any, file_exists: Any, file_path: Any, expected_e
         assert load_config(str(Path(__file__).parent.parent.parent / 'tests' / file_path)) is not None
 
 
+def test_load_config_accepts_whisparr_type(tmp_path: Any) -> None:
+    """Test load_config accepts whisparr as a valid instance type."""
+    config_file = tmp_path / 'config.yaml'
+    config_file.write_text(
+        'instances:\n'
+        '  my-whisparr:\n'
+        '    type: whisparr\n'
+        '    url: http://whisparr:6969\n'
+        '    api_key: testkey\n'
+        '    enabled: true\n'
+    )
+    result = load_config(str(config_file))
+    assert result['instances']['whisparr'][0]['name'] == 'my-whisparr'
+
+
 def test_load_config_empty_yaml_treats_as_empty_dict(tmp_path: Any) -> None:
     """Test load_config treats an empty YAML file as an empty config dict."""
     empty_file = tmp_path / 'empty.yaml'

@@ -9,6 +9,7 @@ from rangarr.clients.arr import ArrClient
 from rangarr.clients.arr import LidarrClient
 from rangarr.clients.arr import RadarrClient
 from rangarr.clients.arr import SonarrClient
+from rangarr.clients.arr import WhisparrClient
 from tests.conftest import FIXED_NOW
 
 
@@ -382,37 +383,42 @@ class ClientBuilder:
         """Build and return the client instance."""
         return self._class(name=self._name, url=self._url, api_key=self._api_key, settings=self._settings)
 
-    def lidarr(self) -> 'ClientBuilder':
+    def lidarr(self) -> Self:
         """Set client class to LidarrClient."""
         self._class = LidarrClient
         return self
 
-    def radarr(self) -> 'ClientBuilder':
+    def radarr(self) -> Self:
         """Set client class to RadarrClient."""
         self._class = RadarrClient
         return self
 
-    def sonarr(self) -> 'ClientBuilder':
+    def sonarr(self) -> Self:
         """Set client class to SonarrClient."""
         self._class = SonarrClient
         return self
 
-    def with_exclude_tags(self, *names: str) -> 'ClientBuilder':
+    def whisparr(self) -> Self:
+        """Set client class to WhisparrClient."""
+        self._class = WhisparrClient
+        return self
+
+    def with_exclude_tags(self, *names: str) -> Self:
         """Set exclude_tags in client settings."""
         self._settings['exclude_tags'] = list(names)
         return self
 
-    def with_include_tags(self, *names: str) -> 'ClientBuilder':
+    def with_include_tags(self, *names: str) -> Self:
         """Set include_tags in client settings."""
         self._settings['include_tags'] = list(names)
         return self
 
-    def with_name(self, name: str) -> 'ClientBuilder':
+    def with_name(self, name: str) -> Self:
         """Set the client name."""
         self._name = name
         return self
 
-    def with_settings(self, **settings: Any) -> 'ClientBuilder':
+    def with_settings(self, **settings: Any) -> Self:
         """Set client settings."""
         self._settings = settings
         return self

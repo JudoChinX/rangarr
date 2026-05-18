@@ -1,0 +1,57 @@
+{
+  "page": 1,
+  "pageSize": 10,
+  "sortKey": "episodes.releaseDate",
+  "sortDirection": "descending",
+  "totalRecords": 3,
+  "records": [
+    {
+      "seriesId": 1,
+      "episodeFileId": 0,
+      "seasonNumber": 1,
+      "episodeNumber": 1,
+      "title": "Scene Title One",
+      "series": {
+        "id": 1,
+        "title": "Performer One",
+        "tags": []
+      },
+      "releaseDate": "2024-01-15",
+      "hasFile": false,
+      "monitored": true,
+      "id": 1
+    },
+    {
+      "seriesId": 2,
+      "episodeFileId": 0,
+      "seasonNumber": 1,
+      "episodeNumber": 1,
+      "title": "Scene Title Two",
+      "series": {
+        "id": 2,
+        "title": "Performer Two",
+        "tags": []
+      },
+      "releaseDate": "2024-02-10",
+      "hasFile": false,
+      "monitored": true,
+      "id": 2
+    },
+    {
+      "seriesId": 3,
+      "episodeFileId": 0,
+      "seasonNumber": 1,
+      "episodeNumber": 1,
+      "title": "Scene Title Three",
+      "series": {
+        "id": 3,
+        "title": "Performer Three",
+        "tags": []
+      },
+      "releaseDate": "2024-03-05",
+      "hasFile": false,
+      "monitored": true,
+      "id": 3
+    }
+  ]
+}

@@ -1,0 +1,214 @@
+[
+  {
+    "name": "HD Quality",
+    "upgradeAllowed": true,
+    "cutoff": 1001,
+    "items": [
+      {
+        "quality": {
+          "id": 0,
+          "name": "Unknown",
+          "source": "unknown",
+          "resolution": 0
+        },
+        "items": [],
+        "allowed": false
+      },
+      {
+        "quality": {
+          "id": 1,
+          "name": "SDTV",
+          "source": "television",
+          "resolution": 480
+        },
+        "items": [],
+        "allowed": false
+      },
+      {
+        "quality": {
+          "id": 4,
+          "name": "HDTV-720p",
+          "source": "television",
+          "resolution": 720
+        },
+        "items": [],
+        "allowed": false
+      },
+      {
+        "quality": {
+          "id": 9,
+          "name": "HDTV-1080p",
+          "source": "television",
+          "resolution": 1080
+        },
+        "items": [],
+        "allowed": false
+      },
+      {
+        "name": "480p Quality",
+        "items": [
+          {
+            "quality": {
+              "id": 2,
+              "name": "DVD",
+              "source": "dvd",
+              "resolution": 480
+            },
+            "items": [],
+            "allowed": true
+          },
+          {
+            "quality": {
+              "id": 8,
+              "name": "WEBDL-480p",
+              "source": "web",
+              "resolution": 480
+            },
+            "items": [],
+            "allowed": true
+          }
+        ],
+        "allowed": true,
+        "id": 1003
+      },
+      {
+        "name": "720p Quality",
+        "items": [
+          {
+            "quality": {
+              "id": 5,
+              "name": "WEBDL-720p",
+              "source": "web",
+              "resolution": 720
+            },
+            "items": [],
+            "allowed": true
+          },
+          {
+            "quality": {
+              "id": 14,
+              "name": "WEBRip-720p",
+              "source": "webRip",
+              "resolution": 720
+            },
+            "items": [],
+            "allowed": true
+          }
+        ],
+        "allowed": true,
+        "id": 1002
+      },
+      {
+        "name": "1080p Quality",
+        "items": [
+          {
+            "quality": {
+              "id": 3,
+              "name": "WEBDL-1080p",
+              "source": "web",
+              "resolution": 1080
+            },
+            "items": [],
+            "allowed": true
+          },
+          {
+            "quality": {
+              "id": 15,
+              "name": "WEBRip-1080p",
+              "source": "webRip",
+              "resolution": 1080
+            },
+            "items": [],
+            "allowed": true
+          }
+        ],
+        "allowed": true,
+        "id": 1001
+      }
+    ],
+    "minFormatScore": 0,
+    "cutoffFormatScore": 0,
+    "minUpgradeFormatScore": 0,
+    "formatItems": [],
+    "id": 1
+  },
+  {
+    "name": "SD Quality",
+    "upgradeAllowed": true,
+    "cutoff": 1003,
+    "items": [
+      {
+        "quality": {
+          "id": 0,
+          "name": "Unknown",
+          "source": "unknown",
+          "resolution": 0
+        },
+        "items": [],
+        "allowed": false
+      },
+      {
+        "quality": {
+          "id": 1,
+          "name": "SDTV",
+          "source": "television",
+          "resolution": 480
+        },
+        "items": [],
+        "allowed": false
+      },
+      {
+        "quality": {
+          "id": 4,
+          "name": "HDTV-720p",
+          "source": "television",
+          "resolution": 720
+        },
+        "items": [],
+        "allowed": false
+      },
+      {
+        "quality": {
+          "id": 9,
+          "name": "HDTV-1080p",
+          "source": "television",
+          "resolution": 1080
+        },
+        "items": [],
+        "allowed": false
+      },
+      {
+        "name": "480p Quality",
+        "items": [
+          {
+            "quality": {
+              "id": 2,
+              "name": "DVD",
+              "source": "dvd",
+              "resolution": 480
+            },
+            "items": [],
+            "allowed": true
+          },
+          {
+            "quality": {
+              "id": 8,
+              "name": "WEBDL-480p",
+              "source": "web",
+              "resolution": 480
+            },
+            "items": [],
+            "allowed": true
+          }
+        ],
+        "allowed": true,
+        "id": 1003
+      }
+    ],
+    "minFormatScore": 0,
+    "cutoffFormatScore": 0,
+    "minUpgradeFormatScore": 0,
+    "formatItems": [],
+    "id": 2
+  }
+]

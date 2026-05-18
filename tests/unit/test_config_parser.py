@@ -193,11 +193,11 @@ _parse_config_cases = {
                 }
             }
         },
-        'expected_error': "Invalid type 'plex' for instance 'test'. Must be one of: radarr, sonarr, lidarr.",
+        'expected_error': "Invalid type 'plex' for instance 'test'. Must be one of: lidarr, radarr, sonarr, whisparr.",
     },
     'empty_instances_dict': {
         'config_data': {'instances': {}},
-        'expected_error': "No instances defined under 'instances'. Add at least one Radarr, Sonarr, or Lidarr instance.",
+        'expected_error': "No instances defined under 'instances'. Add at least one Lidarr, Radarr, Sonarr, or Whisparr instance.",
     },
     'missing_batch_size_unlimited': {
         'config_data': {
@@ -480,7 +480,7 @@ _parse_config_cases = {
                 },
             }
         },
-        'expected_error': "No instances defined under 'instances'. Add at least one Radarr, Sonarr, or Lidarr instance.",
+        'expected_error': "No instances defined under 'instances'. Add at least one Lidarr, Radarr, Sonarr, or Whisparr instance.",
     },
     'yaml_style_mapping': {
         'config_data': {
