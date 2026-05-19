@@ -184,7 +184,7 @@ def _parse_instance(name: str, config: dict) -> tuple[str, dict] | None:
     if inst_type not in VALID_ARR_TYPES:
         logger.error(
             f"Unsupported instance type '{inst_type}' for instance '{name}'. "
-            f"Must be one of: {', '.join(VALID_ARR_TYPES)}. Skipping this instance."
+            f'Must be one of: {", ".join(VALID_ARR_TYPES)}. Skipping this instance.'
         )
         return None
     instance['name'] = name
