@@ -45,7 +45,7 @@ To be absolutely clear, Rangarr does not and will never:
 
 ## Architecture Overview
 
-Rangarr is a ~1,707-line Python service with three core modules:
+Rangarr is a ~1,762-line Python service with three core modules:
 
 ```
 rangarr/
@@ -96,9 +96,10 @@ config.yaml → config_parser.py → main.py → ArrClient instances → *arr AP
 
 **Classes:**
 - `ArrClient`: Abstract base class with shared fetch, client-side sorting, and filtering logic.
+- `LidarrClient`: Lidarr-specific implementation (uses `/api/v1/` endpoints).
 - `RadarrClient`: Radarr-specific implementation.
 - `SonarrClient`: Sonarr-specific implementation.
-- `LidarrClient`: Lidarr-specific implementation (uses `/api/v1/` endpoints).
+- `WhisparrClient`: Whisparr v3 implementation; extends `SonarrClient` with performer/scene title formatting.
 
 **Key Methods:**
 - `get_media_to_search()`: Fetches, sorts, and filters missing/upgrade items from wanted endpoints. Returns the full backlog for global allocation.
@@ -107,8 +108,8 @@ config.yaml → config_parser.py → main.py → ArrClient instances → *arr AP
 - `_get_custom_format_score_unmet_records()`: Orchestrates the supplemental upgrade pass — fetches quality profiles, then delegates to `_get_custom_format_upgrade_records()`.
 - `_get_custom_format_upgrade_records()`: Per-client override that finds items where `customFormatScore` is below the profile's `cutoffFormatScore`. Monitored status is enforced for all records (movies, series, and episodes) before scoring. No-op in base class and `LidarrClient`.
 - `_fetch_movie_file_scores()`: Radarr — fetches custom format scores for a list of movie file IDs, batched at 100 IDs per request.
-- `_fetch_episode_file_scores()`: Sonarr — fetches episode file IDs for a series where the score is below the cutoff.
-- `trigger_search()`: Dispatches search commands via POST to `/api/v3/command` (Radarr/Sonarr) or `/api/v1/command` (Lidarr), staggered by `stagger_interval_seconds`.
+- `_fetch_episode_file_scores()`: Sonarr and Whisparr — fetches episode file IDs for a series where the score is below the cutoff.
+- `trigger_search()`: Dispatches search commands via POST to `/api/v3/command` (Radarr/Sonarr/Whisparr) or `/api/v1/command` (Lidarr), staggered by `stagger_interval_seconds`.
 - `_fetch_unlimited()`: Low-level paged HTTP fetcher that collects all records across pages (uses requests.Session).
 - `_fetch_list()`: Low-level single-page HTTP fetcher for non-paginated list endpoints.
 - `_sort_records_client_side()`: Sorts fetched records in-place according to `search_order`.
@@ -122,19 +123,19 @@ config.yaml → config_parser.py → main.py → ArrClient instances → *arr AP
 
 | Endpoint | Method | Purpose | Frequency | Read/Write |
 |----------|--------|---------|-----------|------------|
-| `/api/v3/wanted/missing` (Radarr/Sonarr), `/api/v1/wanted/missing` (Lidarr) | GET | Fetch missing items (`monitored=true`) | Per cycle per instance | Read-only |
-| `/api/v3/wanted/cutoff` (Radarr/Sonarr), `/api/v1/wanted/cutoff` (Lidarr) | GET | Fetch upgrade candidates (`monitored=true`) | Per cycle per instance | Read-only |
-| `/api/v3/qualityprofile` (Radarr/Sonarr) | GET | Fetch quality profiles to identify cutoff format score thresholds | Per cycle per instance | Read-only |
+| `/api/v3/wanted/missing` (Radarr/Sonarr/Whisparr), `/api/v1/wanted/missing` (Lidarr) | GET | Fetch missing items (`monitored=true`) | Per cycle per instance | Read-only |
+| `/api/v3/wanted/cutoff` (Radarr/Sonarr/Whisparr), `/api/v1/wanted/cutoff` (Lidarr) | GET | Fetch upgrade candidates (`monitored=true`) | Per cycle per instance | Read-only |
+| `/api/v3/qualityprofile` (Radarr/Sonarr/Whisparr) | GET | Fetch quality profiles to identify cutoff format score thresholds | Per cycle per instance | Read-only |
 | `/api/v3/movie` (Radarr) | GET | Fetch movies to find upgrade candidates (skips unmonitored) | Per cycle when profiles have non-zero cutoff format scores | Read-only |
 | `/api/v3/moviefile` (Radarr) | GET | Fetch movie file scores to compare against profile cutoff | Per cycle when movie candidates exist, batched at 100 IDs | Read-only |
-| `/api/v3/series` (Sonarr) | GET | Fetch series — find upgrade candidates (skips unmonitored); determine air status | Per cycle per Sonarr instance when either condition applies | Read-only |
-| `/api/v3/episodefile` (Sonarr) | GET | Fetch episode file scores to compare against profile cutoff | Per series with a tracked profile, per cycle | Read-only |
-| `/api/v3/episode` (Sonarr) | GET | Fetch episodes with files (skips unmonitored) | Per series with low-scoring files, per cycle | Read-only |
-| `/api/v3/command` (Radarr/Sonarr), `/api/v1/command` (Lidarr) | POST | Trigger search command | Per item | **Write** |
+| `/api/v3/series` (Sonarr/Whisparr) | GET | Fetch series — find upgrade candidates (skips unmonitored); determine air status | Per cycle per instance when either condition applies | Read-only |
+| `/api/v3/episodefile` (Sonarr/Whisparr) | GET | Fetch episode file scores to compare against profile cutoff | Per series with a tracked profile, per cycle | Read-only |
+| `/api/v3/episode` (Sonarr/Whisparr) | GET | Fetch episodes with files (skips unmonitored) | Per series with low-scoring files, per cycle | Read-only |
+| `/api/v3/command` (Radarr/Sonarr/Whisparr), `/api/v1/command` (Lidarr) | POST | Trigger search command | Per item | **Write** |
 
 **Search Commands Sent:**
 - Radarr: `{"name": "MoviesSearch", "movieIds": [...]}`
-- Sonarr: `{"name": "EpisodeSearch", "episodeIds": [...]}` (or `{"name": "SeasonSearch", "seriesId": ..., "seasonNumber": ...}` when `season_packs` is `true`, an integer count threshold is met, or a float ratio threshold is met; airing seasons and seasons that don't meet the configured threshold always use `EpisodeSearch`)
+- Sonarr/Whisparr: `{"name": "EpisodeSearch", "episodeIds": [...]}` (or `{"name": "SeasonSearch", "seriesId": ..., "seasonNumber": ...}` when `season_packs` is `true`, an integer count threshold is met, or a float ratio threshold is met; airing seasons and seasons that don't meet the configured threshold always use `EpisodeSearch`)
 - Lidarr: `{"name": "AlbumSearch", "albumIds": [...]}`
 
 **Data Accessed:**
@@ -192,7 +193,7 @@ Rangarr operates entirely within your local network (or wherever you host your *
 
 ### 1. Security Through Simplicity
 
-**Decision:** ~1,707 lines of core Python code, zero external dependencies beyond requests and PyYAML.
+**Decision:** ~1,762 lines of core Python code, zero external dependencies beyond requests and PyYAML.
 
 **Why:** Small codebases are auditable. Every line of code is a potential attack surface. By keeping the codebase minimal, security reviewers can read and understand the entire project in under an hour.
 
@@ -219,7 +220,7 @@ Rangarr operates entirely within your local network (or wherever you host your *
 
 ### 4. Test Coverage as Documentation
 
-**Decision:** 411 tests covering all code paths, including error conditions.
+**Decision:** 432 tests covering all code paths, including error conditions.
 
 **Why:** Tests serve three purposes:
 1. Prevent regressions.
@@ -317,7 +318,7 @@ Unit tests (co-located with source):
 - `test_main.py`: Orchestration loop with mocked clients.
 - `clients/test_arr_base.py`: Shared ArrClient base class behaviour.
 - `clients/test_arr_client_sort.py`: Client-side sorting for all search orders across all client types.
-- `clients/test_radarr.py`, `clients/test_sonarr.py`, `clients/test_lidarr.py`: Client-specific logic with mocked HTTP responses.
+- `clients/test_radarr.py`, `clients/test_sonarr.py`, `clients/test_lidarr.py`, `clients/test_whisparr.py`: Client-specific logic with mocked HTTP responses.
 - `clients/test_sonarr_sort.py`: Sorting and interleaving correctness for Sonarr season pack results.
 
 Integration / system tests (`tests/`):
@@ -346,10 +347,10 @@ Both are widely-used, well-maintained libraries with public security disclosure 
 
 ## File Sizes
 
-- `main.py`: ~517 lines
-- `config_parser.py`: ~412 lines
-- `clients/arr.py`: ~778 lines
-- **Total:** ~1,707 lines of Python (excluding tests/comments)
+- `main.py`: ~547 lines
+- `config_parser.py`: ~414 lines
+- `clients/arr.py`: ~801 lines
+- **Total:** ~1,762 lines of Python (excluding tests/comments)
 
 The small codebase size makes comprehensive security auditing feasible.
 
