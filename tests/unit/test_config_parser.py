@@ -1,5 +1,6 @@
 """Tests for config_parser.py configuration validation and schema."""
 
+import logging
 import re
 from typing import Any
 
@@ -193,7 +194,7 @@ _parse_config_cases = {
                 }
             }
         },
-        'expected_error': "Invalid type 'plex' for instance 'test'. Must be one of: lidarr, radarr, sonarr, whisparr.",
+        'expected_error': "No instances defined under 'instances'. Add at least one Lidarr, Radarr, Sonarr, or Whisparr instance.",
     },
     'empty_instances_dict': {
         'config_data': {'instances': {}},
@@ -1168,3 +1169,21 @@ def test_get_setting_default_raises_on_invalid_setting() -> None:
     """Test get_setting_default raises KeyError for undefined settings."""
     with pytest.raises(KeyError):
         get_setting_default('nonexistent_setting')
+
+
+def test_parse_config_unsupported_instance_type_logs_error(caplog: pytest.LogCaptureFixture) -> None:
+    """Test parse_config logs an error and skips instances with unsupported types."""
+    config_data = {
+        'instances': {
+            'my-plex': {
+                'type': 'plex',
+                'url': 'http://test',
+                'api_key': 'testkey',
+                'enabled': True,
+            }
+        }
+    }
+    with caplog.at_level(logging.ERROR, logger='rangarr.config_parser'):
+        with pytest.raises(ValueError):
+            parse_config(config_data)
+    assert "Unsupported instance type 'plex' for instance 'my-plex'" in caplog.text

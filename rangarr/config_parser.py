@@ -182,9 +182,11 @@ def _parse_instance(name: str, config: dict) -> tuple[str, dict] | None:
     if not inst_type:
         raise ValueError(f"Missing 'type' field for instance '{name}'. Must be one of: {', '.join(VALID_ARR_TYPES)}.")
     if inst_type not in VALID_ARR_TYPES:
-        raise ValueError(
-            f"Invalid type '{inst_type}' for instance '{name}'. Must be one of: {', '.join(VALID_ARR_TYPES)}."
+        logger.error(
+            f"Unsupported instance type '{inst_type}' for instance '{name}'. "
+            f"Must be one of: {', '.join(VALID_ARR_TYPES)}. Skipping this instance."
         )
+        return None
     instance['name'] = name
     for field in ('url', 'api_key'):
         if not instance.get(field):
