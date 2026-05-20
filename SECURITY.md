@@ -27,18 +27,20 @@ The only direct dependencies are [`requests`](https://github.com/psf/requests) a
 
 ## What Rangarr Accesses
 
-Rangarr interacts exclusively with your configured Radarr, Sonarr, and Lidarr instances through their official APIs. Specifically:
+Rangarr interacts exclusively with your configured Radarr, Sonarr, Lidarr, and Whisparr instances through their official APIs. Specifically:
+
+> **Note:** Whisparr v3 shares the same API architecture and security profile as Sonarr. Any endpoint or data access described for Sonarr applies equally to Whisparr v3 unless otherwise noted.
 
 **API Endpoints Called:**
 - `GET /api/v3/wanted/missing` (or `/api/v1/wanted/missing` for Lidarr) — Retrieves lists of missing media items (not yet downloaded)
 - `GET /api/v3/wanted/cutoff` (or `/api/v1/wanted/cutoff` for Lidarr) — Retrieves lists of items eligible for quality upgrades
-- `GET /api/v3/qualityprofile` (Radarr/Sonarr only) — Reads quality profile definitions to identify cutoff format score thresholds; only called when the supplemental upgrade pass is active
+- `GET /api/v3/qualityprofile` (Radarr, Sonarr, and Whisparr only) — Reads quality profile definitions to identify cutoff format score thresholds; only called when the supplemental upgrade pass is active
 - `GET /api/v3/movie` (Radarr only) — Reads the full movie list to find custom format score upgrade candidates; only called when profiles have non-zero cutoff format scores
 - `GET /api/v3/moviefile` (Radarr only) — Reads movie file metadata (scores only) to compare against profile cutoffs; batched at 100 IDs per request
-- `GET /api/v3/series` (Sonarr only) — Reads the full series list for two purposes: (1) finding custom format score upgrade candidates when profiles have non-zero cutoff format scores; (2) determining season air status when `season_packs: true` to fall back to individual episode searches for seasons that have not finished airing
-- `GET /api/v3/episodefile` (Sonarr only) — Reads episode file metadata (scores only) to compare against profile cutoffs; called once per series with a tracked profile
-- `GET /api/v3/episode` (Sonarr only) — Reads episode list for series where low-scoring files were found; used to map file IDs back to episode records
-- `POST /api/v3/command` (or `/api/v1/command` for Lidarr) — Sends search commands (`MoviesSearch` for Radarr, `EpisodeSearch` or `SeasonSearch` for Sonarr, `AlbumSearch` for Lidarr)
+- `GET /api/v3/series` (Sonarr and Whisparr only) — Reads the full series list for two purposes: (1) finding custom format score upgrade candidates when profiles have non-zero cutoff format scores; (2) determining season air status when `season_packs: true` to fall back to individual episode searches for seasons that have not finished airing
+- `GET /api/v3/episodefile` (Sonarr and Whisparr only) — Reads episode file metadata (scores only) to compare against profile cutoffs; called once per series with a tracked profile
+- `GET /api/v3/episode` (Sonarr and Whisparr only) — Reads episode list for series where low-scoring files were found; used to map file IDs back to episode records
+- `POST /api/v3/command` (or `/api/v1/command` for Lidarr) — Sends search commands (`MoviesSearch` for Radarr, `EpisodeSearch` or `SeasonSearch` for Sonarr/Whisparr, `AlbumSearch` for Lidarr)
 
 **Data Accessed:**
 - Media metadata only: titles, IDs, air dates, search timestamps, quality profile IDs, custom format scores
