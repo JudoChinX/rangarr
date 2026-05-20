@@ -1,0 +1,61 @@
+services:
+  sonarr:
+    image: linuxserver/sonarr:latest
+    container_name: rangarr-test-sonarr
+    hostname: sonarr
+    environment:
+      TZ: UTC
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8989/ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 15
+    ports:
+      - "8989"
+    restart: unless-stopped
+  radarr:
+    image: linuxserver/radarr:latest
+    container_name: rangarr-test-radarr
+    hostname: radarr
+    environment:
+      TZ: UTC
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:7878/ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 15
+    ports:
+      - "7878"
+    restart: unless-stopped
+  lidarr:
+    image: linuxserver/lidarr:latest
+    container_name: rangarr-test-lidarr
+    hostname: lidarr
+    environment:
+      TZ: UTC
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8686/ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 15
+    ports:
+      - "8686"
+    restart: unless-stopped
+  whisparr:
+    image: ghcr.io/thespad/whisparr:latest
+    container_name: rangarr-test-whisparr
+    hostname: whisparr
+    environment:
+      TZ: UTC
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:6969/ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 15
+    ports:
+      - "6969"
+    restart: unless-stopped
+
+networks:
+  default:
+    name: rangarr-test-net
