@@ -10,16 +10,16 @@ from tests.builders import SonarrRecordBuilder
 
 _get_record_title_cases = {
     'full_record_returns_performer_and_scene_title': {
-        'record': SonarrRecordBuilder().with_series('Jane Doe').with_title('Test Scene').build(),
-        'expected': 'Jane Doe - Test Scene',
+        'record': SonarrRecordBuilder().with_series('Test Performer').with_title('Test Scene').build(),
+        'expected': 'Test Performer - Test Scene',
     },
     'missing_series_falls_back_to_unknown_performer': {
         'record': {'title': 'Test Scene'},
         'expected': 'Unknown Performer - Test Scene',
     },
     'missing_title_key_falls_back_to_unknown_scene': {
-        'record': {'series': {'title': 'Jane Doe'}},
-        'expected': 'Jane Doe - Unknown Scene',
+        'record': {'series': {'title': 'Test Performer'}},
+        'expected': 'Test Performer - Unknown Scene',
     },
 }
 
@@ -40,14 +40,14 @@ _get_release_date_cases = {
 
 _get_season_title_cases = {
     'full_record_zero_pads_single_digit_season': {
-        'record': SonarrRecordBuilder().with_series('Jane Doe').build(),
+        'record': SonarrRecordBuilder().with_series('Test Performer').build(),
         'season_number': 3,
-        'expected': 'Jane Doe - Season 03',
+        'expected': 'Test Performer - Season 03',
     },
     'full_record_two_digit_season_not_padded': {
-        'record': SonarrRecordBuilder().with_series('Jane Doe').build(),
+        'record': SonarrRecordBuilder().with_series('Test Performer').build(),
         'season_number': 12,
-        'expected': 'Jane Doe - Season 12',
+        'expected': 'Test Performer - Season 12',
     },
     'missing_series_falls_back_to_unknown_performer': {
         'record': {'title': 'Test Scene'},
@@ -79,7 +79,7 @@ def test_get_media_to_search_returns_released_scenes() -> None:
         {
             'id': 1,
             'title': 'Past Scene',
-            'series': {'id': 10, 'title': 'Jane Doe', 'tags': []},
+            'series': {'id': 10, 'title': 'Test Performer', 'tags': []},
             'seasonNumber': 1,
             'episodeNumber': 1,
             'releaseDate': '2025-01-01',
@@ -92,7 +92,7 @@ def test_get_media_to_search_returns_released_scenes() -> None:
     ):
         items = client.get_media_to_search(missing_batch_size=10, upgrade_batch_size=0)
     assert len(items) == 1
-    assert items[0][2] == 'Jane Doe - Past Scene'
+    assert items[0][2] == 'Test Performer - Past Scene'
 
 
 @pytest.mark.parametrize(

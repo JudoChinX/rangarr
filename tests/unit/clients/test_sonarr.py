@@ -588,14 +588,14 @@ def test_sonarr_supplemental_injects_series_into_episode_record() -> None:
     """Test SonarrClient._get_custom_format_upgrade_records injects series data into returned episodes."""
     client = ClientBuilder().sonarr().build()
     profile_cutoffs = {1: 100}
-    series_list = [SonarrSeriesRecordBuilder().with_id(1).with_profile(1).with_title('My Show').build()]
+    series_list = [SonarrSeriesRecordBuilder().with_id(1).with_profile(1).with_title('Test Show').build()]
     episode_files = [
         SonarrEpisodeFileRecordBuilder().with_id(10).with_series_id(1).with_score(0).with_episode_ids([100]).build(),
     ]
     episodes = [
         SonarrRecordBuilder()
         .with_id(100)
-        .with_series('My Show')
+        .with_series('Test Show')
         .with_series_id(1)
         .with_episode(1, 1)
         .aired()
@@ -607,7 +607,7 @@ def test_sonarr_supplemental_injects_series_into_episode_record() -> None:
     with patch.object(client, '_fetch_list', side_effect=mock_fetch):
         result = client._get_custom_format_upgrade_records(profile_cutoffs)
     assert result[0]['series']['id'] == 1
-    assert result[0]['series']['title'] == 'My Show'
+    assert result[0]['series']['title'] == 'Test Show'
 
 
 def test_sonarr_supplemental_skips_series_on_untracked_profile() -> None:
