@@ -6,61 +6,51 @@
   "totalRecords": 102,
   "records": [
     {
-      "title": "Zero Hour: Massacre at Columbine High",
-      "originalTitle": "Zero Hour: Massacre at Columbine High",
+      "title": "Test Movie 01",
+      "originalTitle": "Test Movie 01",
       "originalLanguage": {
         "id": 1,
         "name": "English"
       },
       "alternateTitles": [],
       "secondaryYearSourceId": 0,
-      "sortTitle": "zero hour massacre at columbine high",
+      "sortTitle": "test movie 01",
       "sizeOnDisk": 0,
       "status": "released",
-      "overview": "This movie covers the final hour leading up to the Columbine High Massacre. On April 20, 1999, two boys from Columbine High School in Colorado embarked on a massacre and killed 12 students, one teacher, and injured 21 other students, before turning the guns on themselves.",
+      "overview": "",
       "digitalRelease": "2004-09-12T00:00:00Z",
       "releaseDate": "2004-09-12T00:00:00Z",
       "images": [
         {
           "coverType": "poster",
           "url": "REDACTED",
-          "remoteUrl": "https://image.tmdb.org/t/p/original/7YZmc8V7ZOd2Bgg4oR749dhGIqK.jpg"
+          "remoteUrl": "REDACTED"
         },
         {
           "coverType": "fanart",
           "url": "REDACTED",
-          "remoteUrl": "https://image.tmdb.org/t/p/original/rbuOzUIi4DcGZ5Sz3fPQSiw94bL.jpg"
+          "remoteUrl": "REDACTED"
         }
       ],
       "website": "",
       "year": 2004,
       "youTubeTrailerId": "",
       "studio": "",
-      "path": "/media/movies/Zero Hour - Massacre at Columbine High (2004)",
+      "path": "/tmp/media/movies/Test Movie 01 (2004)",
       "qualityProfileId": 11,
       "hasFile": false,
       "movieFileId": 0,
       "monitored": true,
       "minimumAvailability": "released",
       "isAvailable": true,
-      "folderName": "/media/movies/Zero Hour - Massacre at Columbine High (2004)",
+      "folderName": "/tmp/media/movies/Test Movie 01 (2004)",
       "runtime": 52,
-      "cleanTitle": "zerohourmassacreatcolumbinehigh",
-      "imdbId": "tt0754392",
-      "tmdbId": 173100,
-      "titleSlug": "173100",
-      "genres": [
-        "Documentary",
-        "Drama",
-        "Crime",
-        "TV Movie",
-        "History"
-      ],
-      "keywords": [
-        "school shooting",
-        "tragedy",
-        "zero hour"
-      ],
+      "cleanTitle": "testmovie01",
+      "imdbId": "tt10000001",
+      "tmdbId": 10001,
+      "titleSlug": "10001",
+      "genres": [],
+      "keywords": [],
       "tags": [
         1
       ],
@@ -92,18 +82,18 @@
       "id": 1373
     },
     {
-      "title": "X-Men Origins: Wolverine",
-      "originalTitle": "X-Men Origins: Wolverine",
+      "title": "Test Movie 02",
+      "originalTitle": "Test Movie 02",
       "originalLanguage": {
         "id": 1,
         "name": "English"
       },
       "alternateTitles": [],
       "secondaryYearSourceId": 0,
-      "sortTitle": "xmen origins wolverine",
+      "sortTitle": "test movie 02",
       "sizeOnDisk": 0,
       "status": "released",
-      "overview": "After seeking to live a normal life, Logan sets out to avenge the death of his girlfriend by undergoing the mutant Weapon X program and becoming Wolverine.",
+      "overview": "",
       "inCinemas": "2009-04-28T00:00:00Z",
       "physicalRelease": "2009-04-29T00:00:00Z",
       "digitalRelease": "2009-04-29T00:00:00Z",
@@ -112,51 +102,34 @@
         {
           "coverType": "poster",
           "url": "REDACTED",
-          "remoteUrl": "https://image.tmdb.org/t/p/original/yj8LbTju1p7CUJg7US2unSBk33s.jpg"
+          "remoteUrl": "REDACTED"
         },
         {
           "coverType": "fanart",
           "url": "REDACTED",
-          "remoteUrl": "https://image.tmdb.org/t/p/original/p4GzAzjlL7lXIVGvayg7zvzGTSi.jpg"
+          "remoteUrl": "REDACTED"
         }
       ],
-      "website": "https://www.20thcenturystudios.com/movies/x-men-origins-wolverine",
+      "website": "",
       "year": 2009,
-      "youTubeTrailerId": "8TQ-gD4UCmI",
-      "studio": "The Donners' Company",
-      "path": "/media/movies/X-Men Origins - Wolverine (2009)",
+      "youTubeTrailerId": "",
+      "studio": "",
+      "path": "/tmp/media/movies/Test Movie 02 (2009)",
       "qualityProfileId": 11,
       "hasFile": false,
       "movieFileId": 0,
       "monitored": true,
       "minimumAvailability": "released",
       "isAvailable": true,
-      "folderName": "/media/movies/X-Men Origins - Wolverine (2009)",
+      "folderName": "/tmp/media/movies/Test Movie 02 (2009)",
       "runtime": 107,
-      "cleanTitle": "xmenoriginswolverine",
-      "imdbId": "tt0458525",
-      "tmdbId": 2080,
-      "titleSlug": "2080",
+      "cleanTitle": "testmovie02",
+      "imdbId": "tt10000002",
+      "tmdbId": 10002,
+      "titleSlug": "10002",
       "certification": "PG-13",
-      "genres": [
-        "Adventure",
-        "Action",
-        "Science Fiction"
-      ],
-      "keywords": [
-        "aftercreditsstinger",
-        "army",
-        "based on comic",
-        "boxer",
-        "corruption",
-        "duringcreditsstinger",
-        "excited",
-        "mutant",
-        "powerful",
-        "prequel",
-        "spin off",
-        "superhero"
-      ],
+      "genres": [],
+      "keywords": [],
       "tags": [
         1
       ],
@@ -188,10 +161,6 @@
           "type": "user"
         }
       },
-      "collection": {
-        "title": "The Wolverine Collection",
-        "tmdbId": 453993
-      },
       "popularity": 0.9163,
       "lastSearchTime": "2026-04-22T00:56:18Z",
       "statistics": {
@@ -202,69 +171,51 @@
       "id": 2220
     },
     {
-      "title": "Winnie-the-Pooh: Blood and Honey 3",
-      "originalTitle": "Winnie-the-Pooh: Blood and Honey 3",
+      "title": "Test Movie 03",
+      "originalTitle": "Test Movie 03",
       "originalLanguage": {
         "id": 1,
         "name": "English"
       },
       "alternateTitles": [],
       "secondaryYearSourceId": 0,
-      "sortTitle": "winniethepooh blood and honey 3",
+      "sortTitle": "test movie 03",
       "sizeOnDisk": 0,
       "status": "announced",
-      "overview": "Plot TBA. The third installment in the Blood and Honey series. New characters will be introduced, including Rabbit, the Heffalumps and the Woozles.",
+      "overview": "",
       "inCinemas": "2026-12-24T00:00:00Z",
       "releaseDate": "2027-03-24T00:00:00Z",
       "images": [
         {
           "coverType": "poster",
           "url": "REDACTED",
-          "remoteUrl": "https://image.tmdb.org/t/p/original/fmFIEe3IejfMx71VIpZDdSCYCxX.jpg"
+          "remoteUrl": "REDACTED"
         },
         {
           "coverType": "fanart",
           "url": "REDACTED",
-          "remoteUrl": "https://image.tmdb.org/t/p/original/2MEISMBbc8t65x7ff3sRxHOmkDc.jpg"
+          "remoteUrl": "REDACTED"
         }
       ],
       "website": "",
       "year": 2026,
       "youTubeTrailerId": "",
-      "studio": "Jagged Edge Productions",
-      "path": "/media/movies/Winnie-the-Pooh - Blood and Honey 3 (2026)",
+      "studio": "",
+      "path": "/tmp/media/movies/Test Movie 03 (2026)",
       "qualityProfileId": 11,
       "hasFile": false,
       "movieFileId": 0,
       "monitored": true,
       "minimumAvailability": "released",
       "isAvailable": false,
-      "folderName": "/media/movies/Winnie-the-Pooh - Blood and Honey 3 (2026)",
+      "folderName": "/tmp/media/movies/Test Movie 03 (2026)",
       "runtime": 0,
-      "cleanTitle": "winniepoohbloodhoney3",
-      "imdbId": "tt31945129",
-      "tmdbId": 1268053,
-      "titleSlug": "1268053",
-      "genres": [
-        "Horror",
-        "Thriller",
-        "Science Fiction"
-      ],
-      "keywords": [
-        "animal horror",
-        "based on children's book",
-        "demon",
-        "gore",
-        "independent film",
-        "mutant",
-        "post-traumatic stress disorder (ptsd)",
-        "psychotic villain",
-        "revenge",
-        "sequel",
-        "slasher",
-        "the twisted childhood universe (tcu)",
-        "winnie the pooh"
-      ],
+      "cleanTitle": "testmovie03",
+      "imdbId": "tt10000003",
+      "tmdbId": 10003,
+      "titleSlug": "10003",
+      "genres": [],
+      "keywords": [],
       "tags": [
         1
       ],
@@ -276,10 +227,6 @@
           "type": "user"
         }
       },
-      "collection": {
-        "title": "Winnie-the-Pooh (Horror) Collection",
-        "tmdbId": 1079486
-      },
       "popularity": 3.2235,
       "lastSearchTime": "2026-03-14T18:02:04Z",
       "statistics": {
@@ -290,47 +237,50 @@
       "id": 1908
     },
     {
-      "title": "The Wiggles: Celebration!",
-      "originalTitle": "The Wiggles: Celebration!",
+      "title": "Test Movie 04",
+      "originalTitle": "Test Movie 04",
       "originalLanguage": {
         "id": 1,
         "name": "English"
       },
       "alternateTitles": [],
       "secondaryYearSourceId": 0,
-      "sortTitle": "wiggles celebration",
+      "sortTitle": "test movie 04",
       "sizeOnDisk": 0,
       "status": "released",
-      "overview": "Here in your hands is a piece of Wiggles history! The Celebration tour of the original Wiggles line-up, Greg, Murray, Jeff and Anthony, travelled all around the world.  This is one of those magical shows filmed live in Ireland!",
+      "overview": "",
       "inCinemas": "2012-09-05T00:00:00Z",
       "releaseDate": "2012-12-04T00:00:00Z",
       "images": [
         {
           "coverType": "poster",
           "url": "REDACTED",
-          "remoteUrl": "https://image.tmdb.org/t/p/original/nxXMZZCMBCNPPF7MSlw6F7at2f8.jpg"
+          "remoteUrl": "REDACTED"
+        },
+        {
+          "coverType": "fanart",
+          "url": "REDACTED",
+          "remoteUrl": "REDACTED"
         }
       ],
-      "website": "http://www.thewiggles.com/",
+      "website": "",
       "year": 2012,
       "youTubeTrailerId": "",
-      "studio": "The Wiggles Pty Ltd",
-      "path": "/media/movies/The Wiggles - Celebration! (2012)",
+      "studio": "",
+      "path": "/tmp/media/movies/Test Movie 04 (2012)",
       "qualityProfileId": 11,
       "hasFile": false,
       "movieFileId": 0,
       "monitored": true,
       "minimumAvailability": "released",
       "isAvailable": true,
-      "folderName": "/media/movies/The Wiggles - Celebration! (2012)",
+      "folderName": "/tmp/media/movies/Test Movie 04 (2012)",
       "runtime": 61,
-      "cleanTitle": "thewigglescelebration",
-      "imdbId": "tt7776072",
-      "tmdbId": 134686,
-      "titleSlug": "134686",
-      "genres": [
-        "Family"
-      ],
+      "cleanTitle": "testmovie04",
+      "imdbId": "tt10000004",
+      "tmdbId": 10004,
+      "titleSlug": "10004",
+      "genres": [],
       "keywords": [],
       "tags": [
         4
@@ -363,46 +313,49 @@
       "id": 2175
     },
     {
-      "title": "What the Blood Moon Brings: Messiah of Evil, A New American Nightmare",
-      "originalTitle": "What the Blood Moon Brings: Messiah of Evil, A New American Nightmare",
+      "title": "Test Movie 05",
+      "originalTitle": "Test Movie 05",
       "originalLanguage": {
         "id": 1,
         "name": "English"
       },
       "alternateTitles": [],
       "secondaryYearSourceId": 0,
-      "sortTitle": "what the blood moon brings messiah of evil a new american nightmare",
+      "sortTitle": "test movie 05",
       "sizeOnDisk": 0,
       "status": "released",
-      "overview": "A documentary feature that explores 1973's Messiah of Evil in the context of American independent cinema of the 70s, as well as examining the film's allegiance to several subgenres of horror.",
+      "overview": "",
       "inCinemas": "2023-11-14T00:00:00Z",
       "releaseDate": "2024-02-12T00:00:00Z",
       "images": [
         {
           "coverType": "poster",
           "url": "REDACTED",
-          "remoteUrl": "https://image.tmdb.org/t/p/original/pf1pJbRvN04feNvposJ5OqJ8oI8.jpg"
+          "remoteUrl": "REDACTED"
+        },
+        {
+          "coverType": "fanart",
+          "url": "REDACTED",
+          "remoteUrl": "REDACTED"
         }
       ],
       "website": "",
       "year": 2023,
       "youTubeTrailerId": "",
       "studio": "",
-      "path": "/media/movies/What the Blood Moon Brings - Messiah of Evil, A New American Nightmare (2023)",
+      "path": "/tmp/media/movies/Test Movie 05 (2023)",
       "qualityProfileId": 11,
       "hasFile": false,
       "movieFileId": 0,
       "monitored": true,
       "minimumAvailability": "released",
       "isAvailable": true,
-      "folderName": "/media/movies/What the Blood Moon Brings - Messiah of Evil, A New American Nightmare (2023)",
+      "folderName": "/tmp/media/movies/Test Movie 05 (2023)",
       "runtime": 57,
-      "cleanTitle": "whatbloodmoonbringsmessiahevilnewamericannightmare",
-      "tmdbId": 1191077,
-      "titleSlug": "1191077",
-      "genres": [
-        "Documentary"
-      ],
+      "cleanTitle": "testmovie05",
+      "tmdbId": 10005,
+      "titleSlug": "10005",
+      "genres": [],
       "keywords": [],
       "tags": [
         1
@@ -422,61 +375,55 @@
         "sizeOnDisk": 0,
         "releaseGroups": []
       },
-      "id": 1840
+      "id": 1840,
+      "imdbId": "tt10000005"
     },
     {
-      "title": "Untitled The Batman Sequel",
-      "originalTitle": "Untitled The Batman Sequel",
+      "title": "Test Movie 06",
+      "originalTitle": "Test Movie 06",
       "originalLanguage": {
         "id": 1,
         "name": "English"
       },
       "alternateTitles": [],
       "secondaryYearSourceId": 0,
-      "sortTitle": "untitled the batman sequel",
+      "sortTitle": "test movie 06",
       "sizeOnDisk": 0,
       "status": "announced",
-      "overview": "Sequel to the 2022 film The Batman.",
+      "overview": "",
       "inCinemas": "2027-09-30T00:00:00Z",
       "releaseDate": "2027-12-29T00:00:00Z",
       "images": [
         {
           "coverType": "poster",
           "url": "REDACTED",
-          "remoteUrl": "https://image.tmdb.org/t/p/original/hUe1G6Ziwl8b6DaaGHjhG6LQQH8.jpg"
+          "remoteUrl": "REDACTED"
+        },
+        {
+          "coverType": "fanart",
+          "url": "REDACTED",
+          "remoteUrl": "REDACTED"
         }
       ],
       "website": "",
       "year": 2027,
       "youTubeTrailerId": "",
-      "studio": "6th & Idaho Motion Picture Company",
-      "path": "/media/movies/Untitled The Batman Sequel (2027)",
+      "studio": "",
+      "path": "/tmp/media/movies/Test Movie 06 (2027)",
       "qualityProfileId": 11,
       "hasFile": false,
       "movieFileId": 0,
       "monitored": true,
       "minimumAvailability": "released",
       "isAvailable": false,
-      "folderName": "/media/movies/Untitled The Batman Sequel (2027)",
+      "folderName": "/tmp/media/movies/Test Movie 06 (2027)",
       "runtime": 0,
-      "cleanTitle": "untitledbatmansequel",
-      "imdbId": "tt19850008",
-      "tmdbId": 806704,
-      "titleSlug": "806704",
-      "genres": [
-        "Mystery",
-        "Drama",
-        "Crime"
-      ],
-      "keywords": [
-        "based on comic",
-        "crime fighter",
-        "dc elseworlds",
-        "masked superhero",
-        "sequel",
-        "superhero",
-        "vigilante"
-      ],
+      "cleanTitle": "testmovie06",
+      "imdbId": "tt10000006",
+      "tmdbId": 10006,
+      "titleSlug": "10006",
+      "genres": [],
+      "keywords": [],
       "tags": [
         1
       ],
@@ -488,10 +435,6 @@
           "type": "user"
         }
       },
-      "collection": {
-        "title": "The Batman Collection",
-        "tmdbId": 948485
-      },
       "popularity": 2.6747,
       "lastSearchTime": "2026-03-14T18:02:23Z",
       "statistics": {
@@ -502,47 +445,49 @@
       "id": 1547
     },
     {
-      "title": "Undertone",
-      "originalTitle": "Undertone",
+      "title": "Test Movie 07",
+      "originalTitle": "Test Movie 07",
       "originalLanguage": {
         "id": 1,
         "name": "English"
       },
       "alternateTitles": [],
       "secondaryYearSourceId": 0,
-      "sortTitle": "undertone",
+      "sortTitle": "test movie 07",
       "sizeOnDisk": 0,
       "status": "announced",
-      "overview": "NOTE: Not to be confused with A24's feature film Undertone directed by Ian Tuason.  A sound recordist captures strange sonic phenomena underneath their house, and things escalate from there.",
+      "overview": "",
       "images": [
         {
           "coverType": "poster",
           "url": "REDACTED",
-          "remoteUrl": "https://image.tmdb.org/t/p/original/brNkSCLfMN51OxcsZGM5dS0EM3x.jpg"
+          "remoteUrl": "REDACTED"
+        },
+        {
+          "coverType": "fanart",
+          "url": "REDACTED",
+          "remoteUrl": "REDACTED"
         }
       ],
       "website": "",
       "year": 2025,
       "youTubeTrailerId": "",
       "studio": "",
-      "path": "/media/movies/Undertone (2025)",
+      "path": "/tmp/media/movies/Test Movie 07 (2025)",
       "qualityProfileId": 11,
       "hasFile": false,
       "movieFileId": 0,
       "monitored": true,
       "minimumAvailability": "released",
       "isAvailable": false,
-      "folderName": "/media/movies/Undertone (2025)",
+      "folderName": "/tmp/media/movies/Test Movie 07 (2025)",
       "runtime": 12,
-      "cleanTitle": "undertone",
-      "imdbId": "tt33498897",
-      "tmdbId": 1471951,
-      "titleSlug": "1471951",
+      "cleanTitle": "testmovie07",
+      "imdbId": "tt10000007",
+      "tmdbId": 10007,
+      "titleSlug": "10007",
       "certification": "NR",
-      "genres": [
-        "Horror",
-        "Science Fiction"
-      ],
+      "genres": [],
       "keywords": [],
       "tags": [
         1
@@ -575,56 +520,50 @@
       "id": 2137
     },
     {
-      "title": "The Twilight Zone: A 60th Anniversary Celebration",
-      "originalTitle": "The Twilight Zone: A 60th Anniversary Celebration",
+      "title": "Test Movie 08",
+      "originalTitle": "Test Movie 08",
       "originalLanguage": {
         "id": 1,
         "name": "English"
       },
       "alternateTitles": [],
       "secondaryYearSourceId": 0,
-      "sortTitle": "twilight zone a 60th anniversary celebration",
+      "sortTitle": "test movie 08",
       "sizeOnDisk": 0,
       "status": "released",
-      "overview": "Six episodes of the original series, restored and on the big screen for the first time, and a special retrospective documentary encompass this Fathom Event.",
+      "overview": "",
       "inCinemas": "2019-11-14T00:00:00Z",
       "releaseDate": "2020-02-12T00:00:00Z",
       "images": [
         {
           "coverType": "poster",
           "url": "REDACTED",
-          "remoteUrl": "https://image.tmdb.org/t/p/original/pFovdt3OW4vk6r0IenrdRLsHgoM.jpg"
+          "remoteUrl": "REDACTED"
         },
         {
           "coverType": "fanart",
           "url": "REDACTED",
-          "remoteUrl": "https://image.tmdb.org/t/p/original/22XrOU09v7Gc3JDNscJl5HJGfct.jpg"
+          "remoteUrl": "REDACTED"
         }
       ],
       "website": "",
       "year": 2019,
       "youTubeTrailerId": "",
-      "studio": "Cayuga Productions",
-      "path": "/media/movies/The Twilight Zone - A 60th Anniversary Celebration (2019)",
+      "studio": "",
+      "path": "/tmp/media/movies/Test Movie 08 (2019)",
       "qualityProfileId": 11,
       "hasFile": false,
       "movieFileId": 0,
       "monitored": true,
       "minimumAvailability": "released",
       "isAvailable": true,
-      "folderName": "/media/movies/The Twilight Zone - A 60th Anniversary Celebration (2019)",
+      "folderName": "/tmp/media/movies/Test Movie 08 (2019)",
       "runtime": 180,
-      "cleanTitle": "thetwilightzone60thanniversarycelebration",
-      "imdbId": "tt10892766",
-      "tmdbId": 631715,
-      "titleSlug": "631715",
-      "genres": [
-        "Documentary",
-        "Drama",
-        "Thriller",
-        "Mystery",
-        "Science Fiction"
-      ],
+      "cleanTitle": "testmovie08",
+      "imdbId": "tt10000008",
+      "tmdbId": 10008,
+      "titleSlug": "10008",
+      "genres": [],
       "keywords": [],
       "tags": [
         1
@@ -657,77 +596,51 @@
       "id": 2154
     },
     {
-      "title": "Toy Story 5",
-      "originalTitle": "Toy Story 5",
+      "title": "Test Movie 09",
+      "originalTitle": "Test Movie 09",
       "originalLanguage": {
         "id": 1,
         "name": "English"
       },
       "alternateTitles": [],
       "secondaryYearSourceId": 0,
-      "sortTitle": "toy story 5",
+      "sortTitle": "test movie 09",
       "sizeOnDisk": 0,
       "status": "announced",
-      "overview": "When Bonnie receives a Lilypad tablet as a gift and becomes obsessed, Buzz, Woody, Jessie and the rest of the gang's jobs become exponentially harder when they have to go head to head with the all-new threat to playtime.",
+      "overview": "",
       "inCinemas": "2026-06-17T00:00:00Z",
       "releaseDate": "2026-09-15T00:00:00Z",
       "images": [
         {
           "coverType": "poster",
           "url": "REDACTED",
-          "remoteUrl": "https://image.tmdb.org/t/p/original/dWIAOC9EKFehGs3CYvDQih3hxaG.jpg"
+          "remoteUrl": "REDACTED"
         },
         {
           "coverType": "fanart",
           "url": "REDACTED",
-          "remoteUrl": "https://image.tmdb.org/t/p/original/uvGW1Fg4gcIiHFbCbw1Li9bZvOd.jpg"
+          "remoteUrl": "REDACTED"
         }
       ],
-      "website": "https://movies.disney.com/toy-story-5",
+      "website": "",
       "year": 2026,
-      "youTubeTrailerId": "c51ND9Hdbw0",
-      "studio": "Pixar",
-      "path": "/media/movies/Toy Story 5 (2026)",
+      "youTubeTrailerId": "",
+      "studio": "",
+      "path": "/tmp/media/movies/Test Movie 09 (2026)",
       "qualityProfileId": 11,
       "hasFile": false,
       "movieFileId": 0,
       "monitored": true,
       "minimumAvailability": "released",
       "isAvailable": false,
-      "folderName": "/media/movies/Toy Story 5 (2026)",
+      "folderName": "/tmp/media/movies/Test Movie 09 (2026)",
       "runtime": 0,
-      "cleanTitle": "toystory5",
-      "imdbId": "tt29355505",
-      "tmdbId": 1084244,
-      "titleSlug": "1084244",
-      "genres": [
-        "Animation",
-        "Family",
-        "Comedy",
-        "Adventure"
-      ],
-      "keywords": [
-        "3d animation",
-        "buddy comedy",
-        "cowboy",
-        "farm",
-        "frog",
-        "hippo",
-        "horse",
-        "ipad",
-        "island",
-        "pig",
-        "replacement",
-        "rescue mission",
-        "rivalry",
-        "sequel",
-        "stranded",
-        "tablet",
-        "toilet paper",
-        "toy",
-        "toy comes to life",
-        "walkie talkie"
-      ],
+      "cleanTitle": "testmovie09",
+      "imdbId": "tt10000009",
+      "tmdbId": 10009,
+      "titleSlug": "10009",
+      "genres": [],
+      "keywords": [],
       "tags": [
         1
       ],
@@ -739,10 +652,6 @@
           "type": "user"
         }
       },
-      "collection": {
-        "title": "Toy Story Collection",
-        "tmdbId": 10194
-      },
       "popularity": 12.6384,
       "lastSearchTime": "2026-03-01T15:55:12Z",
       "statistics": {
@@ -753,53 +662,50 @@
       "id": 1307
     },
     {
-      "title": "The Third Saturday in October",
-      "originalTitle": "The Third Saturday in October",
+      "title": "Test Movie 10",
+      "originalTitle": "Test Movie 10",
       "originalLanguage": {
         "id": 1,
         "name": "English"
       },
       "alternateTitles": [],
       "secondaryYearSourceId": 0,
-      "sortTitle": "third saturday in october",
+      "sortTitle": "test movie 10",
       "sizeOnDisk": 0,
       "status": "released",
-      "overview": "A lost slasher film from the golden age of the slasher genre. October 1979, Ricky Dean Logan is a man on a mission. Years ago, he lost a child at the hands of a psychopathic killer named Jakkariah Harding. When Harding escapes Death Row, Ricky Dean throws himself into the line of fire to stop him from killing again as Harding preys upon a group of friends gathered to watch a college football game.",
+      "overview": "",
       "digitalRelease": "2023-05-05T00:00:00Z",
       "releaseDate": "2023-05-05T00:00:00Z",
       "images": [
         {
           "coverType": "poster",
           "url": "REDACTED",
-          "remoteUrl": "https://image.tmdb.org/t/p/original/vVzHk0KOVI78tEtywleBQQToqyX.jpg"
+          "remoteUrl": "REDACTED"
         },
         {
           "coverType": "fanart",
           "url": "REDACTED",
-          "remoteUrl": "https://image.tmdb.org/t/p/original/klJoPFprnVjf3V8noWC2zF3xFzP.jpg"
+          "remoteUrl": "REDACTED"
         }
       ],
       "website": "",
       "year": 2022,
-      "youTubeTrailerId": "_6Q_r7Taaj8",
-      "studio": "City of Red",
-      "path": "/media/movies/The Third Saturday in October (2022)",
+      "youTubeTrailerId": "",
+      "studio": "",
+      "path": "/tmp/media/movies/Test Movie 10 (2022)",
       "qualityProfileId": 11,
       "hasFile": false,
       "movieFileId": 0,
       "monitored": true,
       "minimumAvailability": "released",
       "isAvailable": true,
-      "folderName": "/media/movies/The Third Saturday in October (2022)",
+      "folderName": "/tmp/media/movies/Test Movie 10 (2022)",
       "runtime": 97,
-      "cleanTitle": "thethirdsaturdayinoctober",
-      "imdbId": "tt15978042",
-      "tmdbId": 968862,
-      "titleSlug": "968862",
-      "genres": [
-        "Horror",
-        "Comedy"
-      ],
+      "cleanTitle": "testmovie10",
+      "imdbId": "tt10000010",
+      "tmdbId": 10010,
+      "titleSlug": "10010",
+      "genres": [],
       "keywords": [],
       "tags": [
         4
@@ -821,10 +727,6 @@
           "value": 4.84906,
           "type": "user"
         }
-      },
-      "collection": {
-        "title": "Third Saturday in October Collection",
-        "tmdbId": 1119029
       },
       "popularity": 0.3581,
       "lastSearchTime": "2026-04-21T06:09:33Z",

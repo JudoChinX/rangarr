@@ -297,18 +297,13 @@ _processing_pipeline_cases = {
         'client_class': 'lidarr',
         'settings': {'retry_interval_days': 0},
         'missing_records': [
-            LidarrRecordBuilder()
-            .with_id(1)
-            .with_title('Dark Side of the Moon')
-            .with_artist('Pink Floyd')
-            .released()
-            .build(),
+            LidarrRecordBuilder().with_id(1).with_title('Test Album').with_artist('Test Artist').released().build(),
         ],
         'upgrade_records': [],
         'missing_batch_size': 10,
         'upgrade_batch_size': 10,
         'expected_ids': [1],
-        'expected_title': 'Pink Floyd - Dark Side of the Moon',
+        'expected_title': 'Test Artist - Test Album',
     },
     'lidarr_handles_missing_release_date': {
         'client_class': 'lidarr',
