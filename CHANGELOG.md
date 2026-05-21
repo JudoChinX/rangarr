@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.8.0] - 2026-05-21
+
 ### Added
 
 - Support for Whisparr v3 instances via `type: whisparr`. Log output uses `Performer - Scene Title` format. Tag filtering, `retry_interval_days`, `season_packs`, custom format scoring, and all other settings apply identically to Sonarr instances.

@@ -45,12 +45,13 @@ To be absolutely clear, Rangarr does not and will never:
 
 ## Architecture Overview
 
-Rangarr is a ~1,762-line Python service with three core modules:
+Rangarr is a ~1,802-line Python service with four core modules:
 
 ```
 rangarr/
 ├── main.py           # Orchestration loop
 ├── config_parser.py  # Configuration validation
+├── validators.py     # Custom validation logic (active hours, time windows)
 └── clients/
     └── arr.py        # *arr API client implementations
 ```
@@ -89,6 +90,12 @@ config.yaml → config_parser.py → main.py → ArrClient instances → *arr AP
 **No Network Activity:** Pure configuration parsing; never makes HTTP requests.
 
 **Security Note:** Extracts API keys from config and passes to client instances. Keys are never logged.
+
+### validators.py — Custom Validation
+
+**Purpose:** Houses validation logic that does not belong in config parsing. Currently validates `active_hours` format and time-window boundary checks.
+
+**No Network Activity:** Pure validation; never makes HTTP requests.
 
 ### clients/arr.py — API Client
 
@@ -193,7 +200,7 @@ Rangarr operates entirely within your local network (or wherever you host your *
 
 ### 1. Security Through Simplicity
 
-**Decision:** ~1,762 lines of core Python code, zero external dependencies beyond requests and PyYAML.
+**Decision:** ~1,802 lines of core Python code, zero external dependencies beyond requests and PyYAML.
 
 **Why:** Small codebases are auditable. Every line of code is a potential attack surface. By keeping the codebase minimal, security reviewers can read and understand the entire project in under an hour.
 
@@ -358,8 +365,9 @@ Both are widely-used, well-maintained libraries with public security disclosure 
 
 - `main.py`: ~547 lines
 - `config_parser.py`: ~414 lines
+- `validators.py`: ~40 lines
 - `clients/arr.py`: ~801 lines
-- **Total:** ~1,762 lines of Python (excluding tests/comments)
+- **Total:** ~1,802 lines of Python (excluding tests/comments)
 
 The small codebase size makes comprehensive security auditing feasible.
 
