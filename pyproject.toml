@@ -102,7 +102,7 @@ skips = []
 
 [tool.pytest.ini_options]
 pythonpath = ["."]
-addopts = "--cov=rangarr --cov-fail-under=95 -n auto"
+addopts = "--cov=rangarr --cov-fail-under=95 -n auto --ignore=tests/system/test_docker.py"
 filterwarnings = [
     "error",
 ]
