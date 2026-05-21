@@ -141,6 +141,12 @@ def _build_final_queue(
     return final_queue
 
 
+def _calculate_eta(item_count: int, stagger_seconds: int) -> str:
+    """Return a formatted ETA string for a staggered batch, or empty string if stagger is disabled."""
+    eta = datetime.timedelta(seconds=(item_count - 1) * stagger_seconds)
+    return f' (1 every {stagger_seconds} seconds, ETA: {eta})' if stagger_seconds > 0 and item_count > 1 else ''
+
+
 def _clients_in_allocation_order(
     allocated_missing: list[tuple[ArrClient, MediaItem]],
     allocated_upgrade: list[tuple[ArrClient, MediaItem]],
@@ -205,18 +211,10 @@ def _format_retry_interval_str(
     retry_missing: int | None,
     retry_upgrade: int | None,
 ) -> str:
-    """Format the retry interval display string with optional per-type overrides."""
-    global_str = _day_str(retry_days)
+    """Format the retry interval display string showing effective per-type values."""
     eff_missing = retry_missing if retry_missing is not None else retry_days
     eff_upgrade = retry_upgrade if retry_upgrade is not None else retry_days
-    parts = []
-    if eff_missing != retry_days:
-        parts.append(f'Missing: {_day_str(eff_missing)}')
-    if eff_upgrade != retry_days:
-        parts.append(f'Upgrade: {_day_str(eff_upgrade)}')
-    if parts:
-        return f'{global_str} ({", ".join(parts)})'
-    return global_str
+    return f'Missing: {_day_str(eff_missing)}, Upgrade: {_day_str(eff_upgrade)}'
 
 
 def _format_run_interval_str(
@@ -224,17 +222,10 @@ def _format_run_interval_str(
     run_interval_missing_m: int | None,
     run_interval_upgrade_m: int | None,
 ) -> str:
-    """Format the run interval display string with optional per-type overrides."""
+    """Format the run interval display string showing effective per-type values."""
     eff_missing_m = run_interval_missing_m if run_interval_missing_m is not None else run_interval_m
     eff_upgrade_m = run_interval_upgrade_m if run_interval_upgrade_m is not None else run_interval_m
-    parts = []
-    if eff_missing_m != run_interval_m:
-        parts.append(f'Missing: {eff_missing_m}m')
-    if eff_upgrade_m != run_interval_m:
-        parts.append(f'Upgrade: {eff_upgrade_m}m')
-    if parts:
-        return f'{run_interval_m}m ({", ".join(parts)})'
-    return f'{run_interval_m}m'
+    return f'Missing: {eff_missing_m}m, Upgrade: {eff_upgrade_m}m'
 
 
 def _get_setting(settings: dict, key: str) -> Any:
@@ -368,6 +359,7 @@ def _run_search_cycle(
 
     logger.info(
         f'Total search batch: {len(final_queue)} item(s) | {_format_instance_breakdown(allocated_missing, allocated_upgrade)}'
+        f'{_calculate_eta(len(final_queue), stagger_seconds)}'
     )
 
     for index, (client, item) in enumerate(final_queue, start=1):
