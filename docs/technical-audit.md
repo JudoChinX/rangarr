@@ -105,6 +105,7 @@ config.yaml → config_parser.py → main.py → ArrClient instances → *arr AP
 - `ArrClient`: Abstract base class with shared fetch, client-side sorting, and filtering logic.
 - `LidarrClient`: Lidarr-specific implementation (uses `/api/v1/` endpoints).
 - `RadarrClient`: Radarr-specific implementation.
+- `ReadarrClient`: Readarr-specific implementation (uses `/api/v1/` endpoints).
 - `SonarrClient`: Sonarr-specific implementation.
 - `WhisparrClient`: Whisparr v3 implementation; extends `SonarrClient` with performer/scene title formatting.
 
@@ -113,10 +114,10 @@ config.yaml → config_parser.py → main.py → ArrClient instances → *arr AP
 - `_get_target_media()`: Fetches all records via `_fetch_unlimited()`, sorts them client-side, and applies retry-window and availability filtering.
 - `_interleave_items()`: Proportionally interleaves missing and upgrade items within a single instance's results.
 - `_get_custom_format_score_unmet_records()`: Orchestrates the supplemental upgrade pass — fetches quality profiles, then delegates to `_get_custom_format_upgrade_records()`.
-- `_get_custom_format_upgrade_records()`: Per-client override that finds items where `customFormatScore` is below the profile's `cutoffFormatScore`. Monitored status is enforced for all records (movies, series, and episodes) before scoring. No-op in base class and `LidarrClient`.
+- `_get_custom_format_upgrade_records()`: Per-client override that finds items where `customFormatScore` is below the profile's `cutoffFormatScore`. Monitored status is enforced for all records (movies, series, and episodes) before scoring. No-op in base class, `LidarrClient`, and `ReadarrClient`.
 - `_fetch_movie_file_scores()`: Radarr — fetches custom format scores for a list of movie file IDs, batched at 100 IDs per request.
 - `_fetch_episode_file_scores()`: Sonarr and Whisparr — fetches episode file IDs for a series where the score is below the cutoff.
-- `trigger_search()`: Dispatches search commands via POST to `/api/v3/command` (Radarr/Sonarr/Whisparr) or `/api/v1/command` (Lidarr), staggered by `stagger_interval_seconds`.
+- `trigger_search()`: Dispatches search commands via POST to `/api/v3/command` (Radarr/Sonarr/Whisparr) or `/api/v1/command` (Lidarr/Readarr), staggered by `stagger_interval_seconds`.
 - `_fetch_unlimited()`: Low-level paged HTTP fetcher that collects all records across pages (uses requests.Session).
 - `_fetch_list()`: Low-level single-page HTTP fetcher for non-paginated list endpoints.
 - `_sort_records_client_side()`: Sorts fetched records in-place according to `search_order`.
@@ -130,20 +131,21 @@ config.yaml → config_parser.py → main.py → ArrClient instances → *arr AP
 
 | Endpoint | Method | Purpose | Frequency | Read/Write |
 |----------|--------|---------|-----------|------------|
-| `/api/v3/wanted/missing` (Radarr/Sonarr/Whisparr), `/api/v1/wanted/missing` (Lidarr) | GET | Fetch missing items (`monitored=true`) | Per cycle per instance | Read-only |
-| `/api/v3/wanted/cutoff` (Radarr/Sonarr/Whisparr), `/api/v1/wanted/cutoff` (Lidarr) | GET | Fetch upgrade candidates (`monitored=true`) | Per cycle per instance | Read-only |
+| `/api/v3/wanted/missing` (Radarr/Sonarr/Whisparr), `/api/v1/wanted/missing` (Lidarr/Readarr) | GET | Fetch missing items (`monitored=true`) | Per cycle per instance | Read-only |
+| `/api/v3/wanted/cutoff` (Radarr/Sonarr/Whisparr), `/api/v1/wanted/cutoff` (Lidarr/Readarr) | GET | Fetch upgrade candidates (`monitored=true`) | Per cycle per instance | Read-only |
 | `/api/v3/qualityprofile` (Radarr/Sonarr/Whisparr) | GET | Fetch quality profiles to identify cutoff format score thresholds | Per cycle per instance | Read-only |
 | `/api/v3/movie` (Radarr) | GET | Fetch movies to find upgrade candidates (skips unmonitored) | Per cycle when profiles have non-zero cutoff format scores | Read-only |
 | `/api/v3/moviefile` (Radarr) | GET | Fetch movie file scores to compare against profile cutoff | Per cycle when movie candidates exist, batched at 100 IDs | Read-only |
 | `/api/v3/series` (Sonarr/Whisparr) | GET | Fetch series — find upgrade candidates (skips unmonitored); determine air status | Per cycle per instance when either condition applies | Read-only |
 | `/api/v3/episodefile` (Sonarr/Whisparr) | GET | Fetch episode file scores to compare against profile cutoff | Per series with a tracked profile, per cycle | Read-only |
 | `/api/v3/episode` (Sonarr/Whisparr) | GET | Fetch episodes with files (skips unmonitored) | Per series with low-scoring files, per cycle | Read-only |
-| `/api/v3/command` (Radarr/Sonarr/Whisparr), `/api/v1/command` (Lidarr) | POST | Trigger search command | Per item | **Write** |
+| `/api/v3/command` (Radarr/Sonarr/Whisparr), `/api/v1/command` (Lidarr/Readarr) | POST | Trigger search command | Per item | **Write** |
 
 **Search Commands Sent:**
 - Radarr: `{"name": "MoviesSearch", "movieIds": [...]}`
 - Sonarr/Whisparr: `{"name": "EpisodeSearch", "episodeIds": [...]}` (or `{"name": "SeasonSearch", "seriesId": ..., "seasonNumber": ...}` when `season_packs` is `true`, an integer count threshold is met, or a float ratio threshold is met; airing seasons and seasons that don't meet the configured threshold always use `EpisodeSearch`)
 - Lidarr: `{"name": "AlbumSearch", "albumIds": [...]}`
+- Readarr: `{"name": "BookSearch", "bookIds": [...]}`
 
 **Data Accessed:**
 - Media metadata only: titles, IDs, air dates, search timestamps, quality profile IDs, custom format scores
@@ -330,7 +332,7 @@ Unit tests (`tests/unit/`):
 - `clients/test_arr_base.py`: Shared ArrClient base class behaviour.
 - `clients/test_arr_client_sort.py`: Client-side sorting for all search orders across all client types.
 - `clients/test_arr_fetch_page_size.py`: Paged fetch behaviour across page-size configurations.
-- `clients/test_radarr.py`, `clients/test_sonarr.py`, `clients/test_lidarr.py`, `clients/test_whisparr.py`: Client-specific logic with mocked HTTP responses.
+- `clients/test_radarr.py`, `clients/test_sonarr.py`, `clients/test_lidarr.py`, `clients/test_readarr.py`, `clients/test_whisparr.py`: Client-specific logic with mocked HTTP responses.
 - `clients/test_sonarr_sort.py`: Sorting and interleaving correctness for Sonarr season pack results.
 
 Integration tests (`tests/integration/`):
@@ -340,7 +342,7 @@ Integration tests (`tests/integration/`):
 
 System tests (`tests/system/`) — require a running Docker stack:
 - `test_docker.py`: Container startup, config loading, and dry-run smoke tests.
-- `test_lidarr.py`, `test_radarr.py`, `test_sonarr.py`, `test_whisparr.py`: Per-app end-to-end search cycle tests against live containers.
+- `test_lidarr.py`, `test_radarr.py`, `test_readarr.py`, `test_sonarr.py`, `test_whisparr.py`: Per-app end-to-end search cycle tests against live containers.
 - `test_multi_instance.py`: Multi-instance slot allocation and interleave behaviour end-to-end.
 
 **Testing Without Production Instances:**

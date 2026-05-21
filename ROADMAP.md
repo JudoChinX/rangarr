@@ -4,10 +4,9 @@ This document reflects the current direction of Rangarr. No dates are attached â
 
 ## Planned
 
-- **Readarr support**
-
 ## Completed
 
+- **Readarr support**
 - **Whisparr v3 support**
 - **Season pack support (Sonarr/Whisparr)**
 - **Global search slot allocation**

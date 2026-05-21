@@ -24,30 +24,30 @@ _get_record_title_cases = {
 }
 
 _get_release_date_cases = {
-    'returns_release_date_when_present': {
-        'record': {'releaseDate': '2025-06-26'},
-        'expected': '2025-06-26',
+    'returns_empty_string_for_none_value': {
+        'record': {'releaseDate': None},
+        'expected': '',
     },
     'returns_empty_string_when_absent': {
         'record': {},
         'expected': '',
     },
-    'returns_empty_string_for_none_value': {
-        'record': {'releaseDate': None},
-        'expected': '',
+    'returns_release_date_when_present': {
+        'record': {'releaseDate': '2025-06-26'},
+        'expected': '2025-06-26',
     },
 }
 
 _get_season_title_cases = {
-    'full_record_zero_pads_single_digit_season': {
-        'record': SonarrRecordBuilder().with_series('Test Performer').build(),
-        'season_number': 3,
-        'expected': 'Test Performer - Season 03',
-    },
     'full_record_two_digit_season_not_padded': {
         'record': SonarrRecordBuilder().with_series('Test Performer').build(),
         'season_number': 12,
         'expected': 'Test Performer - Season 12',
+    },
+    'full_record_zero_pads_single_digit_season': {
+        'record': SonarrRecordBuilder().with_series('Test Performer').build(),
+        'season_number': 3,
+        'expected': 'Test Performer - Season 03',
     },
     'missing_series_falls_back_to_unknown_performer': {
         'record': {'title': 'Test Scene'},
@@ -57,10 +57,6 @@ _get_season_title_cases = {
 }
 
 _is_available_cases = {
-    'past_release_date_is_available': {
-        'record': {'releaseDate': '2025-01-01'},
-        'expected': True,
-    },
     'future_release_date_is_not_available': {
         'record': {'releaseDate': '2027-01-01'},
         'expected': False,
@@ -68,6 +64,10 @@ _is_available_cases = {
     'missing_release_date_is_not_available': {
         'record': {},
         'expected': False,
+    },
+    'past_release_date_is_available': {
+        'record': {'releaseDate': '2025-01-01'},
+        'expected': True,
     },
 }
 

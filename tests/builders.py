@@ -8,6 +8,7 @@ from unittest.mock import MagicMock
 from rangarr.clients.arr import ArrClient
 from rangarr.clients.arr import LidarrClient
 from rangarr.clients.arr import RadarrClient
+from rangarr.clients.arr import ReadarrClient
 from rangarr.clients.arr import SonarrClient
 from rangarr.clients.arr import WhisparrClient
 from tests.conftest import FIXED_NOW
@@ -65,6 +66,67 @@ class _RecordBuilder:
     def with_title(self, title: str) -> Self:
         """Set the record title."""
         self._data['title'] = title
+        return self
+
+
+class ClientBuilder:
+    """Builder for test client instances."""
+
+    def __init__(self, client_class: type[ArrClient] = RadarrClient) -> None:
+        """Initialize builder with default client settings."""
+        self._class = client_class
+        self._name = 'test'
+        self._url = 'http://test'
+        self._api_key = 'testkey'
+        self._settings: dict[str, Any] = {}
+
+    def build(self) -> ArrClient:
+        """Build and return the client instance."""
+        return self._class(name=self._name, url=self._url, api_key=self._api_key, settings=self._settings)
+
+    def lidarr(self) -> Self:
+        """Set client class to LidarrClient."""
+        self._class = LidarrClient
+        return self
+
+    def radarr(self) -> Self:
+        """Set client class to RadarrClient."""
+        self._class = RadarrClient
+        return self
+
+    def readarr(self) -> Self:
+        """Set client class to ReadarrClient."""
+        self._class = ReadarrClient
+        return self
+
+    def sonarr(self) -> Self:
+        """Set client class to SonarrClient."""
+        self._class = SonarrClient
+        return self
+
+    def whisparr(self) -> Self:
+        """Set client class to WhisparrClient."""
+        self._class = WhisparrClient
+        return self
+
+    def with_exclude_tags(self, *names: str) -> Self:
+        """Set exclude_tags in client settings."""
+        self._settings['exclude_tags'] = list(names)
+        return self
+
+    def with_include_tags(self, *names: str) -> Self:
+        """Set include_tags in client settings."""
+        self._settings['include_tags'] = list(names)
+        return self
+
+    def with_name(self, name: str) -> Self:
+        """Set the client name."""
+        self._name = name
+        return self
+
+    def with_settings(self, **settings: Any) -> Self:
+        """Set client settings."""
+        self._settings = settings
         return self
 
 
@@ -220,6 +282,34 @@ class RadarrRecordBuilder(_RecordBuilder):
         return self
 
 
+class ReadarrRecordBuilder(_RecordBuilder):
+    """Builder for Readarr API response records."""
+
+    def __init__(self) -> None:
+        """Initialize builder with default Readarr record."""
+        self._data: dict[str, Any] = {
+            'id': 1,
+            'title': 'Test Book',
+            'author': {'authorName': 'Test Author'},
+            'releaseDate': '2020-01-01T00:00:00Z',
+        }
+
+    def not_released(self) -> Self:
+        """Set release date to future (not available)."""
+        self._data['releaseDate'] = '2030-01-01T00:00:00Z'
+        return self
+
+    def released(self) -> Self:
+        """Set release date to past (available)."""
+        self._data['releaseDate'] = '2020-01-01T00:00:00Z'
+        return self
+
+    def with_author(self, author_name: str) -> Self:
+        """Set the author name."""
+        self._data['author']['authorName'] = author_name
+        return self
+
+
 class SonarrEpisodeFileRecordBuilder:
     """Builder for Sonarr /api/v3/episodefile response records."""
 
@@ -365,62 +455,6 @@ class SonarrSeriesRecordBuilder:
     def with_title(self, title: str) -> Self:
         """Set the series title."""
         self._data['title'] = title
-        return self
-
-
-class ClientBuilder:
-    """Builder for test client instances."""
-
-    def __init__(self, client_class: type[ArrClient] = RadarrClient) -> None:
-        """Initialize builder with default client settings."""
-        self._class = client_class
-        self._name = 'test'
-        self._url = 'http://test'
-        self._api_key = 'testkey'
-        self._settings: dict[str, Any] = {}
-
-    def build(self) -> ArrClient:
-        """Build and return the client instance."""
-        return self._class(name=self._name, url=self._url, api_key=self._api_key, settings=self._settings)
-
-    def lidarr(self) -> Self:
-        """Set client class to LidarrClient."""
-        self._class = LidarrClient
-        return self
-
-    def radarr(self) -> Self:
-        """Set client class to RadarrClient."""
-        self._class = RadarrClient
-        return self
-
-    def sonarr(self) -> Self:
-        """Set client class to SonarrClient."""
-        self._class = SonarrClient
-        return self
-
-    def whisparr(self) -> Self:
-        """Set client class to WhisparrClient."""
-        self._class = WhisparrClient
-        return self
-
-    def with_exclude_tags(self, *names: str) -> Self:
-        """Set exclude_tags in client settings."""
-        self._settings['exclude_tags'] = list(names)
-        return self
-
-    def with_include_tags(self, *names: str) -> Self:
-        """Set include_tags in client settings."""
-        self._settings['include_tags'] = list(names)
-        return self
-
-    def with_name(self, name: str) -> Self:
-        """Set the client name."""
-        self._name = name
-        return self
-
-    def with_settings(self, **settings: Any) -> Self:
-        """Set client settings."""
-        self._settings = settings
         return self
 
 

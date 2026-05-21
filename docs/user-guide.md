@@ -402,7 +402,7 @@ Settings for individual *arr instances.
 
 #### `type` (required)
 
-**Options:** `radarr`, `sonarr`, `lidarr`, `whisparr`
+**Options:** `radarr`, `sonarr`, `lidarr`, `readarr`, `whisparr`
 
 Use `whisparr` for Whisparr v3 instances. Log output uses `Performer - Scene Title` format. Prowlarr is not supported — it is an indexer aggregator, not a media manager, and does not expose the missing/cutoff wanted endpoints that Rangarr uses.
 
@@ -601,7 +601,7 @@ Each instance is identified by a numeric index. Prefix instance fields with `RAN
 | Variable | Required | Description |
 |---|---|---|
 | `RANGARR_INSTANCE_<n>_NAME` | Yes | Unique name for this instance. |
-| `RANGARR_INSTANCE_<n>_TYPE` | Yes | `radarr`, `sonarr`, `lidarr`, or `whisparr` (case-insensitive). |
+| `RANGARR_INSTANCE_<n>_TYPE` | Yes | `radarr`, `sonarr`, `lidarr`, `readarr`, or `whisparr` (case-insensitive). |
 | `RANGARR_INSTANCE_<n>_URL` | Yes | Base URL of the instance (e.g. `http://radarr:7878`). `HOST` is accepted as an alias. |
 | `RANGARR_INSTANCE_<n>_API_KEY` | Yes | API key from the instance's settings page. |
 | `RANGARR_INSTANCE_<n>_ENABLED` | No | Defaults to `true`. Set to `false` to disable without removing the variable. |

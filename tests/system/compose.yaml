@@ -41,6 +41,20 @@ services:
     ports:
       - "8686"
     restart: unless-stopped
+  readarr:
+    image: linuxserver/readarr:0.4.19-nightly
+    container_name: rangarr-test-readarr
+    hostname: readarr
+    environment:
+      TZ: UTC
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8787/ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 15
+    ports:
+      - "8787"
+    restart: unless-stopped
   whisparr:
     image: ghcr.io/thespad/whisparr:latest
     container_name: rangarr-test-whisparr

@@ -183,21 +183,36 @@ _parse_config_cases = {
             'instances': {'radarr': [{'name': 'my-movies'}]},
         },
     },
-    'invalid_instance_type': {
+    'valid_readarr_instance': {
         'config_data': {
             'instances': {
-                'test': {
-                    'type': 'plex',
-                    'url': 'http://test',
-                    'api_key': 'testkey',
+                'my-books': {
+                    'type': 'readarr',
+                    'url': 'http://localhost:8787',
+                    'api_key': 'readarr_api_key',
+                    'enabled': True,
                 }
             }
         },
-        'expected_error': "Invalid type 'plex' for instance 'test'. Must be one of: lidarr, radarr, sonarr, whisparr.",
+        'expected_result': {
+            'instances': {'readarr': [{'name': 'my-books'}]},
+        },
+    },
+    'invalid_instance_type': {
+        'config_data': {
+            'instances': {
+                'invalidarr': {
+                    'type': 'invalidarr',
+                    'url': 'http://localhost:8787',
+                    'api_key': 'some_api_key',
+                }
+            }
+        },
+        'expected_error': "Invalid type 'invalidarr' for instance 'invalidarr'. Must be one of: lidarr, radarr, readarr, sonarr, whisparr.",
     },
     'empty_instances_dict': {
         'config_data': {'instances': {}},
-        'expected_error': "No instances defined under 'instances'. Add at least one Lidarr, Radarr, Sonarr, or Whisparr instance.",
+        'expected_error': "No instances defined under 'instances'. Add at least one Lidarr, Radarr, Readarr, Sonarr, or Whisparr instance.",
     },
     'missing_batch_size_unlimited': {
         'config_data': {
@@ -480,7 +495,7 @@ _parse_config_cases = {
                 },
             }
         },
-        'expected_error': "No instances defined under 'instances'. Add at least one Lidarr, Radarr, Sonarr, or Whisparr instance.",
+        'expected_error': "No instances defined under 'instances'. Add at least one Lidarr, Radarr, Readarr, Sonarr, or Whisparr instance.",
     },
     'yaml_style_mapping': {
         'config_data': {

@@ -20,22 +20,25 @@ _COMPOSE_NETWORK: str = 'rangarr-test-net'
 _API_VERSIONS: dict[str, str] = {
     'lidarr': 'v1',
     'radarr': 'v3',
+    'readarr': 'v1',
     'sonarr': 'v3',
     'whisparr': 'v3',
 }
-_COMMAND_CHECKED_APPS: tuple[str, ...] = ('lidarr', 'radarr', 'sonarr')
+_COMMAND_CHECKED_APPS: tuple[str, ...] = ('lidarr', 'radarr', 'readarr', 'sonarr')
 _COMMAND_POLL_INTERVAL: int = 1
 _COMMAND_POLL_TIMEOUT: int = 30
 _COMPOSE_PATH: str = os.path.join(os.path.dirname(__file__), 'compose.yaml')
 _CONTAINER_NAMES: dict[str, str] = {
     'lidarr': 'rangarr-test-lidarr',
     'radarr': 'rangarr-test-radarr',
+    'readarr': 'rangarr-test-readarr',
     'sonarr': 'rangarr-test-sonarr',
     'whisparr': 'rangarr-test-whisparr',
 }
 _DB_PATHS: dict[str, str] = {
     'lidarr': '/config/lidarr.db',
     'radarr': '/config/radarr.db',
+    'readarr': '/config/readarr.db',
     'sonarr': '/config/sonarr.db',
     'whisparr': '/config/whisparr3.db',
 }
@@ -43,6 +46,7 @@ _HTTP_TIMEOUT: int = 10
 _SERVICES: dict[str, int] = {
     'lidarr': 8686,
     'radarr': 7878,
+    'readarr': 8787,
     'sonarr': 8989,
     'whisparr': 6969,
 }
@@ -222,7 +226,7 @@ def test_search_cycle_runs(
     }
     global_settings = {
         'dry_run': False,
-        'missing_batch_size': 3,
+        'missing_batch_size': len(_COMMAND_CHECKED_APPS),
         'retry_interval_days': 0,
         'search_order': 'last_searched_ascending',
         'stagger_interval_seconds': 0,

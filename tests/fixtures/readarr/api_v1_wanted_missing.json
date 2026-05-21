@@ -1,0 +1,51 @@
+{
+  "page": 1,
+  "pageSize": 10,
+  "sortKey": "releaseDate",
+  "sortDirection": "descending",
+  "totalRecords": 3,
+  "records": [
+    {
+      "id": 1,
+      "title": "Test Book 01",
+      "author": {
+        "id": 1,
+        "authorName": "Test Author 01",
+        "monitored": true,
+        "tags": []
+      },
+      "releaseDate": "2021-03-15T00:00:00Z",
+      "monitored": true,
+      "lastSearchTime": "2021-04-01T00:00:00Z",
+      "tags": []
+    },
+    {
+      "id": 2,
+      "title": "Test Book 02",
+      "author": {
+        "id": 2,
+        "authorName": "Test Author 02",
+        "monitored": true,
+        "tags": []
+      },
+      "releaseDate": "2020-07-22T00:00:00Z",
+      "monitored": true,
+      "lastSearchTime": "2020-08-01T00:00:00Z",
+      "tags": []
+    },
+    {
+      "id": 3,
+      "title": "Test Book 03",
+      "author": {
+        "id": 1,
+        "authorName": "Test Author 01",
+        "monitored": true,
+        "tags": []
+      },
+      "releaseDate": "2019-11-05T00:00:00Z",
+      "monitored": true,
+      "lastSearchTime": "2019-12-01T00:00:00Z",
+      "tags": []
+    }
+  ]
+}

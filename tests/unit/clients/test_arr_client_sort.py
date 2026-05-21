@@ -4,16 +4,19 @@ from unittest.mock import patch
 
 import pytest
 
+from rangarr.clients.arr import ArrClient
 from rangarr.clients.arr import LidarrClient
 from rangarr.clients.arr import RadarrClient
+from rangarr.clients.arr import ReadarrClient
 from rangarr.clients.arr import SonarrClient
 from tests.builders import ClientBuilder
 from tests.builders import RadarrRecordBuilder
 
-_CLIENT_MAP: dict[str, type[RadarrClient] | type[SonarrClient] | type[LidarrClient]] = {
-    'radarr': RadarrClient,
-    'sonarr': SonarrClient,
+_CLIENT_MAP: dict[str, type[ArrClient]] = {
     'lidarr': LidarrClient,
+    'radarr': RadarrClient,
+    'readarr': ReadarrClient,
+    'sonarr': SonarrClient,
 }
 
 _get_release_date_cases = {
@@ -24,6 +27,11 @@ _get_release_date_cases = {
     },
     'lidarr_returns_release_date_field': {
         'client_class': 'lidarr',
+        'record': {'releaseDate': '2023-06-15T00:00:00Z'},
+        'expected': '2023-06-15T00:00:00Z',
+    },
+    'readarr_returns_release_date_field': {
+        'client_class': 'readarr',
         'record': {'releaseDate': '2023-06-15T00:00:00Z'},
         'expected': '2023-06-15T00:00:00Z',
     },

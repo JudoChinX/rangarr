@@ -1,4 +1,4 @@
-"""Tests shared across all ArrClient implementations (Radarr, Sonarr, Lidarr)."""
+"""Tests shared across all ArrClient implementations (Radarr, Sonarr, Lidarr, Readarr)."""
 
 import datetime
 import logging
@@ -9,29 +9,34 @@ from unittest.mock import patch
 import pytest
 import requests
 
+from rangarr.clients.arr import ArrClient
 from rangarr.clients.arr import LidarrClient
 from rangarr.clients.arr import RadarrClient
+from rangarr.clients.arr import ReadarrClient
 from rangarr.clients.arr import SonarrClient
 from tests.builders import ClientBuilder
 from tests.builders import LidarrRecordBuilder
 from tests.builders import QualityProfileBuilder
 from tests.builders import RadarrRecordBuilder
+from tests.builders import ReadarrRecordBuilder
 from tests.builders import SonarrRecordBuilder
 from tests.builders import mock_fetch_unlimited_factory
 from tests.builders import mock_http_response
 from tests.builders import mock_session_get_factory
 from tests.conftest import FIXED_NOW
 
-_CLIENT_MAP: dict[str, type[RadarrClient] | type[SonarrClient] | type[LidarrClient]] = {
-    'radarr': RadarrClient,
-    'sonarr': SonarrClient,
+_CLIENT_MAP: dict[str, type[ArrClient]] = {
     'lidarr': LidarrClient,
+    'radarr': RadarrClient,
+    'readarr': ReadarrClient,
+    'sonarr': SonarrClient,
 }
 
 
 _arr_client_dry_run_cases = {
     'lidarr': {'client_class': 'lidarr'},
     'radarr': {'client_class': 'radarr'},
+    'readarr': {'client_class': 'readarr'},
     'sonarr': {'client_class': 'sonarr'},
 }
 
@@ -321,6 +326,47 @@ _processing_pipeline_cases = {
         'expected_ids': [],
         'expected_title': None,
     },
+    'readarr_filters_unreleased_book': {
+        'client_class': 'readarr',
+        'settings': {'retry_interval_days': 0},
+        'missing_records': [
+            ReadarrRecordBuilder().with_id(1).with_title('Released Book').with_author('Author A').released().build(),
+            ReadarrRecordBuilder().with_id(2).with_title('Future Book').with_author('Author A').not_released().build(),
+        ],
+        'upgrade_records': [],
+        'missing_batch_size': 10,
+        'upgrade_batch_size': 10,
+        'expected_ids': [1],
+        'expected_title': None,
+    },
+    'readarr_formats_title_as_author_book': {
+        'client_class': 'readarr',
+        'settings': {'retry_interval_days': 0},
+        'missing_records': [
+            ReadarrRecordBuilder().with_id(1).with_title('Test Book').with_author('Test Author').released().build(),
+        ],
+        'upgrade_records': [],
+        'missing_batch_size': 10,
+        'upgrade_batch_size': 10,
+        'expected_ids': [1],
+        'expected_title': 'Test Author - Test Book',
+    },
+    'readarr_handles_missing_release_date': {
+        'client_class': 'readarr',
+        'settings': {'retry_interval_days': 0},
+        'missing_records': [
+            {
+                'id': 1,
+                'title': 'Unknown Release',
+                'author': {'authorName': 'Unknown Author'},
+            },
+        ],
+        'upgrade_records': [],
+        'missing_batch_size': 10,
+        'upgrade_batch_size': 10,
+        'expected_ids': [],
+        'expected_title': None,
+    },
     'missing_override_disables_retry_for_missing': {
         'client_class': 'radarr',
         'settings': {'retry_interval_days': 30, 'retry_interval_days_missing': 0},
@@ -488,33 +534,9 @@ def test_arr_client_trigger_search(
 
 
 _trigger_single_cases = {
-    'radarr_posts_movies_search_payload': {
-        'client_class': 'radarr',
-        'item': (42, 'missing', 'Test Movie'),
-        'expected_payload': {'name': 'MoviesSearch', 'movieIds': [42]},
-        'raises_exception': False,
-    },
-    'sonarr_posts_episode_search_payload': {
-        'client_class': 'sonarr',
-        'item': (99, 'upgrade', 'Test Episode'),
-        'expected_payload': {'name': 'EpisodeSearch', 'episodeIds': [99]},
-        'raises_exception': False,
-    },
-    'lidarr_posts_album_search_payload': {
-        'client_class': 'lidarr',
-        'item': (77, 'missing', 'Test Album'),
-        'expected_payload': {'name': 'AlbumSearch', 'albumIds': [77]},
-        'raises_exception': False,
-    },
     'handles_post_exception_without_propagating': {
         'client_class': 'radarr',
         'item': (1, 'missing', 'Movie A'),
-        'expected_payload': None,
-        'raises_exception': True,
-    },
-    'sonarr_handles_post_exception_without_propagating': {
-        'client_class': 'sonarr',
-        'item': (1, 'missing', 'Episode A'),
         'expected_payload': None,
         'raises_exception': True,
     },
@@ -523,6 +545,42 @@ _trigger_single_cases = {
         'item': (1, 'missing', 'Album A'),
         'expected_payload': None,
         'raises_exception': True,
+    },
+    'lidarr_posts_album_search_payload': {
+        'client_class': 'lidarr',
+        'item': (77, 'missing', 'Test Album'),
+        'expected_payload': {'name': 'AlbumSearch', 'albumIds': [77]},
+        'raises_exception': False,
+    },
+    'radarr_posts_movies_search_payload': {
+        'client_class': 'radarr',
+        'item': (42, 'missing', 'Test Movie'),
+        'expected_payload': {'name': 'MoviesSearch', 'movieIds': [42]},
+        'raises_exception': False,
+    },
+    'readarr_handles_post_exception_without_propagating': {
+        'client_class': 'readarr',
+        'item': (1, 'missing', 'Book A'),
+        'expected_payload': None,
+        'raises_exception': True,
+    },
+    'readarr_posts_book_search_payload': {
+        'client_class': 'readarr',
+        'item': (55, 'missing', 'Test Book'),
+        'expected_payload': {'name': 'BookSearch', 'bookIds': [55]},
+        'raises_exception': False,
+    },
+    'sonarr_handles_post_exception_without_propagating': {
+        'client_class': 'sonarr',
+        'item': (1, 'missing', 'Episode A'),
+        'expected_payload': None,
+        'raises_exception': True,
+    },
+    'sonarr_posts_episode_search_payload': {
+        'client_class': 'sonarr',
+        'item': (99, 'upgrade', 'Test Episode'),
+        'expected_payload': {'name': 'EpisodeSearch', 'episodeIds': [99]},
+        'raises_exception': False,
     },
 }
 
@@ -560,7 +618,9 @@ def test_arr_client_trigger_single(client_class: Any, item: Any, expected_payloa
 
     client.session.post.assert_called_once()
     if expected_payload is not None:
-        expected_url = 'http://test/api/v1/command' if client_class == 'lidarr' else 'http://test/api/v3/command'
+        expected_url = (
+            'http://test/api/v1/command' if client_class in ('lidarr', 'readarr') else 'http://test/api/v3/command'
+        )
         client.session.post.assert_called_once_with(
             expected_url,
             json=expected_payload,
@@ -666,17 +726,21 @@ def test_fetch_does_not_send_sort_params() -> None:
 
 
 _fetch_extra_params_cases = {
-    'sonarr_sends_include_series_and_monitored': {
-        'client_class': 'sonarr',
-        'expect_include_series': True,
+    'lidarr_omits_include_series_sends_monitored': {
+        'client_class': 'lidarr',
+        'expect_include_series': False,
     },
     'radarr_omits_include_series_sends_monitored': {
         'client_class': 'radarr',
         'expect_include_series': False,
     },
-    'lidarr_omits_include_series_sends_monitored': {
-        'client_class': 'lidarr',
+    'readarr_omits_include_series_sends_monitored': {
+        'client_class': 'readarr',
         'expect_include_series': False,
+    },
+    'sonarr_sends_include_series_and_monitored': {
+        'client_class': 'sonarr',
+        'expect_include_series': True,
     },
 }
 

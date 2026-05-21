@@ -56,6 +56,12 @@ instances:
     api_key: "YOUR_LIDARR_KEY"
     enabled: false                 # Set to true to activate
 
+  readarr:
+    type: readarr
+    host: "http://readarr:8787"    # Use container hostname for Docker deployments
+    api_key: "YOUR_READARR_KEY"
+    enabled: false                 # Set to true to activate
+
   whisparr:
     type: whisparr
     host: "http://whisparr:6969"   # Use container hostname for Docker deployments
