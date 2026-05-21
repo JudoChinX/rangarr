@@ -349,13 +349,13 @@ _log_rangarr_start_retry_cases = {
         'retry_interval_days': 30,
         'retry_interval_days_missing': None,
         'retry_interval_days_upgrade': None,
-        'expected_retry': 'Retry: 30d',
+        'expected_retry': 'Retry: Missing: 30d, Upgrade: 30d',
     },
     'missing_override_only': {
         'retry_interval_days': 30,
         'retry_interval_days_missing': 7,
         'retry_interval_days_upgrade': None,
-        'expected_retry': 'Retry: 30d (Missing: 7d)',
+        'expected_retry': 'Retry: Missing: 7d, Upgrade: 30d',
     },
 }
 
@@ -410,13 +410,13 @@ _log_rangarr_start_interval_cases = {
         'run_interval_minutes': 60,
         'run_interval_minutes_missing': None,
         'run_interval_minutes_upgrade': None,
-        'expected_interval': 'Run Interval: 60m',
+        'expected_interval': 'Run Interval: Missing: 60m, Upgrade: 60m',
     },
     'both_overrides': {
         'run_interval_minutes': 60,
         'run_interval_minutes_missing': 30,
         'run_interval_minutes_upgrade': 360,
-        'expected_interval': 'Run Interval: 60m (Missing: 30m, Upgrade: 360m)',
+        'expected_interval': 'Run Interval: Missing: 30m, Upgrade: 360m',
     },
 }
 

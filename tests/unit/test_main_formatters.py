@@ -18,6 +18,44 @@ def _make_allocation_pairs(pairs: list[tuple[str, str]]) -> list[tuple[Mock, str
     return result
 
 
+_calculate_eta_cases = {
+    'stagger_disabled': {
+        'item_count': 10,
+        'stagger_seconds': 0,
+        'expected': '',
+    },
+    'single_item': {
+        'item_count': 1,
+        'stagger_seconds': 1800,
+        'expected': '',
+    },
+    'multiple_items': {
+        'item_count': 441,
+        'stagger_seconds': 1800,
+        'expected': ' (1 every 1800 seconds, ETA: 9 days, 4:00:00)',
+    },
+    'two_items': {
+        'item_count': 2,
+        'stagger_seconds': 60,
+        'expected': ' (1 every 60 seconds, ETA: 0:01:00)',
+    },
+}
+
+
+@pytest.mark.parametrize(
+    'item_count, stagger_seconds, expected',
+    [(case['item_count'], case['stagger_seconds'], case['expected']) for case in _calculate_eta_cases.values()],
+    ids=list(_calculate_eta_cases.keys()),
+)
+def test_calculate_eta(item_count: int, stagger_seconds: int, expected: str) -> None:
+    """Test _calculate_eta returns correct ETA string or empty string when stagger is disabled."""
+    from rangarr.main import _calculate_eta
+
+    result = _calculate_eta(item_count, stagger_seconds)
+
+    assert result == expected
+
+
 _format_cycle_complete_log_cases = {
     'both_ran': {
         'ran_missing': True,
@@ -154,43 +192,43 @@ _format_retry_interval_str_cases = {
         'retry_days': 30,
         'retry_missing': None,
         'retry_upgrade': None,
-        'expected': '30d',
+        'expected': 'Missing: 30d, Upgrade: 30d',
     },
     'disabled': {
         'retry_days': 0,
         'retry_missing': None,
         'retry_upgrade': None,
-        'expected': 'Disabled',
+        'expected': 'Missing: Disabled, Upgrade: Disabled',
     },
     'missing_override_only': {
         'retry_days': 30,
         'retry_missing': 14,
         'retry_upgrade': None,
-        'expected': '30d (Missing: 14d)',
+        'expected': 'Missing: 14d, Upgrade: 30d',
     },
     'upgrade_override_only': {
         'retry_days': 30,
         'retry_missing': None,
         'retry_upgrade': 60,
-        'expected': '30d (Upgrade: 60d)',
+        'expected': 'Missing: 30d, Upgrade: 60d',
     },
     'both_overrides': {
         'retry_days': 30,
         'retry_missing': 14,
         'retry_upgrade': 60,
-        'expected': '30d (Missing: 14d, Upgrade: 60d)',
+        'expected': 'Missing: 14d, Upgrade: 60d',
     },
     'base_disabled_with_missing_override': {
         'retry_days': 0,
         'retry_missing': 7,
         'retry_upgrade': None,
-        'expected': 'Disabled (Missing: 7d)',
+        'expected': 'Missing: 7d, Upgrade: Disabled',
     },
-    'override_equals_global_suppressed': {
+    'missing_override_equals_global': {
         'retry_days': 30,
         'retry_missing': 30,
         'retry_upgrade': 60,
-        'expected': '30d (Upgrade: 60d)',
+        'expected': 'Missing: 30d, Upgrade: 60d',
     },
 }
 
@@ -227,31 +265,31 @@ _format_run_interval_str_cases = {
         'run_interval_m': 60,
         'run_interval_missing_m': None,
         'run_interval_upgrade_m': None,
-        'expected': '60m',
+        'expected': 'Missing: 60m, Upgrade: 60m',
     },
     'missing_override_only': {
         'run_interval_m': 60,
         'run_interval_missing_m': 30,
         'run_interval_upgrade_m': None,
-        'expected': '60m (Missing: 30m)',
+        'expected': 'Missing: 30m, Upgrade: 60m',
     },
     'upgrade_override_only': {
         'run_interval_m': 60,
         'run_interval_missing_m': None,
         'run_interval_upgrade_m': 360,
-        'expected': '60m (Upgrade: 360m)',
+        'expected': 'Missing: 60m, Upgrade: 360m',
     },
     'both_overrides': {
         'run_interval_m': 60,
         'run_interval_missing_m': 30,
         'run_interval_upgrade_m': 360,
-        'expected': '60m (Missing: 30m, Upgrade: 360m)',
+        'expected': 'Missing: 30m, Upgrade: 360m',
     },
-    'override_equals_global_suppressed': {
+    'missing_override_equals_global': {
         'run_interval_m': 60,
         'run_interval_missing_m': 60,
         'run_interval_upgrade_m': 360,
-        'expected': '60m (Upgrade: 360m)',
+        'expected': 'Missing: 60m, Upgrade: 360m',
     },
 }
 
