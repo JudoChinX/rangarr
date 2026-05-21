@@ -220,7 +220,7 @@ Rangarr operates entirely within your local network (or wherever you host your *
 
 ### 4. Test Coverage as Documentation
 
-**Decision:** 432 tests covering all code paths, including error conditions.
+**Decision:** 438 unit and integration tests covering all code paths, including error conditions. Docker-based system tests run separately and require a live stack.
 
 **Why:** Tests serve three purposes:
 1. Prevent regressions.
@@ -311,21 +311,30 @@ Every line of AI-generated code was reviewed, tested, and validated against requ
 
 **Test Coverage:** See `rangarr/` and `tests/` directories.
 
-Unit tests (co-located with source):
+Unit tests (`tests/unit/`):
 - `test_config_parser.py`: Configuration validation without network calls.
+- `test_config_parser_hours.py`: Active hours parsing and boundary cases.
+- `test_config_loader.py`: Config file loading and env-var source switching.
 - `test_env_config.py`: Environment variable configuration loading.
 - `test_validators.py`: Input validation logic.
 - `test_main.py`: Orchestration loop with mocked clients.
+- `test_main_formatters.py`: Startup log formatting (compact intervals, interleave line).
+- `test_main_search.py`: Search cycle orchestration with mocked clients.
 - `clients/test_arr_base.py`: Shared ArrClient base class behaviour.
 - `clients/test_arr_client_sort.py`: Client-side sorting for all search orders across all client types.
+- `clients/test_arr_fetch_page_size.py`: Paged fetch behaviour across page-size configurations.
 - `clients/test_radarr.py`, `clients/test_sonarr.py`, `clients/test_lidarr.py`, `clients/test_whisparr.py`: Client-specific logic with mocked HTTP responses.
 - `clients/test_sonarr_sort.py`: Sorting and interleaving correctness for Sonarr season pack results.
 
-Integration / system tests (`tests/`):
-- `integration/test_search_cycle.py`: Full search cycle with mocked *arr API responses.
-- `integration/test_sonarr_season_packs.py`: Season pack search logic end-to-end.
-- `integration/test_tag_filtering.py`: Tag-based include/exclude filtering.
-- `system/test_app_flow.py`: Full application flow smoke test.
+Integration tests (`tests/integration/`):
+- `test_search_cycle.py`: Full search cycle with mocked *arr API responses.
+- `test_sonarr_season_packs.py`: Season pack search logic end-to-end.
+- `test_tag_filtering.py`: Tag-based include/exclude filtering.
+
+System tests (`tests/system/`) — require a running Docker stack:
+- `test_docker.py`: Container startup, config loading, and dry-run smoke tests.
+- `test_lidarr.py`, `test_radarr.py`, `test_sonarr.py`, `test_whisparr.py`: Per-app end-to-end search cycle tests against live containers.
+- `test_multi_instance.py`: Multi-instance slot allocation and interleave behaviour end-to-end.
 
 **Testing Without Production Instances:**
 
