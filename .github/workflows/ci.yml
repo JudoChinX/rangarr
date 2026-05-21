@@ -58,7 +58,36 @@ jobs:
         run: pip-audit -r requirements.txt
 
       - name: pytest
-        run: pytest
+        run: pytest --ignore=tests/system/test_docker.py
+
+  docker_system_testing:
+    runs-on: self-hosted
+    needs: tests_and_quality
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        with:
+          python-version: "3.13"
+
+      - name: Cache pip
+        uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('requirements*.txt') }}
+          restore-keys: ${{ runner.os }}-pip-
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install -r requirements-dev.txt
+
+      - name: pytest (Docker system tests)
+        run: pytest tests/system/test_docker.py --override-ini="addopts="
 
   release:
     needs: tests_and_quality
