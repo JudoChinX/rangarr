@@ -43,7 +43,7 @@
 
 Some tools in this space have done things their users didn't know about — phoning home, collecting data, making connections that were never disclosed. Rangarr exists as a direct response to that. It talks to the *arr instances you configure. It talks to nothing else.
 
-The codebase is intentionally small. There is no database, no persistence layer. If you want to verify what it does, [SECURITY.md](SECURITY.md) documents the exact threat model, and the source itself is three files you can read in an afternoon.
+The codebase is intentionally small. There is no database, no persistence layer. If you want to verify what it does, [SECURITY.md](SECURITY.md) documents the exact threat model, and the source itself is four files you can read in an afternoon.
 
 ## Quick Start
 
