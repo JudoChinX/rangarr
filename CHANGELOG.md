@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Support for Whisparr v3 instances via `type: whisparr`. Log output uses `Performer - Scene Title` format. Tag filtering, `retry_interval_days`, `season_packs`, custom format scoring, and all other settings apply identically to Sonarr instances.
+
 ### Changed
 
 - Startup log now displays intervals in compact form (e.g. `30d`, `60m`) and suppresses per-type overrides that match the global value. The interleave settings are combined into a single `Interleave:` line. The search-cycle batch log now shows a per-instance item breakdown (e.g. `Alpha: 2 missing, Beta: 1 upgrade`) in place of the ETA estimate.
