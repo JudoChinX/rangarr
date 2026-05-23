@@ -56,7 +56,7 @@ services:
       - "8787"
     restart: unless-stopped
   whisparr:
-    image: ghcr.io/thespad/whisparr:latest
+    image: ghcr.io/hotio/whisparr:latest
     container_name: rangarr-test-whisparr
     hostname: whisparr
     environment:

@@ -86,6 +86,9 @@ jobs:
           pip install -r requirements.txt
           pip install -r requirements-dev.txt
 
+      - name: Pull Docker test images
+        run: docker compose -f tests/system/compose.yaml pull
+
       - name: pytest (Docker system tests)
         run: >-
           pytest tests/system/test_docker.py

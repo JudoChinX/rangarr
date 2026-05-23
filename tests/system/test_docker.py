@@ -25,7 +25,7 @@ _API_VERSIONS: dict[str, str] = {
     'sonarr': 'v3',
     'whisparr': 'v3',
 }
-_COMMAND_CHECKED_APPS: tuple[str, ...] = ('lidarr', 'radarr', 'readarr', 'sonarr')
+_COMMAND_CHECKED_APPS: tuple[str, ...] = ('lidarr', 'radarr', 'readarr', 'sonarr', 'whisparr')
 _COMMAND_POLL_INTERVAL: int = 1
 _COMMAND_POLL_TIMEOUT: int = 30
 _COMPOSE_PATH: str = os.path.join(os.path.dirname(__file__), 'compose.yaml')
@@ -41,7 +41,7 @@ _DB_PATHS: dict[str, str] = {
     'radarr': '/config/radarr.db',
     'readarr': '/config/readarr.db',
     'sonarr': '/config/sonarr.db',
-    'whisparr': '/config/whisparr3.db',
+    'whisparr': '/config/whisparr2.db',
 }
 _HTTP_TIMEOUT: int = 10
 _SERVICES: dict[str, int] = {
@@ -94,6 +94,28 @@ def _poll_command(url: str, api_key: str, command_id: int, api_version: str = 'v
             return data
         time.sleep(_COMMAND_POLL_INTERVAL)
     raise TimeoutError(f'Command {command_id} did not reach a terminal state in {_COMMAND_POLL_TIMEOUT}s')
+
+
+def _wait_for_api(url: str, api_key: str, api_version: str, timeout: int = 60) -> None:
+    """Poll the command endpoint until the API is fully initialised after a restart.
+
+    Checks the command list endpoint rather than /ping so the command queue must
+    be ready before returning — not just the HTTP server.
+    """
+    for _ in range(timeout):
+        try:
+            resp = requests.get(
+                f'{url}/api/{api_version}/command',
+                headers={'X-Api-Key': api_key},
+                timeout=5,
+            )
+            if resp.ok:
+                logger.info('%s API ready.', url)
+                return
+        except requests.RequestException:
+            pass
+        time.sleep(1)
+    raise TimeoutError(f'API at {url} did not become ready within {timeout}s')
 
 
 def _wait_for_ping(url: str, timeout: int = 120) -> None:
@@ -182,6 +204,10 @@ def seeded_env(docker_env: dict[str, str]) -> None:
                 conn.commit()
             finally:
                 conn.close()
+            # Make the DB world-writable so container users without root can write to it.
+            # docker cp sets the file owner to the host user (root in CI), which breaks
+            # containers that run as a non-root user and don't re-chown /config on startup.
+            os.chmod(host_db, 0o666)
             subprocess.run(['docker', 'cp', host_db, f'{container}:{db_path}'], check=True)
             for ext in ('-wal', '-shm'):
                 wal_path = f'{host_db}{ext}'
@@ -194,6 +220,8 @@ def seeded_env(docker_env: dict[str, str]) -> None:
         new_url = _container_url(container, _SERVICES[service])
         docker_env[service] = new_url
         _wait_for_ping(new_url)
+        api_key = _extract_api_key(container)
+        _wait_for_api(new_url, api_key, _API_VERSIONS[service])
         subprocess.run(['docker', 'exec', container, 'mkdir', '-p', '/tmp/media'], check=True)
     logger.info('All services seeded and restarted.')
 

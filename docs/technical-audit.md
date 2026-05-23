@@ -107,7 +107,7 @@ config.yaml → config_parser.py → main.py → ArrClient instances → *arr AP
 - `RadarrClient`: Radarr-specific implementation.
 - `ReadarrClient`: Readarr-specific implementation (uses `/api/v1/` endpoints).
 - `SonarrClient`: Sonarr-specific implementation.
-- `WhisparrClient`: Whisparr v3 implementation; extends `SonarrClient` with performer/scene title formatting.
+- `WhisparrClient`: Whisparr v2 implementation; extends `SonarrClient` with performer/scene title formatting.
 
 **Key Methods:**
 - `get_media_to_search()`: Fetches, sorts, and filters missing/upgrade items from wanted endpoints. Returns the full backlog for global allocation.
