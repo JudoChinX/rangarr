@@ -324,8 +324,10 @@ class ArrClient(ABC):
                 response.raise_for_status()
                 logger.info(f'[{self.name}] Searching ({reason}): {title} ({index}/{total})')
             except requests.RequestException as error:
+                body = getattr(getattr(error, 'response', None), 'text', '') or ''
+                detail = f' — {body[:300]}' if body else ''
                 logger.error(
-                    f'[{self.name}] Failed to trigger {self._command_name} for {title} (ID: {item_id}): {error}'
+                    f'[{self.name}] Failed to trigger {self._command_name} for {title} (ID: {item_id}): {error}{detail}'
                 )
 
     def check_connection(self) -> bool:
@@ -820,7 +822,7 @@ class SonarrClient(ArrClient):
 
 
 class WhisparrClient(SonarrClient):
-    """Whisparr v3 API client."""
+    """Whisparr v2 API client."""
 
     @override
     def _get_record_title(self, record: dict) -> str:

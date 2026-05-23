@@ -404,7 +404,7 @@ Settings for individual *arr instances.
 
 **Options:** `radarr`, `sonarr`, `lidarr`, `readarr`, `whisparr`
 
-Use `whisparr` for Whisparr v3 instances. Log output uses `Performer - Scene Title` format. Prowlarr is not supported — it is an indexer aggregator, not a media manager, and does not expose the missing/cutoff wanted endpoints that Rangarr uses.
+Use `whisparr` for Whisparr v2 instances. Log output uses `Performer - Scene Title` format. Prowlarr is not supported — it is an indexer aggregator, not a media manager, and does not expose the missing/cutoff wanted endpoints that Rangarr uses.
 
 ```yaml
 instances:

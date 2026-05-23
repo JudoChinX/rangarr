@@ -29,7 +29,7 @@ The only direct dependencies are [`requests`](https://github.com/psf/requests) a
 
 Rangarr interacts exclusively with your configured Radarr, Sonarr, Lidarr, Readarr, and Whisparr instances through their official APIs. Specifically:
 
-> **Note:** Whisparr v3 shares the same API architecture and security profile as Sonarr. Any endpoint or data access described for Sonarr applies equally to Whisparr v3 unless otherwise noted.
+> **Note:** Whisparr v2 shares the same API architecture and security profile as Sonarr. Any endpoint or data access described for Sonarr applies equally to Whisparr v2 unless otherwise noted.
 
 **API Endpoints Called:**
 - `GET /api/v3/wanted/missing` (Radarr/Sonarr/Whisparr) or `GET /api/v1/wanted/missing` (Lidarr/Readarr) — Retrieves lists of missing media items (not yet downloaded)

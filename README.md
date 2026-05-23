@@ -24,7 +24,7 @@
 
 ## Key Features
 
-- **Multi-Instance Support:** Manage Radarr, Sonarr, Lidarr, Readarr, and Whisparr v3 from a single service.
+- **Multi-Instance Support:** Manage Radarr, Sonarr, Lidarr, Readarr, and Whisparr v2 from a single service.
 - **Global Slot Allocation:** Efficiently distributes search slots across all instances, ensuring no search capacity is wasted.
 - **Instance Interleaving:** Spreads search pressure evenly across multiple *arr instances and shared indexers throughout the cycle.
 - **Smart Staggering:** Prevents "thundering herd" issues by spacing out search requests.
