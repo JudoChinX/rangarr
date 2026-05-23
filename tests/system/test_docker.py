@@ -1,5 +1,6 @@
 """E2E system tests using real Docker instances of Sonarr, Radarr, Lidarr, and Whisparr."""
 
+import logging
 import os
 import socket
 import sqlite3
@@ -51,6 +52,8 @@ _SERVICES: dict[str, int] = {
     'whisparr': 6969,
 }
 
+logger = logging.getLogger(__name__)
+
 
 def _container_url(container_name: str, port: int) -> str:
     """Return a base URL for a container using its Docker network IP."""
@@ -95,10 +98,12 @@ def _poll_command(url: str, api_key: str, command_id: int, api_version: str = 'v
 
 def _wait_for_ping(url: str, timeout: int = 120) -> None:
     """Poll /ping until the service responds, raising TimeoutError on failure."""
+    logger.info('Waiting for %s to become healthy...', url)
     for _ in range(timeout):
         try:
             resp = requests.get(f'{url}/ping', timeout=5)
             if resp.ok:
+                logger.info('%s is healthy.', url)
                 return
         except requests.RequestException:
             pass
@@ -115,10 +120,12 @@ def api_keys(docker_env: dict[str, str]) -> dict[str, str]:
 @pytest.fixture(scope='session')
 def docker_env() -> Generator[dict[str, str], None, None]:
     """Start Docker Arr containers and yield a mapping of service name to base URL."""
+    logger.info('Starting compose stack...')
     subprocess.run(
         ['docker', 'compose', '-f', _COMPOSE_PATH, 'up', '-d', '--wait'],
         check=True,
     )
+    logger.info('Compose stack up. Connecting runner to network %s...', _COMPOSE_NETWORK)
     # Connect this runner to the compose network so container IPs are reachable.
     # On containerized CI runners the hostname is the short container ID; on bare
     # metal this fails silently and the bridge is already routable.
@@ -134,6 +141,7 @@ def docker_env() -> Generator[dict[str, str], None, None]:
 
     yield urls
 
+    logger.info('Tearing down compose stack...')
     subprocess.run(
         ['docker', 'network', 'disconnect', _COMPOSE_NETWORK, socket.gethostname()],
         capture_output=True,
@@ -150,6 +158,7 @@ def seeded_env(docker_env: dict[str, str]) -> None:
     """Seed each app's SQLite database with test records, then restart to reload."""
     fixtures_dir = os.path.join(os.path.dirname(__file__), 'fixtures')
     for service in docker_env:
+        logger.info('Seeding %s database...', service)
         container = _CONTAINER_NAMES[service]
         db_path = _DB_PATHS[service]
         sql_path = os.path.join(fixtures_dir, service, 'seed.sql')
@@ -186,6 +195,7 @@ def seeded_env(docker_env: dict[str, str]) -> None:
         docker_env[service] = new_url
         _wait_for_ping(new_url)
         subprocess.run(['docker', 'exec', container, 'mkdir', '-p', '/tmp/media'], check=True)
+    logger.info('All services seeded and restarted.')
 
 
 def test_api_connectivity(docker_env: dict[str, str], api_keys: dict[str, str]) -> None:
@@ -198,7 +208,9 @@ def test_api_connectivity(docker_env: dict[str, str], api_keys: dict[str, str]) 
             timeout=_HTTP_TIMEOUT,
         )
         resp.raise_for_status()
-        assert 'version' in resp.json()
+        data = resp.json()
+        assert 'version' in data
+        logger.info('%s API OK (version: %s).', service, data.get('version', 'unknown'))
 
 
 def test_containers_healthy(docker_env: dict[str, str]) -> None:
@@ -212,6 +224,7 @@ def test_containers_healthy(docker_env: dict[str, str]) -> None:
         )
         assert res.returncode == 0, f'{service} ping failed: {res.stderr}'
         assert 'OK' in res.stdout or 'pong' in res.stdout.lower() or res.stdout.strip() == ''
+        logger.info('%s ping OK.', service)
 
 
 def test_search_cycle_runs(
@@ -233,6 +246,7 @@ def test_search_cycle_runs(
         'upgrade_batch_size': 0,
     }
     clients = build_arr_clients(instances_config, global_settings)
+    logger.info('Running search cycle against %d service(s).', len(docker_env))
     _run_search_cycle(clients, global_settings)
 
     for app in _COMMAND_CHECKED_APPS:
@@ -247,6 +261,8 @@ def test_search_cycle_runs(
         resp.raise_for_status()
         command_ids = [cmd['id'] for cmd in resp.json()]
         assert len(command_ids) > 0, f'No commands triggered for {app}'
+        logger.info('%s - %d command(s) triggered.', app, len(command_ids))
         for cmd_id in command_ids:
             result = _poll_command(url, api_key, cmd_id, ver)
             assert result['status'] == 'completed', f'{app} command {cmd_id} ended with status {result["status"]}'
+            logger.info('%s command %d (%s): %s.', app, cmd_id, result.get('name', 'unknown'), result['status'])
