@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Readarr support. Add instances of type `readarr` to manage book libraries alongside existing Radarr, Sonarr, and Lidarr instances.
 
+### Changed
+
+- Unsupported instance types (e.g. an unrecognized `type:` value) now log an error and skip the instance rather than aborting startup.
+
 ## [0.8.0] - 2026-05-21
 
 ### Added

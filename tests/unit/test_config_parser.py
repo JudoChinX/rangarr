@@ -1,5 +1,6 @@
 """Tests for config_parser.py configuration validation and schema."""
 
+import logging
 import re
 from typing import Any
 
@@ -198,17 +199,18 @@ _parse_config_cases = {
             'instances': {'readarr': [{'name': 'my-books'}]},
         },
     },
-    'invalid_instance_type': {
+    'unsupported_type_only_raises_no_instances': {
         'config_data': {
             'instances': {
-                'invalidarr': {
-                    'type': 'invalidarr',
-                    'url': 'http://localhost:8787',
-                    'api_key': 'some_api_key',
+                'test': {
+                    'type': 'plex',
+                    'url': 'http://test',
+                    'api_key': 'testkey',
+                    'enabled': True,
                 }
             }
         },
-        'expected_error': "Invalid type 'invalidarr' for instance 'invalidarr'. Must be one of: lidarr, radarr, readarr, sonarr, whisparr.",
+        'expected_error': "No instances defined under 'instances'. Add at least one Lidarr, Radarr, Readarr, Sonarr, or Whisparr instance.",
     },
     'empty_instances_dict': {
         'config_data': {'instances': {}},
@@ -1183,3 +1185,12 @@ def test_get_setting_default_raises_on_invalid_setting() -> None:
     """Test get_setting_default raises KeyError for undefined settings."""
     with pytest.raises(KeyError):
         get_setting_default('nonexistent_setting')
+
+
+def test_parse_config_unsupported_type_logs_error_and_skips(caplog: Any) -> None:
+    """Test that an unsupported instance type logs an error and skips the instance."""
+    config_data = _parse_config_cases['unsupported_type_only_raises_no_instances']['config_data']
+    with caplog.at_level(logging.ERROR, logger='rangarr.config_parser'):
+        with pytest.raises(ValueError, match='No instances defined'):
+            parse_config(config_data)
+    assert any("Unsupported instance type 'plex'" in r.message for r in caplog.records)
