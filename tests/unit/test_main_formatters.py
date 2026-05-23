@@ -19,20 +19,20 @@ def _make_allocation_pairs(pairs: list[tuple[str, str]]) -> list[tuple[Mock, str
 
 
 _calculate_eta_cases = {
-    'stagger_disabled': {
-        'item_count': 10,
-        'stagger_seconds': 0,
-        'expected': '',
+    'multiple_items': {
+        'item_count': 441,
+        'stagger_seconds': 1800,
+        'expected': ' (1 every 1800 seconds, ETA: 9 days, 4:00:00)',
     },
     'single_item': {
         'item_count': 1,
         'stagger_seconds': 1800,
         'expected': '',
     },
-    'multiple_items': {
-        'item_count': 441,
-        'stagger_seconds': 1800,
-        'expected': ' (1 every 1800 seconds, ETA: 9 days, 4:00:00)',
+    'stagger_disabled': {
+        'item_count': 10,
+        'stagger_seconds': 0,
+        'expected': '',
     },
     'two_items': {
         'item_count': 2,

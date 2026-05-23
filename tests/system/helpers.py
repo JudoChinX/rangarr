@@ -65,6 +65,34 @@ def _make_radarr_router(
     return route
 
 
+def _make_readarr_router(
+    tag_data: list,
+    missing_data: dict,
+    cutoff_data: dict,
+) -> Any:
+    """Return a request router that serves Readarr fixture data by URL."""
+
+    def route(method: str, url: str, **_kwargs: Any) -> Any:
+        """Route a request to the appropriate fixture response."""
+        response = MagicMock()
+        response.raise_for_status.return_value = None
+
+        if '/api/v1/tag' in url:
+            response.json.return_value = tag_data
+        elif '/api/v1/wanted/missing' in url:
+            response.json.return_value = missing_data
+        elif '/api/v1/wanted/cutoff' in url:
+            response.json.return_value = cutoff_data
+        elif '/api/v1/command' in url and method.upper() == 'POST':
+            response.json.return_value = {'id': 1}
+        else:
+            raise ValueError(f'Unexpected URL: {url}')
+
+        return response
+
+    return route
+
+
 def _make_sonarr_router(
     tag_data: list,
     missing_data: dict,

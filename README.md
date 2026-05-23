@@ -20,11 +20,11 @@
   <img src="https://github.com/JudoChinX/unraid-templates/raw/main/assets/rangarr-logo.png" alt="Rangarr Logo">
 </p>
 
-**Rangarr** is a lightweight orchestration service that automates and staggers media searches across multiple *arr instances ([Radarr](https://github.com/Radarr/Radarr), [Sonarr](https://github.com/Sonarr/Sonarr), [Lidarr](https://github.com/Lidarr/Lidarr), [Whisparr](https://github.com/Whisparr/Whisparr)). It helps keep your library complete without overwhelming your indexers or API limits.
+**Rangarr** is a lightweight orchestration service that automates and staggers media searches across multiple *arr instances ([Radarr](https://github.com/Radarr/Radarr), [Sonarr](https://github.com/Sonarr/Sonarr), [Lidarr](https://github.com/Lidarr/Lidarr), [Readarr](https://github.com/Readarr/Readarr), [Whisparr](https://github.com/Whisparr/Whisparr)). It helps keep your library complete without overwhelming your indexers or API limits.
 
 ## Key Features
 
-- **Multi-Instance Support:** Manage Radarr, Sonarr, Lidarr, and Whisparr v3 from a single service.
+- **Multi-Instance Support:** Manage Radarr, Sonarr, Lidarr, Readarr, and Whisparr v3 from a single service.
 - **Global Slot Allocation:** Efficiently distributes search slots across all instances, ensuring no search capacity is wasted.
 - **Instance Interleaving:** Spreads search pressure evenly across multiple *arr instances and shared indexers throughout the cycle.
 - **Smart Staggering:** Prevents "thundering herd" issues by spacing out search requests.

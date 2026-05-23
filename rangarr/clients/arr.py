@@ -512,6 +512,47 @@ class RadarrClient(ArrClient):
         return record.get('isAvailable', True)
 
 
+class ReadarrClient(ArrClient):
+    """Readarr API client."""
+
+    ENDPOINT_COMMAND = '/api/v1/command'
+    ENDPOINT_TAG = '/api/v1/tag'
+    ENDPOINT_WANTED_CUTOFF = '/api/v1/wanted/cutoff'
+    ENDPOINT_WANTED_MISSING = '/api/v1/wanted/missing'
+
+    @property
+    @override
+    def _command_name(self) -> str:
+        return 'BookSearch'
+
+    @override
+    def _fetch_quality_profile_cutoffs(self) -> dict[int, int]:
+        return {}
+
+    @override
+    def _get_record_tags(self, record: dict) -> list[int]:
+        return record.get('tags', [])
+
+    @override
+    def _get_record_title(self, record: dict) -> str:
+        author_name = record.get('author', {}).get('authorName', 'Unknown Author')
+        book_title = record.get('title', 'Unknown Book')
+        return f'{author_name} - {book_title}'
+
+    @override
+    def _get_release_date(self, record: dict) -> str:
+        return record.get('releaseDate') or ''
+
+    @property
+    @override
+    def _id_field(self) -> str:
+        return 'bookIds'
+
+    @override
+    def _is_available(self, record: dict) -> bool:
+        return self._is_date_past(record.get('releaseDate'))
+
+
 class SonarrClient(ArrClient):
     """Sonarr API client."""
 

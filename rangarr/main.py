@@ -17,6 +17,7 @@ from typing import Any
 from rangarr.clients.arr import ArrClient
 from rangarr.clients.arr import LidarrClient
 from rangarr.clients.arr import RadarrClient
+from rangarr.clients.arr import ReadarrClient
 from rangarr.clients.arr import SonarrClient
 from rangarr.clients.arr import WhisparrClient
 from rangarr.config_parser import SETTINGS_SCHEMA
@@ -43,6 +44,7 @@ logger = logging.getLogger(__name__)
 _CLIENT_MAP: dict[str, type[ArrClient]] = {
     'lidarr': LidarrClient,
     'radarr': RadarrClient,
+    'readarr': ReadarrClient,
     'sonarr': SonarrClient,
     'whisparr': WhisparrClient,
 }
