@@ -1,10 +1,10 @@
-"""Tests specific to the WhisparrClient implementation."""
+"""Tests specific to the WhisparrV2Client implementation."""
 
 from unittest.mock import patch
 
 import pytest
 
-from rangarr.clients.arr import WhisparrClient
+from rangarr.clients.arr import WhisparrV2Client
 from tests.builders import ClientBuilder
 from tests.builders import SonarrRecordBuilder
 
@@ -74,7 +74,7 @@ _is_available_cases = {
 
 def test_get_media_to_search_returns_released_scenes() -> None:
     """Test get_media_to_search returns scenes whose releaseDate is in the past."""
-    client = ClientBuilder().whisparr().with_settings(retry_interval_days=0).build()
+    client = ClientBuilder().whisparr_v2().with_settings(retry_interval_days=0).build()
     missing_records = [
         {
             'id': 1,
@@ -102,7 +102,7 @@ def test_get_media_to_search_returns_released_scenes() -> None:
 )
 def test_get_record_title(record: dict, expected: str) -> None:
     """Test _get_record_title formats performer and scene title correctly."""
-    client = ClientBuilder().whisparr().build()
+    client = ClientBuilder().whisparr_v2().build()
     result = client._get_record_title(record)
     assert result == expected
 
@@ -114,7 +114,7 @@ def test_get_record_title(record: dict, expected: str) -> None:
 )
 def test_get_release_date(record: dict, expected: str) -> None:
     """Test _get_release_date returns the releaseDate field used for sort ordering."""
-    client = ClientBuilder().whisparr().build()
+    client = ClientBuilder().whisparr_v2().build()
     assert client._get_release_date(record) == expected
 
 
@@ -125,7 +125,7 @@ def test_get_release_date(record: dict, expected: str) -> None:
 )
 def test_get_season_title(record: dict, season_number: int, expected: str) -> None:
     """Test _get_season_title formats performer and zero-padded season number correctly."""
-    client = ClientBuilder().whisparr().build()
+    client = ClientBuilder().whisparr_v2().build()
     result = client._get_season_title(record, season_number)
     assert result == expected
 
@@ -137,17 +137,17 @@ def test_get_season_title(record: dict, season_number: int, expected: str) -> No
 )
 def test_is_available(record: dict, expected: bool) -> None:
     """Test _is_available uses releaseDate to determine whether a scene has been released."""
-    client = ClientBuilder().whisparr().build()
+    client = ClientBuilder().whisparr_v2().build()
     assert client._is_available(record) == expected
 
 
-def test_whisparr_client_inherits_sonarr_season_packs_default() -> None:
-    """Test WhisparrClient inherits SonarrClient and defaults season_packs to False."""
-    client = WhisparrClient(name='test', url='http://test', api_key='testkey', settings={})
+def test_whisparr_v2_client_inherits_sonarr_season_packs_default() -> None:
+    """Test WhisparrV2Client inherits SonarrClient and defaults season_packs to False."""
+    client = WhisparrV2Client(name='test', url='http://test', api_key='testkey', settings={})
     assert client.season_packs is False
 
 
-def test_whisparr_client_reads_season_packs_setting() -> None:
-    """Test WhisparrClient inherits season_packs setting from SonarrClient."""
-    client = WhisparrClient(name='test', url='http://test', api_key='testkey', settings={'season_packs': True})
+def test_whisparr_v2_client_reads_season_packs_setting() -> None:
+    """Test WhisparrV2Client inherits season_packs setting from SonarrClient."""
+    client = WhisparrV2Client(name='test', url='http://test', api_key='testkey', settings={'season_packs': True})
     assert client.season_packs is True

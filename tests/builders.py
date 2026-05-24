@@ -10,7 +10,8 @@ from rangarr.clients.arr import LidarrClient
 from rangarr.clients.arr import RadarrClient
 from rangarr.clients.arr import ReadarrClient
 from rangarr.clients.arr import SonarrClient
-from rangarr.clients.arr import WhisparrClient
+from rangarr.clients.arr import WhisparrV2Client
+from rangarr.clients.arr import WhisparrV3Client
 from tests.conftest import FIXED_NOW
 
 
@@ -104,9 +105,14 @@ class ClientBuilder:
         self._class = SonarrClient
         return self
 
-    def whisparr(self) -> Self:
-        """Set client class to WhisparrClient."""
-        self._class = WhisparrClient
+    def whisparr_v2(self) -> Self:
+        """Set client class to WhisparrV2Client."""
+        self._class = WhisparrV2Client
+        return self
+
+    def whisparr_v3(self) -> Self:
+        """Set client class to WhisparrV3Client."""
+        self._class = WhisparrV3Client
         return self
 
     def with_exclude_tags(self, *names: str) -> Self:
@@ -455,6 +461,34 @@ class SonarrSeriesRecordBuilder:
     def with_title(self, title: str) -> Self:
         """Set the series title."""
         self._data['title'] = title
+        return self
+
+
+class WhisparrV3RecordBuilder(_RecordBuilder):
+    """Builder for Whisparr v3 API response records."""
+
+    def __init__(self) -> None:
+        """Initialize builder with default Whisparr v3 record."""
+        self._data: dict[str, Any] = {
+            'id': 1,
+            'title': 'Test Scene',
+            'studioTitle': 'Test Studio',
+            'isAvailable': True,
+        }
+
+    def available(self) -> Self:
+        """Mark record as available."""
+        self._data['isAvailable'] = True
+        return self
+
+    def unavailable(self) -> Self:
+        """Mark record as unavailable."""
+        self._data['isAvailable'] = False
+        return self
+
+    def with_studio(self, studio_title: str) -> Self:
+        """Set the studio title."""
+        self._data['studioTitle'] = studio_title
         return self
 
 

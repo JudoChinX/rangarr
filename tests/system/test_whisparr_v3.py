@@ -1,4 +1,4 @@
-"""System tests for WhisparrClient end-to-end flow using realistic HTTP fixtures."""
+"""System tests for WhisparrV3Client end-to-end flow using realistic HTTP fixtures."""
 
 import logging
 from unittest.mock import patch
@@ -9,16 +9,16 @@ import requests
 from rangarr.main import _run_search_cycle
 from rangarr.main import build_arr_clients
 from tests.helpers import load_fixture
-from tests.system.helpers import _make_whisparr_router
+from tests.system.helpers import _make_whisparr_v3_router
 
 
-def test_full_search_cycle_with_whisparr(caplog: pytest.LogCaptureFixture) -> None:
-    """Test a full search cycle with a real WhisparrClient and fixture HTTP responses."""
+def test_full_search_cycle_with_whisparr_v3(caplog: pytest.LogCaptureFixture) -> None:
+    """Test a full search cycle with a real WhisparrV3Client and fixture HTTP responses."""
     config = {
         'instances': {
-            'whisparr': [
+            'whisparr_v3': [
                 {
-                    'name': 'test-whisparr',
+                    'name': 'test-whisparr-v3',
                     'url': 'http://localhost:6969',
                     'api_key': 'testkey',
                     'enabled': True,
@@ -36,10 +36,11 @@ def test_full_search_cycle_with_whisparr(caplog: pytest.LogCaptureFixture) -> No
         },
     }
 
-    router = _make_whisparr_router(
-        load_fixture('whisparr', 'api_v3_tag.json'),
-        load_fixture('whisparr', 'api_v3_wanted_missing.json'),
-        load_fixture('whisparr', 'api_v3_wanted_cutoff.json'),
+    router = _make_whisparr_v3_router(
+        load_fixture('whisparr_v3', 'api_v3_tag.json'),
+        load_fixture('whisparr_v3', 'api_v3_qualityprofile.json'),
+        load_fixture('whisparr_v3', 'api_v3_wanted_missing.json'),
+        load_fixture('whisparr_v3', 'api_v3_wanted_cutoff.json'),
     )
 
     with patch.object(requests.Session, 'request', side_effect=router):

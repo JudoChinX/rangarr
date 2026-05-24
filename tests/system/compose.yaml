@@ -55,10 +55,24 @@ services:
     ports:
       - "8787"
     restart: unless-stopped
-  whisparr:
+  whisparr_v2:
     image: ghcr.io/hotio/whisparr:latest
-    container_name: rangarr-test-whisparr
-    hostname: whisparr
+    container_name: rangarr-test-whisparr-v2
+    hostname: whisparr_v2
+    environment:
+      TZ: UTC
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:6969/ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 15
+    ports:
+      - "6969"
+    restart: unless-stopped
+  whisparr_v3:
+    image: ghcr.io/thespad/whisparr:latest
+    container_name: rangarr-test-whisparr-v3
+    hostname: whisparr_v3
     environment:
       TZ: UTC
     healthcheck:

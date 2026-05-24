@@ -289,7 +289,7 @@ class ArrClient(ABC):
                 logger.error(f'[{self.name}] Failed to fetch tags, tag filtering disabled: {err}')
 
     def _resolve_tag_names(self, tag_map: dict[str, int], names: list[str]) -> set[int]:
-        """Resolve tag names to IDs, logging a warning for any unrecognised name."""
+        """Resolve tag names to IDs, logging a warning for any unrecognized name."""
         result: set[int] = set()
         for name in names:
             tag_id = tag_map.get(name.lower())
@@ -821,7 +821,7 @@ class SonarrClient(ArrClient):
         return merged
 
 
-class WhisparrClient(SonarrClient):
+class WhisparrV2Client(SonarrClient):
     """Whisparr v2 API client."""
 
     @override
@@ -842,3 +842,13 @@ class WhisparrClient(SonarrClient):
     @override
     def _is_available(self, record: dict) -> bool:
         return self._is_date_past(record.get('releaseDate'))
+
+
+class WhisparrV3Client(RadarrClient):
+    """Whisparr v3 API client."""
+
+    @override
+    def _get_record_title(self, record: dict) -> str:
+        studio = record.get('studioTitle', 'Unknown Studio')
+        scene_title = record.get('title', f'Scene {record.get("id", "Unknown")}')
+        return f'{studio} - {scene_title}'

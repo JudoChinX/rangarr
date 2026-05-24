@@ -1,0 +1,42 @@
+{
+    "page": 1,
+    "pageSize": 10,
+    "sortKey": "movieMetadata.sortTitle",
+    "sortDirection": "descending",
+    "totalRecords": 3,
+    "records": [
+        {
+            "id": 1,
+            "title": "Scene Title One",
+            "studioTitle": "Studio One",
+            "isAvailable": true,
+            "monitored": true,
+            "hasFile": false,
+            "movieFileId": 0,
+            "qualityProfileId": 1,
+            "tags": []
+        },
+        {
+            "id": 2,
+            "title": "Scene Title Two",
+            "studioTitle": "Studio Two",
+            "isAvailable": true,
+            "monitored": true,
+            "hasFile": false,
+            "movieFileId": 0,
+            "qualityProfileId": 1,
+            "tags": []
+        },
+        {
+            "id": 3,
+            "title": "Scene Title Three",
+            "studioTitle": "Studio Three",
+            "isAvailable": true,
+            "monitored": true,
+            "hasFile": false,
+            "movieFileId": 0,
+            "qualityProfileId": 1,
+            "tags": []
+        }
+    ]
+}
