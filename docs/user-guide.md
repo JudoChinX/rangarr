@@ -337,9 +337,9 @@ global:
 
 #### `season_packs`
 
-**Type:** `Boolean | Integer (≥ 1) | Float (0.0 < x < 1.0)` | **Default:** `false` | **Applies to:** Sonarr and Whisparr instances only
+**Type:** `Boolean | Integer (≥ 1) | Float (0.0 < x < 1.0)` | **Default:** `false` | **Applies to:** Sonarr and Whisparr v2 instances only
 
-Controls whether searches are grouped into season packs, and optionally gated behind a threshold. Instead of sending one `EpisodeSearch` per episode, Rangarr sends one `SeasonSearch` per `(series, season)` pair — more efficient when many episodes of the same season are affected.
+Controls whether searches are grouped into season packs, and optionally gated behind a threshold. Instead of sending one `EpisodeSearch` per episode, Rangarr sends one `SeasonSearch` per `(series, season)` pair — more efficient when many episodes of the same season are affected. Applies to Sonarr and Whisparr v2 instances only; ignored for all other instance types.
 
 | Value | Behaviour |
 |---|---|
@@ -402,9 +402,9 @@ Settings for individual *arr instances.
 
 #### `type` (required)
 
-**Options:** `radarr`, `sonarr`, `lidarr`, `readarr`, `whisparr`
+**Options:** `radarr`, `sonarr`, `lidarr`, `readarr`, `whisparr`, `whisparr_v2`, `whisparr_v3`
 
-Use `whisparr` for Whisparr v2 instances. Log output uses `Performer - Scene Title` format. Prowlarr is not supported — it is an indexer aggregator, not a media manager, and does not expose the missing/cutoff wanted endpoints that Rangarr uses.
+Use `whisparr` or `whisparr_v3` for Whisparr v3 instances (the current, scene/movie-based version). Log output uses `Studio - Scene Title` format. Use `whisparr_v2` for the older Sonarr-based Whisparr. Log output uses `Performer - Scene Title` format. Prowlarr is not supported — it is an indexer aggregator, not a media manager, and does not expose the missing/cutoff wanted endpoints that Rangarr uses.
 
 ```yaml
 instances:
@@ -589,7 +589,7 @@ The following global settings are supported, each prefixed with `RANGARR_GLOBAL_
 | `RANGARR_GLOBAL_DRY_RUN` | `false` | Log searches without triggering them. |
 | `RANGARR_GLOBAL_INTERLEAVE_INSTANCES` | `false` | `false` = run all items for one instance before moving to the next. `true` = alternate across instances in round-robin order. |
 | `RANGARR_GLOBAL_INTERLEAVE_TYPES` | `true` | `true` = interleave missing and upgrade items in the execution queue. `false` = search all missing items before any upgrade searches. |
-| `RANGARR_GLOBAL_SEASON_PACKS` | `false` | Season pack mode for Sonarr and Whisparr. `false` = individual episode searches. `true` = always use season packs. Integer `N` = season pack only when N or more episodes are affected. Float `x` = season pack only when the ratio of affected to monitored episodes meets or exceeds x. Airing seasons always fall back to individual searches. Sonarr and Whisparr only; ignored by other instance types. |
+| `RANGARR_GLOBAL_SEASON_PACKS` | `false` | Season pack mode for Sonarr and Whisparr v2. `false` = individual episode searches. `true` = always use season packs. Integer `N` = season pack only when N or more episodes are affected. Float `x` = season pack only when the ratio of affected to monitored episodes meets or exceeds x. Airing seasons always fall back to individual searches. Sonarr and Whisparr v2 only; ignored by other instance types. |
 | `RANGARR_GLOBAL_INCLUDE_TAGS` | `(none)` | Comma-separated tag names. Only search items that have any of these tags. |
 | `RANGARR_GLOBAL_EXCLUDE_TAGS` | `(none)` | Comma-separated tag names. Skip items that have any of these tags. |
 | `RANGARR_GLOBAL_ACTIVE_HOURS` | `""` | Time window for searches, e.g. `22:00-06:00`. Leave empty to search at any hour. |
@@ -601,7 +601,7 @@ Each instance is identified by a numeric index. Prefix instance fields with `RAN
 | Variable | Required | Description |
 |---|---|---|
 | `RANGARR_INSTANCE_<n>_NAME` | Yes | Unique name for this instance. |
-| `RANGARR_INSTANCE_<n>_TYPE` | Yes | `radarr`, `sonarr`, `lidarr`, `readarr`, or `whisparr` (case-insensitive). |
+| `RANGARR_INSTANCE_<n>_TYPE` | Yes | `radarr`, `sonarr`, `lidarr`, `readarr`, `whisparr`, `whisparr_v2`, or `whisparr_v3` (case-insensitive). `whisparr` and `whisparr_v3` are aliases for Whisparr v3. Use `whisparr_v2` for the older Sonarr-based Whisparr. |
 | `RANGARR_INSTANCE_<n>_URL` | Yes | Base URL of the instance (e.g. `http://radarr:7878`). `HOST` is accepted as an alias. |
 | `RANGARR_INSTANCE_<n>_API_KEY` | Yes | API key from the instance's settings page. |
 | `RANGARR_INSTANCE_<n>_ENABLED` | No | Defaults to `true`. Set to `false` to disable without removing the variable. |

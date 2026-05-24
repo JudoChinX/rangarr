@@ -23,9 +23,10 @@ _API_VERSIONS: dict[str, str] = {
     'radarr': 'v3',
     'readarr': 'v1',
     'sonarr': 'v3',
-    'whisparr': 'v3',
+    'whisparr_v2': 'v3',
+    'whisparr_v3': 'v3',
 }
-_COMMAND_CHECKED_APPS: tuple[str, ...] = ('lidarr', 'radarr', 'readarr', 'sonarr', 'whisparr')
+_COMMAND_CHECKED_APPS: tuple[str, ...] = ('lidarr', 'radarr', 'readarr', 'sonarr', 'whisparr_v2', 'whisparr_v3')
 _COMMAND_POLL_INTERVAL: int = 1
 _COMMAND_POLL_TIMEOUT: int = 30
 _COMPOSE_PATH: str = os.path.join(os.path.dirname(__file__), 'compose.yaml')
@@ -34,14 +35,16 @@ _CONTAINER_NAMES: dict[str, str] = {
     'radarr': 'rangarr-test-radarr',
     'readarr': 'rangarr-test-readarr',
     'sonarr': 'rangarr-test-sonarr',
-    'whisparr': 'rangarr-test-whisparr',
+    'whisparr_v2': 'rangarr-test-whisparr-v2',
+    'whisparr_v3': 'rangarr-test-whisparr-v3',
 }
 _DB_PATHS: dict[str, str] = {
     'lidarr': '/config/lidarr.db',
     'radarr': '/config/radarr.db',
     'readarr': '/config/readarr.db',
     'sonarr': '/config/sonarr.db',
-    'whisparr': '/config/whisparr2.db',
+    'whisparr_v2': '/config/whisparr2.db',
+    'whisparr_v3': '/config/whisparr3.db',
 }
 _HTTP_TIMEOUT: int = 10
 _SERVICES: dict[str, int] = {
@@ -49,7 +52,8 @@ _SERVICES: dict[str, int] = {
     'radarr': 7878,
     'readarr': 8787,
     'sonarr': 8989,
-    'whisparr': 6969,
+    'whisparr_v2': 6969,
+    'whisparr_v3': 6969,
 }
 
 logger = logging.getLogger(__name__)
@@ -260,7 +264,7 @@ def test_search_cycle_runs(
     api_keys: dict[str, str],
     seeded_env: None,  # pylint: disable=unused-argument
 ) -> None:
-    """_run_search_cycle dispatches and completes commands against seeded Sonarr, Radarr, Lidarr."""
+    """_run_search_cycle dispatches and completes commands against seeded Sonarr, Radarr, Lidarr, Readarr, Whisparr v2, and Whisparr v3."""
     instances_config = {
         app: [{'name': f'docker-{app}', 'url': url, 'api_key': api_keys[app], 'enabled': True, 'weight': 1.0}]
         for app, url in docker_env.items()

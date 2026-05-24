@@ -121,12 +121,12 @@ def _make_sonarr_router(
     return route
 
 
-def _make_whisparr_router(
+def _make_whisparr_v2_router(
     tag_data: list,
     missing_data: dict,
     cutoff_data: dict,
 ) -> Any:
-    """Return a request router that serves Whisparr fixture data by URL."""
+    """Return a request router that serves Whisparr v2 fixture data by URL."""
 
     def route(method: str, url: str, **_kwargs: Any) -> Any:
         """Route a request to the appropriate fixture response."""
@@ -139,6 +139,39 @@ def _make_whisparr_router(
             response.json.return_value = missing_data
         elif '/api/v3/wanted/cutoff' in url:
             response.json.return_value = cutoff_data
+        elif '/api/v3/command' in url and method.upper() == 'POST':
+            response.json.return_value = {'id': 1}
+        else:
+            raise ValueError(f'Unexpected URL: {url}')
+
+        return response
+
+    return route
+
+
+def _make_whisparr_v3_router(
+    tag_data: list,
+    quality_data: list,
+    missing_data: dict,
+    cutoff_data: dict,
+) -> Any:
+    """Return a request router that serves Whisparr v3 fixture data by URL."""
+
+    def route(method: str, url: str, **_kwargs: Any) -> Any:
+        """Route a request to the appropriate fixture response."""
+        response = MagicMock()
+        response.raise_for_status.return_value = None
+
+        if '/api/v3/tag' in url:
+            response.json.return_value = tag_data
+        elif '/api/v3/qualityprofile' in url:
+            response.json.return_value = quality_data
+        elif '/api/v3/wanted/missing' in url:
+            response.json.return_value = missing_data
+        elif '/api/v3/wanted/cutoff' in url:
+            response.json.return_value = cutoff_data
+        elif '/api/v3/movie' in url and method.upper() == 'GET':
+            response.json.return_value = []
         elif '/api/v3/command' in url and method.upper() == 'POST':
             response.json.return_value = {'id': 1}
         else:

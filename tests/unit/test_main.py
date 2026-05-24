@@ -166,14 +166,24 @@ def test_build_arr_clients_instance_settings_override_global() -> None:
     assert global_settings['season_packs'] is False
 
 
-def test_build_arr_clients_logs_whisparr_display_name(caplog: pytest.LogCaptureFixture) -> None:
-    """Test build_arr_clients logs 'Whisparr' for whisparr instances."""
+def test_build_arr_clients_logs_whisparr_v2_display_name(caplog: pytest.LogCaptureFixture) -> None:
+    """Test build_arr_clients logs 'WhisparrV2' for whisparr_v2 instances."""
     instances_config = {
-        'whisparr': [{'name': 'my-whisparr', 'url': 'http://test', 'api_key': 'key'}],
+        'whisparr_v2': [{'name': 'my-whisparr', 'url': 'http://test', 'api_key': 'key'}],
     }
     with caplog.at_level(logging.INFO):
         build_arr_clients(instances_config, {})
-    assert 'Registered Whisparr instance: my-whisparr' in caplog.text
+    assert 'Registered WhisparrV2 instance: my-whisparr' in caplog.text
+
+
+def test_build_arr_clients_logs_whisparr_v3_display_name(caplog: pytest.LogCaptureFixture) -> None:
+    """Test build_arr_clients logs 'WhisparrV3' for whisparr_v3 instances."""
+    instances_config = {
+        'whisparr_v3': [{'name': 'my-whisparr', 'url': 'http://test', 'api_key': 'key'}],
+    }
+    with caplog.at_level(logging.INFO):
+        build_arr_clients(instances_config, {})
+    assert 'Registered WhisparrV3 instance: my-whisparr' in caplog.text
 
 
 _log_rangarr_start_cases = {

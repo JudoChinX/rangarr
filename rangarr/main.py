@@ -19,7 +19,8 @@ from rangarr.clients.arr import LidarrClient
 from rangarr.clients.arr import RadarrClient
 from rangarr.clients.arr import ReadarrClient
 from rangarr.clients.arr import SonarrClient
-from rangarr.clients.arr import WhisparrClient
+from rangarr.clients.arr import WhisparrV2Client
+from rangarr.clients.arr import WhisparrV3Client
 from rangarr.config_parser import SETTINGS_SCHEMA
 from rangarr.config_parser import get_setting_default
 from rangarr.config_parser import load_config
@@ -46,7 +47,9 @@ _CLIENT_MAP: dict[str, type[ArrClient]] = {
     'radarr': RadarrClient,
     'readarr': ReadarrClient,
     'sonarr': SonarrClient,
-    'whisparr': WhisparrClient,
+    'whisparr': WhisparrV3Client,
+    'whisparr_v2': WhisparrV2Client,
+    'whisparr_v3': WhisparrV3Client,
 }
 
 _MAX_CONNECTION_ATTEMPTS: int = 3
