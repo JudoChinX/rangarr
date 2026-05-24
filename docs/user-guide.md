@@ -215,7 +215,7 @@ Search slots are distributed across instances using weighted round-robin; unused
 Upgrade candidates come from two sources each cycle:
 
 1. **Cutoff Unmet** — items reported by *arr's Cutoff Unmet endpoint (quality level below the profile cutoff).
-2. **Custom format score pass** (Radarr, Sonarr, and Whisparr only) — items where `customFormatScore` is below the profile's `cutoffFormatScore`. *arr's Cutoff Unmet endpoint silently omits these even though they are eligible for a better release.
+2. **Custom format score pass** (Radarr, Sonarr, Whisparr v2, and Whisparr v3 only) — items where `customFormatScore` is below the profile's `cutoffFormatScore`. *arr's Cutoff Unmet endpoint silently omits these even though they are eligible for a better release.
 
 In both passes, only items marked as **monitored** in *arr are considered.
 

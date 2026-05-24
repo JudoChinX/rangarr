@@ -10,10 +10,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Readarr support. Add instances of type `readarr` to manage book libraries alongside existing Radarr, Sonarr, and Lidarr instances.
+- Whisparr v3 support via `type: whisparr_v3`. Whisparr v3 is the current scene/movie-based version and uses a Radarr-style API — custom format score awareness, tag filtering, and all other settings apply identically to Radarr instances. Log output uses `Studio - Scene Title` format. `type: whisparr` is also accepted as an alias for `whisparr_v3`.
+- `type: whisparr_v2` — explicit type value for the Sonarr-based Whisparr client. Existing Whisparr v2 users must migrate from `type: whisparr` to `type: whisparr_v2`; see the breaking change below.
 
 ### Changed
 
 - Unsupported instance types (e.g. an unrecognized `type:` value) now log an error and skip the instance rather than aborting startup.
+- **Breaking:** `type: whisparr` now maps to Whisparr v3 (the current, scene/movie-based version). Existing Whisparr v2 users must update their config to `type: whisparr_v2` to continue using the Sonarr-based client. `type: whisparr_v2` is new in this release.
 
 ## [0.8.0] - 2026-05-21
 
