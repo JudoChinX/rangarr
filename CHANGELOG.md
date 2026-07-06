@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `max_queue_size` setting (global and per-instance, default `0` = disabled). Before searching an instance, Rangarr measures its active download-queue depth (items that are downloading, queued, paused, or in delay) and queues only enough new items to keep the queue at or below the threshold, split proportionally between missing and upgrade searches. If the queue is already at or above the threshold the instance is skipped for that cycle; if the queue endpoint cannot be reached the instance is skipped (fail-closed).
+
 ## [0.9.0] - 2026-05-24
 
 ### Added

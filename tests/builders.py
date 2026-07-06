@@ -191,6 +191,28 @@ class QualityProfileBuilder:
         return self
 
 
+class QueueRecordBuilder:
+    """Builder for *arr /queue response records."""
+
+    def __init__(self) -> None:
+        """Initialize with default queue record fields."""
+        self._data: dict[str, Any] = {'id': 1, 'status': 'downloading'}
+
+    def build(self) -> dict[str, Any]:
+        """Build and return the queue record dict."""
+        return self._data.copy()
+
+    def with_id(self, record_id: int) -> Self:
+        """Set the queue record ID."""
+        self._data['id'] = record_id
+        return self
+
+    def with_status(self, status: str) -> Self:
+        """Set the queue record status."""
+        self._data['status'] = status
+        return self
+
+
 class RadarrMovieFileRecordBuilder:
     """Builder for Radarr /api/v3/moviefile response records."""
 

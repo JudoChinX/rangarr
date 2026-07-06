@@ -240,6 +240,29 @@ global:
   # fetch_page_size: 5000  # Fewer round trips for very large libraries
 ```
 
+#### `max_queue_size`
+
+**Type:** Integer | **Default:** `0`
+
+Caps how many items an instance may have actively downloading. Before each search, Rangarr
+queries the instance's `/queue` endpoint and counts items that are **downloading, queued,
+paused, or in delay** (items waiting for import or in a failed/warning state are not counted).
+It then queues only up to `max_queue_size - current_depth` new items this cycle, split
+proportionally between missing and upgrade searches.
+
+- `0` (default) disables the check entirely — no `/queue` request is made.
+- If the queue is already at or above `max_queue_size`, the instance is skipped for the cycle.
+- If the `/queue` request fails, the instance is skipped for the cycle (fail-closed).
+
+The depth is sampled once per cycle, so the cap is per-cycle and converges across cycles
+rather than being a hard real-time ceiling.
+
+```yaml
+global:
+  max_queue_size: 20   # Keep no more than ~20 active downloads per instance
+  # max_queue_size: 0  # Disabled (default)
+```
+
 #### `stagger_interval_seconds`
 
 **Type:** Integer | **Default:** `30` | **Minimum:** `1`
@@ -452,6 +475,19 @@ instances:
 ```
 
 With `missing_batch_size: 30`, Movies-Main gets ~20 items, Movies-4K gets ~10.
+
+#### `max_queue_size`
+
+**Type:** Integer | **Default:** not set (inherits global `max_queue_size`)
+
+Optional per-instance override of the global [`max_queue_size`](#max_queue_size). Useful when
+one instance should run a deeper or shallower queue than the others.
+
+```yaml
+instances:
+  Radarr-1080:
+    max_queue_size: 15
+```
 
 ### Common Scenarios
 

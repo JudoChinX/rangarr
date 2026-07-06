@@ -45,7 +45,7 @@ To be absolutely clear, Rangarr does not and will never:
 
 ## Architecture Overview
 
-Rangarr is a ~1,822-line Python service with four core modules:
+Rangarr is a ~1,949-line Python service with four core modules:
 
 ```
 rangarr/
@@ -112,6 +112,7 @@ config.yaml → config_parser.py → main.py → ArrClient instances → *arr AP
 
 **Key Methods:**
 - `get_media_to_search()`: Fetches, sorts, and filters missing/upgrade items from wanted endpoints. Returns the full backlog for global allocation.
+- `get_active_queue_depth()`: Counts active download-queue items (status downloading/queued/paused/delay) from the queue endpoint, or returns `None` on fetch failure. Used to enforce `max_queue_size`. Only called when `max_queue_size > 0`.
 - `_get_target_media()`: Fetches all records via `_fetch_unlimited()`, sorts them client-side, and applies retry-window and availability filtering.
 - `_interleave_items()`: Proportionally interleaves missing and upgrade items within a single instance's results.
 - `_get_custom_format_score_unmet_records()`: Orchestrates the supplemental upgrade pass — fetches quality profiles, then delegates to `_get_custom_format_upgrade_records()`.
@@ -134,6 +135,7 @@ config.yaml → config_parser.py → main.py → ArrClient instances → *arr AP
 |----------|--------|---------|-----------|------------|
 | `/api/v3/wanted/missing` (Radarr/Sonarr/Whisparr v2/Whisparr v3), `/api/v1/wanted/missing` (Lidarr/Readarr) | GET | Fetch missing items (`monitored=true`) | Per cycle per instance | Read-only |
 | `/api/v3/wanted/cutoff` (Radarr/Sonarr/Whisparr v2/Whisparr v3), `/api/v1/wanted/cutoff` (Lidarr/Readarr) | GET | Fetch upgrade candidates (`monitored=true`) | Per cycle per instance | Read-only |
+| `/api/v3/queue` (Radarr/Sonarr/Whisparr v2/Whisparr v3), `/api/v1/queue` (Lidarr/Readarr) | GET | Count active download-queue depth to enforce `max_queue_size` | Per cycle per instance when `max_queue_size > 0` | Read-only |
 | `/api/v3/qualityprofile` (Radarr/Sonarr/Whisparr v2/Whisparr v3) | GET | Fetch quality profiles to identify cutoff format score thresholds | Per cycle per instance | Read-only |
 | `/api/v3/movie` (Radarr/Whisparr v3) | GET | Fetch movies/scenes to find upgrade candidates (skips unmonitored) | Per cycle when profiles have non-zero cutoff format scores | Read-only |
 | `/api/v3/moviefile` (Radarr/Whisparr v3) | GET | Fetch movie/scene file scores to compare against profile cutoff | Per cycle when candidates exist, batched at 100 IDs | Read-only |
@@ -203,7 +205,7 @@ Rangarr operates entirely within your local network (or wherever you host your *
 
 ### 1. Security Through Simplicity
 
-**Decision:** ~1,822 lines of core Python code, zero external dependencies beyond requests and PyYAML.
+**Decision:** ~1,949 lines of core Python code, zero external dependencies beyond requests and PyYAML.
 
 **Why:** Small codebases are auditable. Every line of code is a potential attack surface. By keeping the codebase minimal, security reviewers can read and understand the entire project in under an hour.
 
@@ -230,7 +232,7 @@ Rangarr operates entirely within your local network (or wherever you host your *
 
 ### 4. Test Coverage as Documentation
 
-**Decision:** 470 unit and integration tests covering all code paths, including error conditions. Docker-based system tests run separately and require a live stack.
+**Decision:** 496 unit and integration tests covering all code paths, including error conditions. Docker-based system tests run separately and require a live stack.
 
 **Why:** Tests serve three purposes:
 1. Prevent regressions.
@@ -324,6 +326,7 @@ Every line of AI-generated code was reviewed, tested, and validated against requ
 Unit tests (`tests/unit/`):
 - `test_config_parser.py`: Configuration validation without network calls.
 - `test_config_parser_hours.py`: Active hours parsing and boundary cases.
+- `test_config_parser_queue.py`: `max_queue_size` setting defaults and validation.
 - `test_config_loader.py`: Config file loading and env-var source switching.
 - `test_env_config.py`: Environment variable configuration loading.
 - `test_validators.py`: Input validation logic.
@@ -333,6 +336,7 @@ Unit tests (`tests/unit/`):
 - `clients/test_arr_base.py`: Shared ArrClient base class behaviour.
 - `clients/test_arr_client_sort.py`: Client-side sorting for all search orders across all client types.
 - `clients/test_arr_fetch_page_size.py`: Paged fetch behaviour across page-size configurations.
+- `clients/test_arr_queue.py`: Active queue-depth measurement and fail-closed fetch behavior.
 - `clients/test_radarr.py`, `clients/test_sonarr.py`, `clients/test_lidarr.py`, `clients/test_readarr.py`, `clients/test_whisparr_v2.py`, `clients/test_whisparr_v3.py`: Client-specific logic with mocked HTTP responses.
 - `clients/test_sonarr_sort.py`: Sorting and interleaving correctness for Sonarr season pack results.
 
@@ -366,11 +370,11 @@ Both are widely-used, well-maintained libraries with public security disclosure 
 
 ## File Sizes
 
-- `main.py`: ~544 lines
-- `config_parser.py`: ~424 lines
+- `main.py`: ~594 lines
+- `config_parser.py`: ~429 lines
 - `validators.py`: ~40 lines
-- `clients/arr.py`: ~854 lines
-- **Total:** ~1,822 lines of Python (excluding tests/comments)
+- `clients/arr.py`: ~886 lines
+- **Total:** ~1,949 lines of Python (excluding tests/comments)
 
 The small codebase size makes comprehensive security auditing feasible.
 

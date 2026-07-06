@@ -52,6 +52,11 @@ SETTINGS_SCHEMA = {
         'default': True,
         'type': bool,
     },
+    'max_queue_size': {
+        'default': 0,
+        'type': int,
+        'min_value': 0,
+    },
     'missing_batch_size': {
         'default': 20,
         'type': int,

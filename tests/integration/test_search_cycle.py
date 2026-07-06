@@ -14,6 +14,8 @@ def radarr_client() -> MagicMock:
     client = MagicMock()
     client.name = 'RealRadarr'
     client.weight = 1.0
+    client.max_queue_size = 0
+    client.get_active_queue_depth.return_value = 0
     client.get_media_to_search.return_value = [
         (101, 'missing', 'Movie A'),
         (102, 'upgrade', 'Movie B'),
@@ -27,6 +29,8 @@ def sonarr_client() -> MagicMock:
     client = MagicMock()
     client.name = 'RealSonarr'
     client.weight = 1.0
+    client.max_queue_size = 0
+    client.get_active_queue_depth.return_value = 0
     client.get_media_to_search.return_value = [
         (201, 'missing', 'Show A S01E01'),
     ]
