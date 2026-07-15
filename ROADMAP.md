@@ -6,6 +6,7 @@ This document reflects the current direction of Rangarr. No dates are attached â
 
 ## Completed
 
+- **Download queue awareness**
 - **Readarr support**
 - **Whisparr v2 support**
 - **Season pack support (Sonarr/Whisparr)**
