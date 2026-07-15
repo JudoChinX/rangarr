@@ -166,6 +166,21 @@ def test_build_arr_clients_instance_settings_override_global() -> None:
     assert global_settings['season_packs'] is False
 
 
+def test_build_arr_clients_max_queue_size_override() -> None:
+    """Test that a per-instance max_queue_size overrides the global value while others inherit it."""
+    instances_config = {
+        'radarr': [
+            {'name': 'Radarr Override', 'url': 'http://test', 'api_key': 'key1', 'max_queue_size': 5},
+            {'name': 'Radarr Inherit', 'url': 'http://test', 'api_key': 'key2'},
+        ]
+    }
+    global_settings = {'max_queue_size': 20}
+    clients = build_arr_clients(instances_config, global_settings)
+    by_name = {client.name: client for client in clients}
+    assert by_name['Radarr Override'].max_queue_size == 5
+    assert by_name['Radarr Inherit'].max_queue_size == 20
+
+
 def test_build_arr_clients_logs_whisparr_v2_display_name(caplog: pytest.LogCaptureFixture) -> None:
     """Test build_arr_clients logs 'WhisparrV2' for whisparr_v2 instances."""
     instances_config = {
@@ -553,6 +568,8 @@ def test_run(
     run_client = MagicMock()
     run_client.name = 'Test'
     run_client.weight = 1.0
+    run_client.max_queue_size = 0
+    run_client.get_active_queue_depth.return_value = 0
     run_client.get_media_to_search.return_value = media_to_return or []
 
     with (
@@ -613,6 +630,8 @@ def test_run_executes_cycle_inside_active_hours() -> None:
     run_client = MagicMock()
     run_client.name = 'Test'
     run_client.weight = 1.0
+    run_client.max_queue_size = 0
+    run_client.get_active_queue_depth.return_value = 0
     run_client.get_media_to_search.return_value = []
 
     settings = _make_run_config(active_hours='22:00-06:00')
@@ -642,6 +661,8 @@ def test_run_no_active_hours_always_executes() -> None:
     run_client = MagicMock()
     run_client.name = 'Test'
     run_client.weight = 1.0
+    run_client.max_queue_size = 0
+    run_client.get_active_queue_depth.return_value = 0
     run_client.get_media_to_search.return_value = []
 
     settings = _make_run_config()
@@ -691,6 +712,8 @@ def test_run_skips_cycle_outside_active_hours() -> None:
     run_client = MagicMock()
     run_client.name = 'Test'
     run_client.weight = 1.0
+    run_client.max_queue_size = 0
+    run_client.get_active_queue_depth.return_value = 0
     run_client.get_media_to_search.return_value = []
 
     settings = _make_run_config(active_hours='22:00-06:00')
@@ -770,6 +793,8 @@ def test_run_exits_when_all_clients_fail_connection() -> None:
     run_client = MagicMock()
     run_client.name = 'Test'
     run_client.weight = 1.0
+    run_client.max_queue_size = 0
+    run_client.get_active_queue_depth.return_value = 0
 
     with (
         patch('pathlib.Path.is_file', return_value=True),

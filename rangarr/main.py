@@ -107,6 +107,33 @@ def _allocate_slots(
     return winners
 
 
+def _apply_queue_headroom(
+    missing_items: list[MediaItem],
+    upgrade_items: list[MediaItem],
+    headroom: int,
+    global_missing: int,
+    global_upgrade: int,
+) -> tuple[list[MediaItem], list[MediaItem]]:
+    """Cap missing and upgrade candidates to a shared headroom, split proportionally with spillover."""
+    weight_missing = headroom if global_missing < 0 else max(0, global_missing)
+    weight_upgrade = headroom if global_upgrade < 0 else max(0, global_upgrade)
+    total_weight = weight_missing + weight_upgrade
+    missing_share = round(headroom * weight_missing / total_weight) if total_weight > 0 else 0
+    upgrade_share = headroom - missing_share
+
+    capped_missing = missing_items[:missing_share]
+    capped_upgrade = upgrade_items[:upgrade_share]
+
+    spare = headroom - len(capped_missing) - len(capped_upgrade)
+    if spare > 0:
+        extra_missing = missing_items[len(capped_missing) : len(capped_missing) + spare]
+        capped_missing = capped_missing + extra_missing
+        spare -= len(extra_missing)
+    if spare > 0:
+        capped_upgrade = capped_upgrade + upgrade_items[len(capped_upgrade) : len(capped_upgrade) + spare]
+    return capped_missing, capped_upgrade
+
+
 def _batch_display_str(batch: int) -> str:
     """Convert a batch size integer to its display string."""
     return {0: 'Disabled', -1: 'Unlimited'}.get(batch, str(batch))
@@ -301,6 +328,7 @@ def _log_rangarr_start(active_clients: list[ArrClient], settings: dict) -> None:
         _get_setting(settings, 'run_interval_minutes_upgrade'),
     )
 
+    max_queue_size = _get_setting(settings, 'max_queue_size')
     dry_run_str = ' | Dry Run: Yes' if dry_run else ''
     logger.info(
         f'Rangarr started | '
@@ -312,7 +340,8 @@ def _log_rangarr_start(active_clients: list[ArrClient], settings: dict) -> None:
         f'Search Order: {search_order_str} | '
         f'Retry: {retry_str} | '
         f'Active Hours: {active_hours_str} | '
-        f'Interleave: {interleave_str}'
+        f'Interleave: {interleave_str} | '
+        f'Max Queue: {_batch_display_str(max_queue_size)}'
         f'{dry_run_str}'
     )
 
@@ -337,17 +366,35 @@ def _run_search_cycle(
     global_missing = _get_setting(settings, 'missing_batch_size') if run_missing else 0
     global_upgrade = _get_setting(settings, 'upgrade_batch_size') if run_upgrade else 0
     stagger_seconds = _get_setting(settings, 'stagger_interval_seconds')
-    interleave_instances = _get_setting(settings, 'interleave_instances')
-    interleave_types = _get_setting(settings, 'interleave_types')
 
     missing_pools: dict[ArrClient, list[MediaItem]] = {}
     upgrade_pools: dict[ArrClient, list[MediaItem]] = {}
 
     for client in active_clients:
-        candidates = client.get_media_to_search(global_missing, global_upgrade)
+        queue_depth = client.get_active_queue_depth() if client.max_queue_size > 0 else None
+        if client.max_queue_size > 0 and queue_depth is None:
+            logger.warning(f'[{client.name}] Queue check failed; skipping this cycle.')
+            continue
 
+        headroom = max(0, client.max_queue_size - queue_depth) if queue_depth is not None else None
+        if headroom == 0:
+            logger.info(
+                f'[{client.name}] Skipping search: active queue depth {queue_depth} '
+                f'>= max_queue_size {client.max_queue_size}.'
+            )
+            continue
+
+        candidates = client.get_media_to_search(global_missing, global_upgrade)
         m_items = [item for item in candidates if item[1] == 'missing']
         u_items = [item for item in candidates if item[1] == 'upgrade']
+
+        if headroom is not None:
+            # headroom > 0 here: the headroom == 0 case was skipped above.
+            m_items, u_items = _apply_queue_headroom(m_items, u_items, headroom, global_missing, global_upgrade)
+            logger.debug(
+                f'[{client.name}] Queue depth {queue_depth}/{client.max_queue_size}; '
+                f'headroom {headroom}, capped to {len(m_items) + len(u_items)} candidate(s) this cycle.'
+            )
 
         if m_items:
             missing_pools[client] = m_items
@@ -356,7 +403,12 @@ def _run_search_cycle(
 
     allocated_missing = _allocate_slots(global_missing, missing_pools)
     allocated_upgrade = _allocate_slots(global_upgrade, upgrade_pools)
-    final_queue = _build_final_queue(allocated_missing, allocated_upgrade, interleave_instances, interleave_types)
+    final_queue = _build_final_queue(
+        allocated_missing,
+        allocated_upgrade,
+        _get_setting(settings, 'interleave_instances'),
+        _get_setting(settings, 'interleave_types'),
+    )
 
     if not final_queue:
         logger.info('No media to search this cycle across all instances.')

@@ -13,4 +13,6 @@ def mock_client() -> Mock:
     client.weight = 1.0
     client.get_media_to_search = Mock(return_value=[])
     client.trigger_search = Mock()
+    client.max_queue_size = 0
+    client.get_active_queue_depth = Mock(return_value=0)
     return client

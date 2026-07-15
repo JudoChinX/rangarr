@@ -85,6 +85,7 @@ global:
   stagger_interval_seconds: 30 # Wait 30s between searches
   missing_batch_size: 20      # Search 20 missing items per cycle (0=disabled, -1=unlimited)
   upgrade_batch_size: 10      # Search 10 upgrade-eligible items per cycle (0=disabled, -1=unlimited)
+  max_queue_size: 0           # Skip/limit searches when the download queue is busy (0=disabled)
   interleave_instances: true  # Alternate between instances during search
   search_order: last_searched_ascending  # Prioritize items not searched recently
 

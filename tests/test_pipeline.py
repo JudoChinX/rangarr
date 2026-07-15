@@ -17,6 +17,8 @@ def _make_mock_client(name: str, weight: float, media: list[tuple[int, str, str]
     client.weight = weight
     client.get_media_to_search = Mock(return_value=media)
     client.trigger_search = Mock()
+    client.max_queue_size = 0
+    client.get_active_queue_depth = Mock(return_value=0)
     return client
 
 

@@ -15,6 +15,8 @@ logger = logging.getLogger(__name__)
 type MediaItem = tuple[int | str, str, str]
 type SeasonPackThreshold = bool | int | float
 
+_ACTIVE_QUEUE_STATUSES = frozenset({'delay', 'downloading', 'paused', 'queued'})
+
 
 class ArrClient(ABC):
     """Abstract base class for *arr application clients."""
@@ -22,6 +24,7 @@ class ArrClient(ABC):
     DEFAULT_FETCH_PAGE_SIZE = 2000
     ENDPOINT_COMMAND = '/api/v3/command'
     ENDPOINT_QUALITY_PROFILE = '/api/v3/qualityprofile'
+    ENDPOINT_QUEUE = '/api/v3/queue'
     ENDPOINT_TAG = '/api/v3/tag'
     ENDPOINT_WANTED_CUTOFF = '/api/v3/wanted/cutoff'
     ENDPOINT_WANTED_MISSING = '/api/v3/wanted/missing'
@@ -61,6 +64,7 @@ class ArrClient(ABC):
 
         self.dry_run = self.settings.get('dry_run', False)
         self.fetch_page_size = self.settings.get('fetch_page_size', self.DEFAULT_FETCH_PAGE_SIZE)
+        self.max_queue_size = self.settings.get('max_queue_size', 0)
         self._include_tag_ids: set[int] = set()
         self._exclude_tag_ids: set[int] = set()
         self._resolve_tag_ids()
@@ -68,7 +72,7 @@ class ArrClient(ABC):
     @property
     @abstractmethod
     def _command_name(self) -> str:
-        """Return the API command name for searches (e.g. 'MoviesSearch')."""
+        """The API command name for searches (e.g. ``MoviesSearch``)."""
 
     def _extract_item(self, record: dict, reason: str) -> MediaItem:
         """Extract (id, reason, title) tuple from record."""
@@ -176,7 +180,7 @@ class ArrClient(ABC):
     @property
     @abstractmethod
     def _id_field(self) -> str:
-        """Return the API payload ID field name for searches (e.g. 'movieIds')."""
+        """The API payload ID field name for searches (e.g. ``movieIds``)."""
 
     def _interleave_items(
         self,
@@ -340,6 +344,32 @@ class ArrClient(ABC):
         except requests.RequestException:
             return False
 
+    def get_active_queue_depth(self) -> int | None:
+        """Count queue items that are actively occupying the downloader.
+
+        Returns:
+            The number of queue records whose status is active (downloading, queued,
+            paused, delay), or ``None`` if the queue endpoint could not be reached.
+        """
+        url = f'{self.url}{self.ENDPOINT_QUEUE}'
+        depth = 0
+        current_page = 1
+        page_size = self.fetch_page_size
+        while True:
+            params = {'page': current_page, 'pageSize': page_size}
+            try:
+                response = self.session.get(url, params=params, timeout=30)
+                response.raise_for_status()
+                records = response.json().get('records', [])
+                depth += sum(1 for record in records if record.get('status', '').lower() in _ACTIVE_QUEUE_STATUSES)
+            except requests.RequestException as error:
+                logger.error(f'[{self.name}] Failed to fetch queue: {error}')
+                return None
+            if len(records) < page_size:
+                break
+            current_page += 1
+        return depth
+
     def get_media_to_search(self, missing_batch_size: int, upgrade_batch_size: int) -> list[MediaItem]:
         """Build a deduplicated list of missing and upgrade media items to search.
 
@@ -413,6 +443,7 @@ class LidarrClient(ArrClient):
     """Lidarr API client."""
 
     ENDPOINT_COMMAND = '/api/v1/command'
+    ENDPOINT_QUEUE = '/api/v1/queue'
     ENDPOINT_TAG = '/api/v1/tag'
     ENDPOINT_WANTED_CUTOFF = '/api/v1/wanted/cutoff'
     ENDPOINT_WANTED_MISSING = '/api/v1/wanted/missing'
@@ -518,6 +549,7 @@ class ReadarrClient(ArrClient):
     """Readarr API client."""
 
     ENDPOINT_COMMAND = '/api/v1/command'
+    ENDPOINT_QUEUE = '/api/v1/queue'
     ENDPOINT_TAG = '/api/v1/tag'
     ENDPOINT_WANTED_CUTOFF = '/api/v1/wanted/cutoff'
     ENDPOINT_WANTED_MISSING = '/api/v1/wanted/missing'
