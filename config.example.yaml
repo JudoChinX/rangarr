@@ -13,6 +13,9 @@ global:
   # upgrade_batch_size: -1     # Search all available upgrades (unlimited)
   # upgrade_batch_size: 0      # Disable upgrade searches entirely
 
+  # max_queue_size: 20     # Keep no more than ~20 active downloads per instance. 0 = disabled (default).
+  # max_queue_size: 0      # Never check the download queue before searching (default)
+
   # fetch_page_size: 2000  # Records per API request when fetching wanted/missing/cutoff lists. Higher = fewer round trips for large libraries.
 
   # interval_missing: 3600   # Override fetch interval for missing items only, in seconds (omit to use interval)

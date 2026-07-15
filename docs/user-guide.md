@@ -616,6 +616,7 @@ The following global settings are supported, each prefixed with `RANGARR_GLOBAL_
 | `RANGARR_GLOBAL_RUN_INTERVAL_MINUTES` | `60` | Run interval in minutes. Ignored if `INTERVAL` is also set. |
 | `RANGARR_GLOBAL_MISSING_BATCH_SIZE` | `20` | Items to search per instance per cycle. `0` disables, `-1` is unlimited. |
 | `RANGARR_GLOBAL_UPGRADE_BATCH_SIZE` | `10` | Upgrade-eligible items to search per cycle. `0` disables, `-1` is unlimited. |
+| `RANGARR_GLOBAL_MAX_QUEUE_SIZE` | `0` | Cap on an instance's active download-queue depth. Rangarr queues only enough items to stay at or below this value, and skips the instance for the cycle when it is already at or above it. `0` disables the check. |
 | `RANGARR_GLOBAL_FETCH_PAGE_SIZE` | `2000` | Records per API request when fetching wanted/missing/cutoff lists. Must be at least 1. |
 | `RANGARR_GLOBAL_STAGGER_INTERVAL_SECONDS` | `30` | Delay between individual search triggers. |
 | `RANGARR_GLOBAL_RETRY_INTERVAL_DAYS` | `30` | Days before a previously searched item is eligible again. `0` disables. |
@@ -642,6 +643,7 @@ Each instance is identified by a numeric index. Prefix instance fields with `RAN
 | `RANGARR_INSTANCE_<n>_API_KEY` | Yes | API key from the instance's settings page. |
 | `RANGARR_INSTANCE_<n>_ENABLED` | No | Defaults to `true`. Set to `false` to disable without removing the variable. |
 | `RANGARR_INSTANCE_<n>_WEIGHT` | No | Relative search weight. Defaults to `1`. |
+| `RANGARR_INSTANCE_<n>_MAX_QUEUE_SIZE` | No | Override the global `max_queue_size` for this instance. Defaults to the global value. |
 
 #### Example
 
