@@ -563,7 +563,8 @@ def test_run(
     """Test run function loads config and executes searches."""
 
     def is_file_mock(path_obj: Any) -> Any:
-        return str(path_obj) == config_file_exists if config_file_exists else False
+        path_str = str(path_obj).replace('\\', '/')
+        return path_str == config_file_exists if config_file_exists else False
 
     run_client = MagicMock()
     run_client.name = 'Test'
