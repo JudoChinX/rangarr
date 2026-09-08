@@ -240,6 +240,26 @@ global:
   # fetch_page_size: 5000  # Fewer round trips for very large libraries
 ```
 
+#### `fetch_timeout`
+
+**Type:** Integer | **Default:** `30` | **Minimum:** `1`
+
+Seconds to wait for each bulk list response before giving up. Applies to the wanted/missing
+and cutoff-unmet fetches and the queue-depth check — the requests whose response size grows
+with your library. If logs show `Read timed out` errors against instances with very large
+libraries, try lowering `fetch_page_size` first: it reduces the work each request has to do.
+Raise `fetch_timeout` when smaller pages are not enough.
+
+Tag lookups, connection checks, and search commands are small fixed-size requests and always
+use a fixed 15-second timeout, so raising `fetch_timeout` never slows down startup checks or
+delays a stuck search command.
+
+```yaml
+global:
+  fetch_timeout: 30    # Default — suitable for most setups
+  # fetch_timeout: 120  # Very large libraries or slow hosts
+```
+
 #### `max_queue_size`
 
 **Type:** Integer | **Default:** `0`
@@ -489,6 +509,19 @@ instances:
     max_queue_size: 15
 ```
 
+#### `fetch_timeout`
+
+**Type:** Integer | **Default:** not set (inherits global `fetch_timeout`)
+
+Optional per-instance override of the global [`fetch_timeout`](#fetch_timeout). Useful when
+a single instance has a much larger library than the others and needs more patience.
+
+```yaml
+instances:
+  Lidarr-Music:
+    fetch_timeout: 120
+```
+
 ### Common Scenarios
 
 #### Single Instance
@@ -618,6 +651,7 @@ The following global settings are supported, each prefixed with `RANGARR_GLOBAL_
 | `RANGARR_GLOBAL_UPGRADE_BATCH_SIZE` | `10` | Upgrade-eligible items to search per cycle. `0` disables, `-1` is unlimited. |
 | `RANGARR_GLOBAL_MAX_QUEUE_SIZE` | `0` | Cap on an instance's active download-queue depth. Rangarr queues only enough items to stay at or below this value, and skips the instance for the cycle when it is already at or above it. `0` disables the check. |
 | `RANGARR_GLOBAL_FETCH_PAGE_SIZE` | `2000` | Records per API request when fetching wanted/missing/cutoff lists. Must be at least 1. |
+| `RANGARR_GLOBAL_FETCH_TIMEOUT` | `30` | Seconds to wait for each bulk list response. Must be at least 1. |
 | `RANGARR_GLOBAL_STAGGER_INTERVAL_SECONDS` | `30` | Delay between individual search triggers. |
 | `RANGARR_GLOBAL_RETRY_INTERVAL_DAYS` | `30` | Days before a previously searched item is eligible again. `0` disables. |
 | `RANGARR_GLOBAL_RETRY_INTERVAL_DAYS_MISSING` | `(none)` | Override `retry_interval_days` for missing searches only. |
@@ -644,6 +678,7 @@ Each instance is identified by a numeric index. Prefix instance fields with `RAN
 | `RANGARR_INSTANCE_<n>_ENABLED` | No | Defaults to `true`. Set to `false` to disable without removing the variable. |
 | `RANGARR_INSTANCE_<n>_WEIGHT` | No | Relative search weight. Defaults to `1`. |
 | `RANGARR_INSTANCE_<n>_MAX_QUEUE_SIZE` | No | Override the global `max_queue_size` for this instance. Defaults to the global value. |
+| `RANGARR_INSTANCE_<n>_FETCH_TIMEOUT` | No | Override the global `fetch_timeout` for this instance. Defaults to the global value. |
 
 #### Example
 

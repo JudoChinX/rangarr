@@ -232,7 +232,7 @@ Rangarr operates entirely within your local network (or wherever you host your *
 
 ### 4. Test Coverage as Documentation
 
-**Decision:** 496 unit and integration tests covering all code paths, including error conditions. Docker-based system tests run separately and require a live stack.
+**Decision:** 518 unit and integration tests covering all code paths, including error conditions. Docker-based system tests run separately and require a live stack.
 
 **Why:** Tests serve three purposes:
 1. Prevent regressions.
@@ -325,6 +325,7 @@ Every line of AI-generated code was reviewed, tested, and validated against requ
 
 Unit tests (`tests/unit/`):
 - `test_config_parser.py`: Configuration validation without network calls.
+- `test_config_parser_fetch_timeout.py`: `fetch_timeout` schema validation and per-instance override rejection.
 - `test_config_parser_hours.py`: Active hours parsing and boundary cases.
 - `test_config_parser_queue.py`: `max_queue_size` setting defaults and validation.
 - `test_config_loader.py`: Config file loading and env-var source switching.
@@ -336,6 +337,7 @@ Unit tests (`tests/unit/`):
 - `clients/test_arr_base.py`: Shared ArrClient base class behaviour.
 - `clients/test_arr_client_sort.py`: Client-side sorting for all search orders across all client types.
 - `clients/test_arr_fetch_page_size.py`: Paged fetch behaviour across page-size configurations.
+- `clients/test_arr_fetch_timeout.py`: Bulk-read timeout configuration and fixed control-plane timeouts.
 - `clients/test_arr_queue.py`: Active queue-depth measurement and fail-closed fetch behavior.
 - `clients/test_radarr.py`, `clients/test_sonarr.py`, `clients/test_lidarr.py`, `clients/test_readarr.py`, `clients/test_whisparr_v2.py`, `clients/test_whisparr_v3.py`: Client-specific logic with mocked HTTP responses.
 - `clients/test_sonarr_sort.py`: Sorting and interleaving correctness for Sonarr season pack results.

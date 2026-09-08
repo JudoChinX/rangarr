@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `fetch_timeout` setting (default `30` seconds, minimum `1`) controlling how long to wait for bulk list responses (wanted/missing, cutoff-unmet, and queue depth). It can be set globally or per-instance. Raise it for instances with very large libraries where these queries exceed the previous hardcoded 30-second limit. Tag lookups, connection checks, and search commands continue to use a fixed 15-second timeout.
+
+### Fixed
+
+- Per-instance setting overrides are now validated at startup, the same as top-level `global` settings. Previously an invalid override such as a negative `fetch_page_size` passed configuration validation and surfaced later as a runtime error.
+- Boolean values are no longer accepted for integer settings. Previously a value like `max_queue_size: true` was silently treated as `1` instead of being rejected.
+
 ## [0.10.0] - 2026-07-15
 
 ### Added

@@ -18,6 +18,8 @@ global:
 
   # fetch_page_size: 2000  # Records per API request when fetching wanted/missing/cutoff lists. Higher = fewer round trips for large libraries.
 
+  # fetch_timeout: 30      # Seconds to wait for each bulk list response. Raise for very large libraries or slow hosts.
+
   # interval_missing: 3600   # Override fetch interval for missing items only, in seconds (omit to use interval)
   # interval_upgrade: 21600  # Override fetch interval for upgrade items only, in seconds (omit to use interval)
 

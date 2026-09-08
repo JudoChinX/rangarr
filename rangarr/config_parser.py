@@ -39,6 +39,11 @@ SETTINGS_SCHEMA = {
         'type': int,
         'min_value': 1,
     },
+    'fetch_timeout': {
+        'default': 30,
+        'type': int,
+        'min_value': 1,
+    },
     'include_tags': {
         'default': [],
         'type': list,
@@ -199,6 +204,11 @@ def _parse_instance(name: str, config: dict) -> tuple[str, dict] | None:
     instance.setdefault('weight', 1)
     if not isinstance(instance['weight'], (int, float)) or instance['weight'] <= 0:
         raise ValueError(f"'weight' for instance '{name}' must be a positive number.")
+    # Only validate overrides that are present; setting a default here would make
+    # build_arr_clients treat every instance as overriding the global value.
+    for setting, definition in SETTINGS_SCHEMA.items():
+        if setting in instance:
+            _validate_schema_setting(setting, instance[setting], definition, f'instances.{name}')
     result = None
     if instance.get('enabled', False):
         result = (inst_type, instance)
@@ -212,20 +222,25 @@ def _validate_global_settings(settings: dict, schema: dict) -> None:
         settings.setdefault(setting, list(default) if isinstance(default, list) else default)
         if definition['default'] is None and settings[setting] is None:
             continue
-        if 'custom_validator' in definition:
-            definition['custom_validator'](setting, settings[setting])
-            continue
-        _validate_setting(
-            setting,
-            settings[setting],
-            definition['type'],
-            definition.get('choices'),
-            allow_special_values=definition.get('allow_special_values', False),
-            min_value=definition.get('min_value'),
-            element_type=definition.get('element_type'),
-            validator=definition.get('validator'),
-            prefix='global',
-        )
+        _validate_schema_setting(setting, settings[setting], definition, 'global')
+
+
+def _validate_schema_setting(setting: str, value: Any, definition: dict, prefix: str) -> None:
+    """Validate one setting value against its schema definition."""
+    if 'custom_validator' in definition:
+        definition['custom_validator'](setting, value, prefix)
+        return
+    _validate_setting(
+        setting,
+        value,
+        definition['type'],
+        definition.get('choices'),
+        allow_special_values=definition.get('allow_special_values', False),
+        min_value=definition.get('min_value'),
+        element_type=definition.get('element_type'),
+        validator=definition.get('validator'),
+        prefix=prefix,
+    )
 
 
 def _validate_setting(
@@ -237,10 +252,11 @@ def _validate_setting(
     min_value: int | None = None,
     prefix: str = 'global',
     element_type: type | None = None,
-    validator: Callable[[str], None] | None = None,
+    validator: Callable[[str, str], None] | None = None,
 ) -> None:
     """Validate a setting value based on its expected type."""
-    if not isinstance(value, expected_type):
+    # bool is a subclass of int, so isinstance(True, int) is True — exclude it explicitly.
+    if not isinstance(value, expected_type) or (expected_type is int and isinstance(value, bool)):
         raise ValueError(f"'{prefix}.{setting}' must be of type {expected_type.__name__}.")
 
     if expected_type is int:
@@ -268,7 +284,7 @@ def _validate_setting(
         raise ValueError(f"'{prefix}.{setting}' must be one of: {valid_choices}.")
 
     if validator is not None:
-        validator(value)
+        validator(value, prefix)
 
 
 def get_setting_default(setting: str) -> Any:

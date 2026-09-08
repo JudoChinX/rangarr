@@ -298,6 +298,16 @@ _load_config_from_env_cases = {
             'global_settings': {'fetch_page_size': 5000},
         },
     },
+    'fetch_timeout_parsed_from_env': {
+        'env': {
+            **_BASE_INSTANCE,
+            'RANGARR_INSTANCE_0_ENABLED': 'true',
+            'RANGARR_GLOBAL_FETCH_TIMEOUT': '120',
+        },
+        'expected_result': {
+            'global_settings': {'fetch_timeout': 120},
+        },
+    },
 }
 
 
