@@ -245,8 +245,9 @@ global:
 **Type:** Integer | **Default:** `30` | **Minimum:** `1`
 
 Seconds to wait for each bulk list response before giving up. Applies to the wanted/missing
-and cutoff-unmet fetches and the queue-depth check — the requests whose response size grows
-with your library. If logs show `Read timed out` errors against instances with very large
+and cutoff-unmet fetches, the queue-depth check, and the custom format score lookups (quality
+profiles, movie, series, and episode lists) — the requests whose response size grows with your
+library. If logs show `Read timed out` errors against instances with very large
 libraries, try lowering `fetch_page_size` first: it reduces the work each request has to do.
 Raise `fetch_timeout` when smaller pages are not enough.
 
@@ -870,6 +871,22 @@ Choosing the right search order depends on your library size and goals:
    host: "http://localhost:7878" # Will not resolve inside Docker — incorrect
    ```
    If containers are on different networks, they cannot reach each other.
+
+#### "Read timed out"
+
+**Symptoms:** Logs show `Read timed out` errors when fetching wanted, cutoff, queue, or custom format score lists, usually only on instances with very large libraries.
+
+**Cause:** The instance took longer than [`fetch_timeout`](#fetch_timeout) (default 30 seconds) to return a bulk list response.
+
+**Solutions:**
+
+1. Lower [`fetch_page_size`](#fetch_page_size) so each request does less work.
+2. If smaller pages are not enough, raise `fetch_timeout` globally or for the affected instance only:
+   ```yaml
+   instances:
+     Lidarr-Music:
+       fetch_timeout: 120
+   ```
 
 #### "401 Unauthorized" or "403 Forbidden"
 
