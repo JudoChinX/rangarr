@@ -7,9 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.11.0] - 2026-09-19
+
 ### Added
 
-- `fetch_timeout` setting (default `30` seconds, minimum `1`) controlling how long to wait for bulk list responses (wanted/missing, cutoff-unmet, and queue depth). It can be set globally or per-instance. Raise it for instances with very large libraries where these queries exceed the previous hardcoded 30-second limit. Tag lookups, connection checks, and search commands continue to use a fixed 15-second timeout.
+- `fetch_timeout` setting (default `30` seconds, minimum `1`) controlling how long to wait for bulk list responses: wanted/missing, cutoff-unmet, queue depth, and the custom format score lookups (quality profiles, movie, series, and episode lists). It can be set globally or per-instance. Raise it for instances with very large libraries where these queries exceed the previous hardcoded 30-second limit. Tag lookups, connection checks, and search commands continue to use a fixed 15-second timeout.
 
 ### Fixed
 

@@ -45,7 +45,7 @@ To be absolutely clear, Rangarr does not and will never:
 
 ## Architecture Overview
 
-Rangarr is a ~1,951-line Python service with four core modules:
+Rangarr is a ~1,973-line Python service with four core modules:
 
 ```
 rangarr/
@@ -85,7 +85,7 @@ config.yaml → config_parser.py → main.py → ArrClient instances → *arr AP
 **Key Functions:**
 - `load_config()`: Reads config.yaml from disk and delegates to `parse_config()`.
 - `parse_config()`: Validates and normalises the loaded configuration dictionary.
-- `_parse_instance()`: Validates each instance entry, renames `host` to `url` for internal use, and enforces required fields (type, host, api_key).
+- `_parse_instance()`: Validates each instance entry, renames `host` to `url` for internal use, enforces required fields (type, host, api_key), and validates any per-instance setting overrides (e.g. `fetch_timeout`, `max_queue_size`) against the same schema as the `global` section.
 
 **No Network Activity:** Pure configuration parsing; never makes HTTP requests.
 
@@ -120,8 +120,8 @@ config.yaml → config_parser.py → main.py → ArrClient instances → *arr AP
 - `_fetch_movie_file_scores()`: Radarr and Whisparr v3 — fetches custom format scores for a list of movie/scene file IDs, batched at 100 IDs per request.
 - `_fetch_episode_file_scores()`: Sonarr and Whisparr v2 — fetches episode file IDs for a series where the score is below the cutoff.
 - `trigger_search()`: Dispatches search commands via POST to `/api/v3/command` (Radarr/Sonarr/Whisparr v2/Whisparr v3) or `/api/v1/command` (Lidarr/Readarr), staggered by `stagger_interval_seconds`.
-- `_fetch_unlimited()`: Low-level paged HTTP fetcher that collects all records across pages (uses requests.Session).
-- `_fetch_list()`: Low-level single-page HTTP fetcher for non-paginated list endpoints.
+- `_fetch_unlimited()`: Low-level paged HTTP fetcher that collects all records across pages (uses requests.Session). Each page request is bounded by `fetch_timeout`.
+- `_fetch_list()`: Low-level single-page HTTP fetcher for non-paginated list endpoints, bounded by `fetch_timeout`. Tag lookups, connection checks, and search commands use a fixed 15-second `REQUEST_TIMEOUT` instead.
 - `_sort_records_client_side()`: Sorts fetched records in-place according to `search_order`.
 - `_is_within_retry_window()`: Filters out items searched within `retry_interval_days`.
 
@@ -205,7 +205,7 @@ Rangarr operates entirely within your local network (or wherever you host your *
 
 ### 1. Security Through Simplicity
 
-**Decision:** ~1,951 lines of core Python code, zero external dependencies beyond requests and PyYAML.
+**Decision:** ~1,973 lines of core Python code, zero external dependencies beyond requests and PyYAML.
 
 **Why:** Small codebases are auditable. Every line of code is a potential attack surface. By keeping the codebase minimal, security reviewers can read and understand the entire project in under an hour.
 
@@ -325,7 +325,7 @@ Every line of AI-generated code was reviewed, tested, and validated against requ
 
 Unit tests (`tests/unit/`):
 - `test_config_parser.py`: Configuration validation without network calls.
-- `test_config_parser_fetch_timeout.py`: `fetch_timeout` schema validation and per-instance override rejection.
+- `test_config_parser_fetch_timeout.py`: `fetch_timeout` schema validation, including acceptance of valid per-instance overrides and rejection of invalid ones.
 - `test_config_parser_hours.py`: Active hours parsing and boundary cases.
 - `test_config_parser_queue.py`: `max_queue_size` setting defaults and validation.
 - `test_config_loader.py`: Config file loading and env-var source switching.
@@ -373,10 +373,10 @@ Both are widely-used, well-maintained libraries with public security disclosure 
 ## File Sizes
 
 - `main.py`: ~596 lines
-- `config_parser.py`: ~429 lines
+- `config_parser.py`: ~445 lines
 - `validators.py`: ~40 lines
-- `clients/arr.py`: ~886 lines
-- **Total:** ~1,951 lines of Python (excluding tests/comments)
+- `clients/arr.py`: ~892 lines
+- **Total:** ~1,973 lines of Python (excluding tests/comments)
 
 The small codebase size makes comprehensive security auditing feasible.
 

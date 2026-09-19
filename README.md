@@ -128,7 +128,7 @@ docker run -d \
 
 ## Development Transparency
 
-AI tooling was used to assist with development tasks in this project. The architecture — no database, no persistence layer, three files, two dependencies — was designed by the author. All code is human-reviewed before inclusion.
+AI tooling was used to assist with development tasks in this project. The architecture — no database, no persistence layer, four files, two dependencies — was designed by the author. All code is human-reviewed before inclusion.
 
 ## License
 
