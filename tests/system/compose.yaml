@@ -1,3 +1,5 @@
+name: rangarr-system-test
+
 services:
   sonarr:
     image: linuxserver/sonarr:latest
