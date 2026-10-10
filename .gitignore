@@ -42,3 +42,4 @@ config.yaml
 # Project-specific
 docs/*/
 .worktrees/
+.claude/worktrees/
