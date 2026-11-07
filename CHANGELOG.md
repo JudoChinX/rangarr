@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Dependencies are now managed with [uv](https://docs.astral.sh/uv/) and pinned in `uv.lock`. The Docker image installs the exact locked versions instead of resolving them at build time. Contributors set up with `uv sync`; `requirements.txt` and `requirements-dev.txt` have been removed.
+
 ## [0.11.0] - 2026-09-19
 
 ### Added
