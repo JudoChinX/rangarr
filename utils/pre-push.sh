@@ -2,6 +2,11 @@
 
 set -e
 
+if ! command -v uv > /dev/null; then
+  echo "ERROR: uv is not installed. See https://docs.astral.sh/uv/getting-started/installation/"
+  exit 1
+fi
+
 source "$(git rev-parse --show-toplevel)/.venv/bin/activate"
 
 echo "Checking for subdirectories under docs/..."
@@ -72,11 +77,14 @@ if ! yamllint .; then
 fi
 
 echo "Running pip-audit..."
-if ! pip-audit -r requirements.txt; then
+req_file="$(mktemp)"
+trap 'rm -f "$req_file"' EXIT
+uv export --quiet --locked --no-dev --no-emit-project --format requirements-txt -o "$req_file"
+if ! pip-audit -r "$req_file" --disable-pip; then
   echo ""
   echo "ERROR: pip-audit found vulnerable dependencies. To fix:"
   echo "   1. Review the vulnerabilities above"
-  echo "   2. Update the affected packages in requirements.txt"
+  echo "   2. Run: uv lock --upgrade-package <package>"
   echo "   3. Commit your fixes and try pushing again"
   exit 1
 fi
