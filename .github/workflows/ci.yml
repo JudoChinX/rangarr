@@ -10,6 +10,9 @@ on:
 
 permissions: {}
 
+env:
+  UV_PYTHON: "3.13"
+
 jobs:
   tests_and_quality:
     runs-on: ubuntu-latest
@@ -24,41 +27,61 @@ jobs:
         with:
           python-version: "3.13"
 
-      - name: Cache pip
-        uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
+      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
         with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('requirements*.txt') }}
-          restore-keys: ${{ runner.os }}-pip-
+          version: "0.13.7"
+          enable-cache: true
 
       - name: Install dependencies
-        run: |
-          pip install -r requirements.txt
-          pip install -r requirements-dev.txt
+        run: uv sync --locked
 
       - name: ruff check
-        run: ruff check .
+        run: uv run ruff check .
 
       - name: ruff format
-        run: ruff format --check .
+        run: uv run ruff format --check .
 
       - name: pylint
-        run: pylint rangarr/ tests/
+        run: uv run pylint rangarr/ tests/
 
       - name: mypy
-        run: mypy rangarr/ tests/
+        run: uv run mypy rangarr/ tests/
 
       - name: bandit
-        run: bandit -r rangarr/ -lll
+        run: uv run bandit -r rangarr/ -lll
 
       - name: yamllint
-        run: yamllint .
+        run: uv run yamllint .
 
       - name: pip-audit
-        run: pip-audit -r requirements.txt
+        run: |
+          uv export --quiet --locked --no-dev --no-emit-project --format requirements-txt -o "$RUNNER_TEMP/requirements.txt"
+          uv run pip-audit -r "$RUNNER_TEMP/requirements.txt" --disable-pip
 
       - name: pytest
-        run: pytest --ignore=tests/system/test_docker.py
+        run: uv run pytest --ignore=tests/system/test_docker.py
+
+  docker_image_build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@ce360397dd3f832beb865e1373c09c0e9f86d70a # v4.0.0
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@4d04d5d9486b7bd6fa91e7baf45bbb4f8b9deedd # v4.0.0
+
+      - name: Build Docker image (no push)
+        uses: docker/build-push-action@d08e5c354a6adb9ed34480a06d141179aa583294 # v7.0.0
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: false
 
   docker_system_testing:
     runs-on: self-hosted
@@ -74,24 +97,20 @@ jobs:
         with:
           python-version: "3.13"
 
-      - name: Cache pip
-        uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
+      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
         with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('requirements*.txt') }}
-          restore-keys: ${{ runner.os }}-pip-
+          version: "0.13.7"
+          enable-cache: true
 
       - name: Install dependencies
-        run: |
-          pip install -r requirements.txt
-          pip install -r requirements-dev.txt
+        run: uv sync --locked
 
       - name: Pull Docker test images
         run: docker compose -f tests/system/compose.yaml pull
 
       - name: pytest (Docker system tests)
         run: >-
-          pytest tests/system/test_docker.py
+          uv run pytest tests/system/test_docker.py
           --override-ini="addopts="
           --log-cli-level=INFO
           --log-level=INFO
@@ -99,7 +118,7 @@ jobs:
           --log-date-format="%H:%M:%S"
 
   release:
-    needs: [tests_and_quality, docker_system_testing]
+    needs: [tests_and_quality, docker_image_build, docker_system_testing]
     if: startsWith(github.ref, 'refs/tags/v') && github.event.base_ref == 'refs/heads/main'
     runs-on: self-hosted
     permissions:
@@ -114,17 +133,13 @@ jobs:
         with:
           python-version: "3.13"
 
-      - name: Cache pip
-        uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
+      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
         with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('requirements*.txt') }}
-          restore-keys: ${{ runner.os }}-pip-
+          version: "0.13.7"
+          enable-cache: true
 
       - name: Install dependencies
-        run: |
-          pip install -r requirements.txt
-          pip install -r requirements-dev.txt
+        run: uv sync --locked
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@ce360397dd3f832beb865e1373c09c0e9f86d70a # v4.0.0

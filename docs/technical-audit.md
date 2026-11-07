@@ -262,7 +262,7 @@ Rangarr operates entirely within your local network (or wherever you host your *
 
 **Why:** The runtime image contains only the Python interpreter, CA certificates, and the application itself. There is no shell, no package manager, no build tooling. This limits what an attacker can do with a compromised container — they cannot execute shell commands, install tools, or escalate privileges through the package manager.
 
-**How it works:** A `python:3.13-slim` builder stage installs dependencies into an isolated prefix (`/install`) using `pip install --prefix`. The distroless runtime stage copies only that prefix and the application source. pip, build headers, and the OS package manager never exist in the final image.
+**How it works:** A `python:3.13-slim` builder stage installs the exact versions pinned in `uv.lock` into an isolated environment (`/venv`) using `uv sync --locked --no-dev`. The distroless runtime stage copies only that environment's `site-packages` and the application source. uv, pip, build headers, and the OS package manager never exist in the final image.
 
 **Trade-off:** Debugging a running container is harder — there is no shell to exec into. Use `LOG_LEVEL=DEBUG` and structured logs for diagnostics.
 
@@ -362,7 +362,7 @@ System tests (`tests/system/`) — require a running Docker stack:
 
 ## Dependencies
 
-Minimal third-party libraries (see `requirements.txt`):
+Minimal third-party libraries (see `pyproject.toml`; exact versions are pinned in `uv.lock`):
 - `requests`: HTTP client for *arr API calls.
 - `PyYAML`: Configuration file parsing.
 
@@ -389,6 +389,6 @@ Don't trust documentation — verify the claims:
 1. **Run the tests:** `pytest` — See that security-relevant code is tested.
 2. **Read the code:** Start with `rangarr/main.py` — a manageable entry point.
 3. **Check the API calls:** Enable `LOG_LEVEL=DEBUG` — Every HTTP request is logged.
-4. **Review dependencies:** `cat requirements.txt` — Two libraries, both standard.
+4. **Review dependencies:** `grep -A3 '^dependencies' pyproject.toml` — Two libraries, both standard.
 
 If anything in this document contradicts the code, the code is correct and this document needs updating. File an issue.

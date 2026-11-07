@@ -32,7 +32,6 @@ build/
 
 # Configuration
 config.yaml
-uv.lock
 
 # IDE
 .idea/
@@ -51,6 +50,5 @@ Dockerfile
 compose.example.yaml
 
 # Development
-requirements-dev.txt
 setup.sh
 pre-push.sh

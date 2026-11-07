@@ -1053,17 +1053,14 @@ If you plan to contribute or modify the code:
    cd rangarr
    ```
 
-2. **Create and activate a virtual environment:**
-   ```bash
-   python3 -m venv .venv
-   source .venv/bin/activate
-   ```
+2. **Install uv:**
+   Follow the [uv installation guide](https://docs.astral.sh/uv/getting-started/installation/).
 
 3. **Install dependencies:**
    ```bash
-   pip install -r requirements.txt
-   pip install -r requirements-dev.txt
+   uv sync
    ```
+   This creates `.venv` with the runtime and development dependencies at the exact versions pinned in `uv.lock`. Prefix commands with `uv run`, or activate the environment with `source .venv/bin/activate`.
 
 4. **Create `config.yaml`:**
    ```bash
@@ -1078,7 +1075,7 @@ If you plan to contribute or modify the code:
    ```
    Or run directly with Python:
    ```bash
-   python -m rangarr.main
+   uv run python -m rangarr.main
    ```
 
 6. **Install git hooks:**
@@ -1089,5 +1086,5 @@ If you plan to contribute or modify the code:
 
 7. **Run tests:**
    ```bash
-   pytest
+   uv run pytest
    ```

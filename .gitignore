@@ -21,9 +21,6 @@ htmlcov/
 dist/
 build/
 
-# Dependencies
-uv.lock
-
 # Configuration with secrets
 config.yaml
 

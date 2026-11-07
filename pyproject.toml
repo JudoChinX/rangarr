@@ -8,6 +8,20 @@ dependencies = [
     "requests>=2.31.0",
 ]
 
+[dependency-groups]
+dev = [
+    "bandit>=1.9.4",
+    "mypy>=1.19.1",
+    "pip-audit>=2.9.0",
+    "pylint>=4.0.5",
+    "pytest>=8.3.4",
+    "pytest-cov>=6.0.0",
+    "pytest-xdist>=3.0.0",
+    "requests-mock>=1.12.0",
+    "ruff>=0.15.6",
+    "yamllint>=1.35.1",
+]
+
 [tool.ruff]
 line-length = 120
 preview = true
